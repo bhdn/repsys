@@ -197,6 +197,19 @@ class SVN:
             return [x.split() for x in output.split()]
         return None
 
+    def switch(self, url, oldurl=None, path=None, relocate=False, **kwargs):
+        cmd = ["switch"]
+        if relocate:
+            if oldurl is None:
+                raise Error, "You must supply the old URL when "\
+                        "relocating working copies"
+            cmd.append("--relocate")
+            cmd.append(oldurl)
+        cmd.append(url)
+        if path is not None:
+            cmd.append(path)
+        return self._execsvn_success(*cmd, **kwargs)
+
     def update(self, path, **kwargs):
         cmd = ["update", path]
         self._add_revision(cmd, kwargs, optional=1)
