@@ -169,6 +169,12 @@ class SVN:
         if status == 0:
             return output.splitlines()
         return None
+
+    def info2(self, *args, **kwargs):
+        lines = self.info(*args, **kwargs)
+        pairs = [[w.strip() for w in line.split(":", 1)] for line in lines]
+        info = dict(pairs)
+        return info
           
     def ls(self, path, **kwargs):
         cmd = ["ls", path]

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from RepSys import Error, config, RepSysTree
+from RepSys import mirror
 from RepSys.svn import SVN
 from RepSys.rpm import SRPM
 from RepSys.log import specfile_svn2rpm
@@ -361,7 +362,19 @@ def checkout(pkgdirurl, path=None, revision=None):
 
 def commit(path="."):
     svn = SVN()
-    svn.commit(path)
+    info = svn.info2(path)
+    url = info.get("URL")
+    if url is None:
+        raise Error, "working copy URL not provided by svn info"
+    if mirror.enabled(url):
+        print "relocating to", url
+        newurl = mirror.switchto_parent(svn, url, path)
+    try:
+        svn.commit(path)
+    finally:
+        if mirror.enabled(url):
+            mirror.switchto_mirror(svn, newurl, path)
+            print "relocated back to", url
 
 def get_submit_info(path):
     path = os.path.abspath(path)
