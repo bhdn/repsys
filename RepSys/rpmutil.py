@@ -359,6 +359,10 @@ def checkout(pkgdirurl, path=None, revision=None):
         _, path = os.path.split(pkgdirurl)
     svn.checkout(current, path, rev=revision, show=1)
 
+def commit(path="."):
+    svn = SVN()
+    svn.commit(path)
+
 def get_submit_info(path):
     path = os.path.abspath(path)
 
