@@ -358,6 +358,9 @@ def checkout(pkgdirurl, path=None, revision=None):
     current = os.path.join(pkgdirurl, "current")
     if path is None:
         _, path = os.path.split(pkgdirurl)
+    if mirror.enabled():
+        current = mirror.checkout_url(current)
+        print "checking out from mirror", current
     svn.checkout(current, path, rev=revision, show=1)
 
 def commit(path=".", message=None):
