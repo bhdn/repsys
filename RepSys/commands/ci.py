@@ -19,6 +19,7 @@ Examples:
 
 def parse_options():
     parser = OptionParser(help=HELP)
+    parser.add_option("-m", dest="message", default=None)
     opts, args = parser.parse_args()
     if len(args):
         opts.target = args[0]

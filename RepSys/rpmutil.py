@@ -360,19 +360,23 @@ def checkout(pkgdirurl, path=None, revision=None):
         _, path = os.path.split(pkgdirurl)
     svn.checkout(current, path, rev=revision, show=1)
 
-def commit(path="."):
-    svn = SVN()
+def commit(path=".", message=None):
+    svn = SVN(noauth=True)
     info = svn.info2(path)
     url = info.get("URL")
     if url is None:
         raise Error, "working copy URL not provided by svn info"
-    if mirror.enabled(url):
-        print "relocating to", url
+    if mirror.enabled():
         newurl = mirror.switchto_parent(svn, url, path)
+        print "relocated to", newurl
     try:
-        svn.commit(path)
+        # we can't use the svn object here because pexpect hides VISUAL
+        mopt = ""
+        if message is not None:
+            mopt = "-m \"%s\"" % message
+        os.system("svn ci %s %s" % (mopt, path))
     finally:
-        if mirror.enabled(url):
+        if mirror.enabled():
             mirror.switchto_mirror(svn, newurl, path)
             print "relocated back to", url
 

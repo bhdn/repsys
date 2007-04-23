@@ -1,24 +1,25 @@
 import os
+import urlparse
 
 from RepSys import config
+from RepSys.svn import SVN
 
-def relocate_path(oldpar, newpar, oldpath):
-    subpath = oldurl[len(oldpar)-1:-1]
-    newurl = os.path.join(newpar, subpath)
+def relocate_path(oldparent, newparent, url):
+    subpath = url[len(oldparent)-1:]
+    newurl = newparent + "/" + subpath # subpath usually gets / at begining
     return newurl
 
-def enabled(url=None):
+def enabled():
     mirror = config.get("global", "mirror")
     default_parent = config.get("global", "default_parent")
-    urlok = True
-    if url:
-        urlok = url.startswith(mirror)
     return (mirror is not None and 
-            default_parent is not None and urlok)
+            default_parent is not None)
 
-def mirror_relocate(oldpar, newpar, oldpath, wcpath):
-    newurl = relocate_path(oldpar, newpar, oldpath)
-    svn.switch(oldurl, newurl, path=wcpath, relocate="True")
+def mirror_relocate(oldparent, newparent, url, wcpath):
+    svn = SVN(noauth=True)
+    newurl = relocate_path(oldparent, newparent, url)
+    svn.switch(newurl, url, path=wcpath, relocate="True")
+    return newurl
 
 def switchto_parent(svn, url, path):
     """Relocates the working copy to default_parent"""
