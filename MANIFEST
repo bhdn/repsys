@@ -15,6 +15,7 @@ RepSys/__init__.py
 RepSys/cgiutil.py
 RepSys/command.py
 RepSys/log.py
+RepSys/mirror.py
 RepSys/pexpect.py
 RepSys/rpm.py
 RepSys/rpmutil.py
@@ -27,6 +28,7 @@ RepSys/cgi/xmlrpcserver.py
 RepSys/commands/__init__.py
 RepSys/commands/authoremail.py
 RepSys/commands/changed.py
+RepSys/commands/ci.py
 RepSys/commands/co.py
 RepSys/commands/create.py
 RepSys/commands/editlog.py
