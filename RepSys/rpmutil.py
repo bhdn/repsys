@@ -363,6 +363,10 @@ def checkout(pkgdirurl, path=None, revision=None):
         print "checking out from mirror", current
     svn.checkout(current, path, rev=revision, show=1)
 
+def sync(target="."):
+    # 
+    pass
+
 def commit(target=".", message=None):
     svn = SVN(noauth=True)
     info = svn.info2(target)
