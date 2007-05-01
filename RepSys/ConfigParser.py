@@ -348,6 +348,7 @@ import os
 class Config:
     def __init__(self):
         self._config = ConfigParser()
+        self._wrapped = {}
         conffiles = []
         conffiles.append("/etc/repsys.conf")
         repsys_conf = os.environ.get("REPSYS_CONF")
@@ -357,6 +358,14 @@ class Config:
         for file in conffiles:
             if os.path.isfile(file):
                 self._config.read(file)
+
+    def wrap(self, section, handler, option=None):
+        """Set one wrapper for a given section
+        
+        The wrapper must be a function 
+        f(section, option=None, default=None).
+        """
+        self._wrapped.setdefault((section, option), []).append(handler)
 
     def sections(self):
         try:
@@ -377,6 +386,10 @@ class Config:
         return self._config.walk(section, *args, **kwargs)
 
     def get(self, section, option, default=None):
+        handler = self._wrapped.get((section, option))
+        if handler is None:
+            handler = self._wrapped.get((section, None))
+            return handler(section, option, default)
         try:
             return self._config.get(section, option)
         except Error:
