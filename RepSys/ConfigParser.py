@@ -363,9 +363,9 @@ class Config:
         """Set one wrapper for a given section
         
         The wrapper must be a function 
-        f(section, option=None, default=None).
+        f(section, option=None, default=None, walk=False).
         """
-        self._wrapped.setdefault((section, option), []).append(handler)
+        self._wrapped[section] = handler
 
     def sections(self):
         try:
@@ -382,13 +382,16 @@ class Config:
     def set(self, section, option, value):
         return self._config.set(section, option, value)
     
-    def walk(self, section, *args, **kwargs):
-        return self._config.walk(section, *args, **kwargs)
+    def walk(self, section, option=None, raw=0, vars=None):
+        handler = self._wrapped.get(section)
+        if handler:
+            return handler(section, option, walk=True)
+        return self._config.walk(section, option, raw, vars)
 
     def get(self, section, option, default=None):
-        handler = self._wrapped.get((section, option))
-        if handler is None:
-            handler = self._wrapped.get((section, None))
+        handler = self._wrapped.get(section)
+        if handler:
+            handler = self._wrapped.get(section)
             return handler(section, option, default)
         try:
             return self._config.get(section, option)
@@ -408,4 +411,19 @@ class Config:
             return states[ret.lower()]
         return default
 
+def test():
+    config = Config()
+    def handler(section, option=None, default=None, walk=False):
+        d = {"fulano": "ciclano",
+             "foolano": "ceeclano"}
+        if walk:
+            return d.items()
+        else:
+            return d[option]
+    config.wrap("users", handler=handler)
+    print config.get("users", "fulano")
+    print config.walk("users")
+
+if __name__ == "__main__":
+    test()
 # vim:ts=4:sw=4:et
