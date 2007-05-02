@@ -388,11 +388,12 @@ class Config:
             return handler(section, option, walk=True)
         return self._config.walk(section, option, raw, vars)
 
-    def get(self, section, option, default=None):
-        handler = self._wrapped.get(section)
-        if handler:
+    def get(self, section, option, default=None, wrap=True):
+        if wrap:
             handler = self._wrapped.get(section)
-            return handler(section, option, default)
+            if handler:
+                handler = self._wrapped.get(section)
+                return handler(section, option, default)
         try:
             return self._config.get(section, option)
         except Error:
@@ -418,10 +419,13 @@ def test():
              "foolano": "ceeclano"}
         if walk:
             return d.items()
-        else:
+        elif option in d:
             return d[option]
+        else:
+            return config.get(section, option, default, wrap=False)
     config.wrap("users", handler=handler)
-    print config.get("users", "fulano")
+    print config.get("users", "fulano") # found in wrapper
+    print config.get("users", "andreas") # found in repsys.conf
     print config.walk("users")
 
 if __name__ == "__main__":
