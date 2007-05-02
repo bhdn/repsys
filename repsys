@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from RepSys import Error
+from RepSys import Error, plugins
 from RepSys.command import *
 import getopt
 import sys
@@ -53,6 +53,7 @@ def dispatch_command(command, argv, debug=0):
     command_module.main()
     
 if __name__ == "__main__":
+    plugins.load()
     do_command(parse_options, dispatch_command)
 
 # vim:et:ts=4:sw=4
