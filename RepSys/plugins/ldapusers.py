@@ -15,28 +15,29 @@ options in the [global] section of repsys.conf:
     ldap-bindpw [optional] [default: empty]
         the password used to bind
     ldap-filterformat [optional] 
-                      [default: (&(objectClass=inetOrgPerson)(uid=%s))]
+            [default: (&(objectClass=inetOrgPerson)(uid=$username))]
         RFC-2254 filter string used in the search of the user entry.
-        Note that this is a python format string and will have the user
-        name as parameter. For example:
+        Note that this is a python template string and will have the 
+        user name as parameter. For example:
 
-           ldap-filterformat = (&(objectClass=inetOrgPerson)(uid=%s))
+           ldap-filterformat = (&(objectClass=inetOrgPerson)(uid=$username))
 
         Will result in the search filter:
 
            (&(objectClass=inetOrgPerson)(uid=john))
 
-    ldap-format [optional] [default: %(cn)s <%(mail)s>]
-        This is a python format string. This string will be 
+    ldap-resultformat [optional] [default: $cn <$mail>]
+        This is a python template string. This string will be 
         formatted using one dict object containing the fields
         returned in the LDAP search, for example:
 
-          >>> format = "%(cn)s <%(mail)s>"
+          >>> format = Template("$cn <$mail>")
           >>> d = search(basedn, filter)
-          >>> d = {"cn": "John Doe", "mail": "john@mandriva.org", 
-                   "uidNumber": "1290", "loginShell": "/bin/bash", 
-                   ... many other attributes ... }
-          >>> value = format % d
+          >>> d
+          {"cn": "John Doe", "mail": "john@mandriva.org", 
+           "uidNumber": "1290", "loginShell": "/bin/bash", 
+            ... many other attributes ... }
+          >>> value = format.substitute(d)
           >>> print value
           John Doe <john@mandriva.org>
 
@@ -53,32 +54,66 @@ For more information, look http://qa.mandriva.com/show_bug.cgi?id=30549
 """
 from RepSys import Error, config
 
+import string
+
 users_cache = {}
+
+class LDAPError(Error):
+    def __init__(self, ldaperr):
+        self.ldaperr = ldaperr
+        name = ldaperr.__class__.__name__
+        desc = ldaperr.message["desc"]
+        self.message = "LDAP error %s: %s" % (name, desc)
+        self.args = self.message,
 
 def strip_entry(entry):
     "Leave only the first value in all keys in the entry"
     new = dict((key, value[0]) for key, value in entry.iteritems())
     return new
 
+def interpolate(optname, format, data):
+    tmpl = string.Template(format)
+    try:
+        return tmpl.substitute(data)
+    except KeyError, e:
+        raise Error, "the key %s was not found in LDAP search, " \
+                "check your %s configuration" % (e, optname)
+    except (TypeError, ValueError), e:
+        raise Error, "LDAP response formatting error: %s. Check " \
+                "your %s configuration" % (e, optname)
+
+def used_attributes(format):
+    class DummyDict:
+        def __init__(self):
+            self.found = []
+        def __getitem__(self, key):
+            self.found.append(key)
+            return key
+    dd = DummyDict()
+    t = string.Template(format)
+    t.safe_substitute(dd)
+    return dd.found
 
 def make_handler():
     server = config.get("global", "ldap-server")
-    port = config.get("global", "ldap-port")
+    port = config.get("global", "ldap-port", 389)
     basedn = config.get("global", "ldap-base")
     binddn = config.get("global", "ldap-binddn")
     bindpw = config.get("global", "ldap-bindpw", "")
     filterformat = config.get("global", "ldap-filterformat",
-            "(&(objectClass=inetOrgPerson)(uid=%s))", raw=1)
-    format = config.get("global", "ldap-format", "%(cn)s <%(mail)s>", raw=1)
+            "(&(objectClass=inetOrgPerson)(uid=$username))", raw=1)
+    format = config.get("global", "ldap-resultformat", "$cn <$mail>", raw=1)
 
     if server is None:
         def dummy_wrapper(section, option=None, default=None, walk=False):
             return config.get(section, option, default, wrap=False)
         return dummy_wrapper
 
-    # only load ldap if it is enabled in configuration, this way we don't
-    # require everyone to have python-ldap installed
-    import ldap
+    try:
+        import ldap
+    except ImportError:
+        raise Error, "LDAP support needs the python-ldap package "\
+                "to be installed"
 
     def users_wrapper(section, option=None, default=None, walk=False):
         global users_cache
@@ -91,22 +126,25 @@ def make_handler():
         if value is not None:
             return value
 
-        l = ldap.open(server)
-        if binddn:
-            l.bind(binddn, bindpw)
-        filter = filterformat % option
-        found = l.search_s(basedn, ldap.SCOPE_SUBTREE, filter)
+        try:
+            l = ldap.open(server, port)
+            if binddn:
+                l.bind(binddn, bindpw)
+        except ldap.LDAPError, e:
+            raise LDAPError(e)
+
+        data = {"username": option}
+        filter = interpolate("ldap-filterformat", filterformat, data)
+        attrs = used_attributes(format)
+        try:
+            found = l.search_s(basedn, ldap.SCOPE_SUBTREE, filter,
+                    attrlist=attrs)
+        except ldap.LDAPError, e:
+            raise LDAPError(e)
         if found:
             dn, entry = found[0]
             entry = strip_entry(entry)
-            try:
-                value = format % entry
-            except KeyError, e:
-                raise Error, "the key %s was not found in LDAP search, " \
-                        "check your ldap-format configuration" % e
-            except (TypeError, ValueError), e:
-                raise Error, "LDAP response formatting error: %s. Check " \
-                        "your ldap-format configuration" % e
+            value = interpolate("ldap-resultformat", format, entry)
         else:
             # issue a warning?
             value = config.get(section, option, default, wrap=False)
