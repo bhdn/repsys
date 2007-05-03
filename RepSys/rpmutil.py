@@ -2,7 +2,7 @@
 from RepSys import Error, config, RepSysTree
 from RepSys import mirror
 from RepSys.svn import SVN
-from RepSys.rpm import SRPM
+from RepSys.simplerpm import SRPM
 from RepSys.log import specfile_svn2rpm
 from RepSys.util import execcmd
 import tempfile
