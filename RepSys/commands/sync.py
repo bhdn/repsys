@@ -1,29 +1,26 @@
 #!/usr/bin/python
 from RepSys.command import *
-from RepSys.rpmutil import commit
+from RepSys.rpmutil import sync
 
 HELP = """\
-Usage: repsys ci [TARGET]
-
-Will commit a change. The difference between an ordinary "svn ci" and
-"repsys ci" is that it relocates the working copy to the default repository
-in case the option "mirror" is set in repsys.conf.
+Usage: repsys sync
 
 Options:
-    -h      Show this message
+    --dry-run    Print results without changing the working copy
+    -h           Show this message
 
 Examples:
-    repsys ci
-    repsys ci SPECS/package.spec SPECS/package-patch.patch
+    repsys sync
 """
 
 def parse_options():
     parser = OptionParser(help=HELP)
-    parser.add_option("-m", dest="message", default=None)
+    parser.add_option("--dry-run", dest="dryrun", default=False,
+            action="store_true")
     opts, args = parser.parse_args()
     if len(args):
         opts.target = args[0]
     return opts
 
 def main():
-    do_command(parse_options, commit)
+    do_command(parse_options, sync)
