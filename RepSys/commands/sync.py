@@ -5,6 +5,11 @@ from RepSys.rpmutil import sync
 HELP = """\
 Usage: repsys sync
 
+Will add or removed from the working copy new files added or removed
+from the spec file.
+
+"No changes are commited."
+
 Options:
     --dry-run    Print results without changing the working copy
     -h           Show this message
