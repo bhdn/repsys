@@ -372,11 +372,11 @@ def sync(dryrun=False):
         topdir = os.pardir
     else:
         topdir = ""
-    specsdir = os.path.join(topdir, "SPECS")
-    sourcesdir = os.path.join(topdir, "SOURCES")
+    specsdir = os.path.join(topdir, "SPECS/")
+    sourcesdir = os.path.join(topdir, "SOURCES/")
     for path in (specsdir, sourcesdir):
         if not os.path.isdir(path):
-            raise Error, "%s not found" % path
+            raise Error, "%s directory not found" % path
     specs = glob.glob(os.path.join(specsdir, "*.spec"))
     if not specs:
         raise Error, "no .spec files found in %s" % specsdir
