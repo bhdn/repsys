@@ -372,6 +372,9 @@ def sync(dryrun=False):
         topdir = os.pardir
     else:
         topdir = ""
+    # run svn info because svn st does not complain when topdir is not an
+    # working copy
+    svn.info(topdir or ".")
     specsdir = os.path.join(topdir, "SPECS/")
     sourcesdir = os.path.join(topdir, "SOURCES/")
     for path in (specsdir, sourcesdir):
@@ -385,7 +388,8 @@ def sync(dryrun=False):
         spec = rpm.TransactionSet().parseSpec(specpath)
     except rpm.error, e:
         raise Error, "could not load spec file: %s" % e
-    sources = [name for name, x, y in spec.sources()]
+    sources = [os.path.basename(name)
+            for name, no, flags in spec.sources()]
     sourcesst = dict((os.path.basename(path), st)
             for st, path in svn.status(sourcesdir, noignore=True))
     toadd = []
