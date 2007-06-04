@@ -4,9 +4,28 @@ import urlparse
 from RepSys import config
 from RepSys.svn import SVN
 
+def _normdirurl(url):
+    """normalize url for relocate_path needs"""
+    parsed = urlparse.urlparse(url)
+    path = os.path.normpath(parsed.path)
+    path += "/" # assuming we always deal with directories
+    newurl = urlparse.urlunparse((parsed.scheme, parsed.netloc, path,
+        parsed.params, parsed.query, parsed.fragment))
+    return newurl
+
+def _joinurl(url, relpath):
+    parsed = urlparse.urlparse(url)
+    newpath = os.path.join(parsed.path, relpath)
+    newurl = urlparse.urlunparse((parsed.scheme, parsed.netloc, newpath,
+        parsed.params, parsed.query, parsed.fragment))
+    return newurl
+
 def relocate_path(oldparent, newparent, url):
-    subpath = url[len(oldparent)-1:]
-    newurl = newparent + "/" + subpath # subpath usually gets / at begining
+    oldparent = _normdirurl(oldparent)
+    newparent = _normdirurl(newparent)
+    url = _normdirurl(url)
+    subpath = url[len(oldparent):]
+    newurl = _joinurl(newparent,  subpath) # subpath usually gets / at begining
     return newurl
 
 def enabled():
