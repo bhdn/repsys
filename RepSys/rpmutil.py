@@ -437,7 +437,8 @@ def commit(target=".", message=None):
     url = info.get("URL")
     if url is None:
         raise Error, "working copy URL not provided by svn info"
-    if mirror.enabled():
+    mirrored = mirror.enabled(url)
+    if mirrored:
         newurl = mirror.switchto_parent(svn, url, target)
         print "relocated to", newurl
     try:
@@ -447,7 +448,7 @@ def commit(target=".", message=None):
             mopt = "-m \"%s\"" % message
         os.system("svn ci %s %s" % (mopt, target))
     finally:
-        if mirror.enabled():
+        if mirrored:
             mirror.switchto_mirror(svn, newurl, target)
             print "relocated back to", url
 

@@ -35,11 +35,15 @@ def relocate_path(oldparent, newparent, url):
     newurl = _joinurl(newparent,  subpath) # subpath usually gets / at begining
     return newurl
 
-def enabled():
+def enabled(wcurl=None):
     mirror = config.get("global", "mirror")
     default_parent = config.get("global", "default_parent")
-    return (mirror is not None and 
-            default_parent is not None)
+    enabled = False
+    if mirror and default_parent:
+        enabled = True
+        if wcurl and (not same_base(mirror, wcurl)):
+            enabled = False
+    return enabled
 
 def mirror_relocate(oldparent, newparent, url, wcpath):
     svn = SVN(noauth=True)
