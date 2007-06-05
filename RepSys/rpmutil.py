@@ -433,6 +433,10 @@ def sync(dryrun=False):
 
 def commit(target=".", message=None):
     svn = SVN(noauth=True)
+    status = svn.status(target, quiet=True)
+    if not status:
+        print "nothing to commit"
+        return
     info = svn.info2(target)
     url = info.get("URL")
     if url is None:
