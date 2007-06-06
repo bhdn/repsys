@@ -247,10 +247,12 @@ def filter_log_lines(lines):
     # Lines in commit messages beginning with CLOG will be the only shown
     # in the changelog. These lines will have the CLOG token and blanks
     # stripped from the beginning.
-    clogstr = config.get("log", "unignore-string", "CLOG")
-    clogre = re.compile(r"(^%s[^ \t]?[ \t])" % clogstr)
-    onlylines = [clogre.sub("", line)
-            for line in lines if line.startswith(clogstr)]
+    onlylines = None
+    clogstr = config.get("log", "unignore-string")
+    if clogstr:
+        clogre = re.compile(r"(^%s[^ \t]?[ \t])" % clogstr)
+        onlylines = [clogre.sub("", line)
+                for line in lines if line.startswith(clogstr)]
     if onlylines:
         filtered = onlylines
     else:
