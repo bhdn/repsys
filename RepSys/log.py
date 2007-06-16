@@ -54,7 +54,6 @@ def getrelease(pkgdirurl, rev=None, macros=[]):
     """
     from RepSys.rpmutil import rpm_macros_defs
     svn = SVN(baseurl=pkgdirurl)
-    import pdb; pdb.set_trace()
     tmpdir = tempfile.mktemp()
     pkgname = RepSysTree.pkgname(pkgdirurl)
     pkgcurrenturl = os.path.join(pkgdirurl, "current")
@@ -62,28 +61,29 @@ def getrelease(pkgdirurl, rev=None, macros=[]):
     svn.export(specurl, tmpdir, rev=rev)
     try:
         found = glob.glob(os.path.join(tmpdir, "*.spec"))
-        if found:
-            specpath = found[0]
-            options = rpm_macros_defs(macros)
-            command = (("rpm -q --qf '%%{EPOCH}:%%{VERSION}-%%{RELEASE}\n' "
-                       "--specfile %s %s 2>/dev/null") % 
-                       (specpath, options))
-            status, output = execcmd(command)
-            if status != 0:
-                raise Error, "Error in command %s: %s" % (command, output)
-            releases = output.split()
-            try:
-                epoch, vr = releases[0].split(":", 1)
-                version, release = vr.split("-", 1)
-            except ValueError:
-                raise Error, "Invalid command output: %s: %s" % \
-                        (command, output)
-            #XXX check if this is the right way:
-            if epoch == "(none)":
-                ev = version
-            else:
-                ev = epoch + ":" + version
-            return ev, release
+        if not found:
+            raise Error, "no .spec file found inside %s" % specurl
+        specpath = found[0]
+        options = rpm_macros_defs(macros)
+        command = (("rpm -q --qf '%%{EPOCH}:%%{VERSION}-%%{RELEASE}\n' "
+                   "--specfile %s %s 2>/dev/null") % 
+                   (specpath, options))
+        status, output = execcmd(command)
+        if status != 0:
+            raise Error, "Error in command %s: %s" % (command, output)
+        releases = output.split()
+        try:
+            epoch, vr = releases[0].split(":", 1)
+            version, release = vr.split("-", 1)
+        except ValueError:
+            raise Error, "Invalid command output: %s: %s" % \
+                    (command, output)
+        #XXX check if this is the right way:
+        if epoch == "(none)":
+            ev = version
+        else:
+            ev = epoch + ":" + version
+        return ev, release
     finally:
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
