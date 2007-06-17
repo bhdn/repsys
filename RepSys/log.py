@@ -45,7 +45,7 @@ default_template = """
 #end for
 """
 
-def getrelease(pkgdirurl, rev=None, macros=[], checkout=None):
+def getrelease(pkgdirurl, rev=None, macros=[], exported=None):
     """Tries to obtain the version-release of the package for a 
     yet-not-markrelease revision of the package.
 
@@ -56,11 +56,11 @@ def getrelease(pkgdirurl, rev=None, macros=[], checkout=None):
     svn = SVN(baseurl=pkgdirurl)
     pkgcurrenturl = os.path.join(pkgdirurl, "current")
     specurl = os.path.join(pkgcurrenturl, "SPECS")
-    if checkout is None:
+    if exported is None:
         tmpdir = tempfile.mktemp()
         svn.export(specurl, tmpdir, rev=rev)
     else:
-        tmpdir = os.path.join(checkout, "SPECS")
+        tmpdir = os.path.join(exported, "SPECS")
     try:
         found = glob.glob(os.path.join(tmpdir, "*.spec"))
         if not found:
@@ -87,7 +87,7 @@ def getrelease(pkgdirurl, rev=None, macros=[], checkout=None):
             ev = epoch + ":" + version
         return ev, release
     finally:
-        if checkout is None and os.path.isdir(tmpdir):
+        if exported is None and os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
             
 class _Revision:
@@ -362,7 +362,7 @@ def parse_markrelease_log(relentry):
 
 
 def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
-        template=None, macros=[], checkout=None):
+        template=None, macros=[], exported=None):
     concat = config.get("log", "concat", "").split()
     revoffset = get_revision_offset()
     svn = SVN(baseurl=pkgdirurl)
@@ -426,7 +426,7 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
         # if they are not submitted yet, what we have to do is to add
         # a release/version number from getrelease()
         version, release = getrelease(pkgdirurl, macros=macros,
-                checkout=checkout)
+                exported=exported)
         toprelease = make_release(entries=notsubmitted, released=False,
                         version=version, release=release)
         releases.append(toprelease)
@@ -437,7 +437,7 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
 
 
 def specfile_svn2rpm(pkgdirurl, specfile, rev=None, size=None,
-        submit=False, template=None, macros=[], checkout=None):
+        submit=False, template=None, macros=[], exported=None):
     newlines = []
     found = 0
     
@@ -454,7 +454,7 @@ def specfile_svn2rpm(pkgdirurl, specfile, rev=None, size=None,
     # Create new changelog
     newlines.append("\n\n%changelog\n")
     newlines.append(svn2rpm(pkgdirurl, rev=rev, size=size, submit=submit,
-        template=template, macros=macros, checkout=checkout))
+        template=template, macros=macros, exported=exported))
 
     # Merge old changelog, if available
     oldurl = config.get("log", "oldurl")
