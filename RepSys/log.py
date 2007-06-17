@@ -461,10 +461,13 @@ def specfile_svn2rpm(pkgdirurl, specfile, rev=None, size=None,
         try:
             pkgname = RepSysTree.pkgname(pkgdirurl)
             pkgoldurl = os.path.join(oldurl, pkgname)
-            if svn.ls(pkgoldurl, noerror=1):
+            try:
                 # we're using HEAD here because fixes in misc/ (oldurl) may
                 # be newer than packages' last changed revision.
                 svn.export(pkgoldurl, tmpdir)
+            except Error:
+                pass
+            else:
                 logfile = os.path.join(tmpdir, "log")
                 if os.path.isfile(logfile):
                     file = open(logfile)
