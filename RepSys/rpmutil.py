@@ -493,16 +493,14 @@ def get_submit_info(path):
     svn = SVN(noauth=True)
 
     # Now, extract the package name.
-    for line in svn.info(path):
-        if line.startswith("URL: "):
-            url = line.split()[1]
-            toks = url.split("/")
-            if len(toks) < 2 or toks[-1] != "current":
-                raise Error, "unexpected URL received from 'svn info'"
-            name = toks[-2]
-            break
-    else:
-        raise Error, "URL tag not found in 'svn info' output"
+    info = svn.info2(path)
+    url = info.get("URL")
+    if url is None:
+        raise Error, "missing URL from svn info %s" % path
+    toks = url.split("/")
+    if len(toks) < 2 or toks[-1] != "current":
+        raise Error, "unexpected URL received from 'svn info'"
+    name = toks[-2]
 
     # Finally, guess revision.
     max = -1
