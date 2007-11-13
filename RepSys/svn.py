@@ -19,6 +19,9 @@ class SVNLogEntry:
 
 class SVN:
     def _execsvn(self, *args, **kwargs):
+        if not kwargs.get("show"):
+            args = list(args)
+            args.append("--non-interactive")
         cmdstr = "svn "+" ".join(args)
         return execcmd(cmdstr, **kwargs)
 
