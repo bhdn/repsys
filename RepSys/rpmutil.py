@@ -492,7 +492,6 @@ def get_submit_info(path):
     
     svn = SVN(baseurl=pkgdirurl)
 
-
     # Now, extract the package name.
     for line in svn.info(path):
         if line.startswith("URL: "):
@@ -511,7 +510,7 @@ def get_submit_info(path):
     files.extend(glob.glob("%s/*" % specsdir))
     files.extend(glob.glob("%s/*" % sourcesdir))
     for line in svn.info(" ".join(files)):
-        if line.startswith("Revision: "):
+        if line.startswith("Last Changed Rev: "):
             rev = int(line.split()[1])
             if rev > max:
                 max = rev
