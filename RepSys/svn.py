@@ -18,67 +18,9 @@ class SVNLogEntry:
         return cmp(self.date, other.date)
 
 class SVN:
-    def __init__(self, username=None, password=None, noauth=0, baseurl=None):
-        self.noauth = noauth or (
-            baseurl and (
-                baseurl.startswith("file:") or
-                baseurl.startswith("svn+ssh:")))
-        if not self.noauth: # argh
-            self.username, self.password = get_auth()
-
-
     def _execsvn(self, *args, **kwargs):
         cmdstr = "svn "+" ".join(args)
-        if kwargs.get("local") or kwargs.get("noauth") or self.noauth:
-            return execcmd(cmdstr, **kwargs)
-        show = kwargs.get("show")
-        noerror = kwargs.get("noerror")
-        p = pexpect.spawn(cmdstr, timeout=1)
-        p.setmaxread(1024)
-        p.setecho(False)
-        outlist = []
-        while True:
-            i = p.expect_exact([pexpect.EOF, pexpect.TIMEOUT,
-                    "username:", "password:",
-                    "(p)ermanently?",
-                    "Authorization failed"])
-            if i == 0:
-                if show and p.before:
-                    print p.before,
-                outlist.append(p.before)
-                break
-            elif i == 1:
-                if show and p.before:
-                    print p.before,
-                outlist.append(p.before)
-            elif i == 2:
-                p.sendline(self.username)
-                outlist = []
-            elif i == 3:
-                p.sendline(self.password)
-                outlist = []
-            elif i == 4:
-                p.sendline("p")
-                outlist = []
-            elif i == 5:
-                if not noerror:
-                    raise Error, "authorization failed"
-                else:
-                    break
-        while p.isalive():
-            try:
-                time.sleep(1)
-            except (pexpect.TIMEOUT, pexpect.EOF):
-                # Continue until the child dies
-                pass
-        status, output = p.exitstatus, "".join(outlist).strip()
-        if status != 0 and not kwargs.get("noerror"):
-            sys.stderr.write(cmdstr)
-            sys.stderr.write("\n")
-            sys.stderr.write(output)
-            sys.stderr.write("\n")
-            raise Error, "command failed: "+cmdstr
-        return status, output
+        return execcmd(cmdstr, **kwargs)
 
     def _execsvn_success(self, *args, **kwargs):
         status, output = self._execsvn(*args, **kwargs)
