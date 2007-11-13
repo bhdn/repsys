@@ -51,15 +51,8 @@ def parse_options():
     opts, args = parser.parse_args()
     if not args:
         name, rev = get_submit_info(".")
-        try:
-            yn = raw_input("Submit '%s', revision %d (y/N)? " % (name, rev))
-        except KeyboardInterrupt:
-            yn = "n"
-        if yn.lower() in ("y", "yes"):
-            args = name, str(rev)
-        else:
-            print "Cancelled."
-            sys.exit(1)
+        args = name, str(rev)
+        print "submitting %s at revision %s..." % args
     elif len(args) > 2:
         raise Error, "invalid arguments"
     opts.pkgdirurl = default_parent(args[0])
