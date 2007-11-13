@@ -20,6 +20,9 @@ Usage: repsys submit [OPTIONS] [URL [REVISION]]
 
 Submits the package from URL to the submit host.
 
+If no URL and revision are specified, the latest changed revision in 
+the package working copy of the current directory will be used.
+
 Options:
     -t TARGET  Submit given package URL to given target
     -l         Just list available targets
