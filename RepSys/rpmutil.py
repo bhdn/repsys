@@ -490,7 +490,7 @@ def get_submit_info(path):
     if not os.path.isdir(os.path.join(path, ".svn")):
         raise Error, "subversion directory not found"
     
-    svn = SVN(baseurl=pkgdirurl)
+    svn = SVN(noauth=True)
 
     # Now, extract the package name.
     for line in svn.info(path):
