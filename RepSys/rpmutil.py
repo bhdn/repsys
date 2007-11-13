@@ -511,7 +511,7 @@ def get_submit_info(path):
     files.extend(glob.glob("%s/*" % sourcesdir))
     for line in svn.info(" ".join(files)):
         if line.startswith("Last Changed Rev: "):
-            rev = int(line.split()[1])
+            rev = int(line.split(":")[1])
             if rev > max:
                 max = rev
     if max == -1:
