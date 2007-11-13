@@ -51,10 +51,14 @@ def parse_options():
     opts, args = parser.parse_args()
     if not args:
         name, rev = get_submit_info(".")
-        try:
-            yn = raw_input("Submit '%s', revision %d (y/N)? " % (name, rev))
-        except KeyboardInterrupt:
-            yn = "n"
+        yn = "y"
+        if config.getbool("submit", "confirm-revision", 1):
+            try:
+                yn = raw_input("Submit '%s', revision %d (y/N)? " % (name, rev))
+            except KeyboardInterrupt:
+                yn = "n"
+        else:
+            print "submitting %s at revision %s.." % (name, rev)
         if yn.lower() in ("y", "yes"):
             args = name, str(rev)
         else:
