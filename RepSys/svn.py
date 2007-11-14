@@ -22,7 +22,8 @@ class SVN:
         if not kwargs.get("show"):
             args = list(args)
             args.append("--non-interactive")
-        cmdstr = "svn "+" ".join(args)
+        svn_command = config.get("global", "svn-command", "svn")
+        cmdstr = svn_command + " " + " ".join(args)
         return execcmd(cmdstr, **kwargs)
 
     def _execsvn_success(self, *args, **kwargs):
