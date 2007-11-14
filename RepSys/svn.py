@@ -22,7 +22,8 @@ class SVN:
         if not kwargs.get("show"):
             args = list(args)
             args.append("--non-interactive")
-        svn_command = config.get("global", "svn-command", "svn")
+        svn_command = config.get("global", "svn-command",
+                        "SVN_SSH='ssh -o \"BatchMode yes\"' svn")
         cmdstr = svn_command + " " + " ".join(args)
         return execcmd(cmdstr, **kwargs)
 
