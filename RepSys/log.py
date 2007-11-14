@@ -429,7 +429,7 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
     # this is done by getting all log entries newer (revision larger)
     # than releaseslog[0] (in the case it exists)
     if releaseslog:
-        latest_revision = releaseslog[0].revision
+        latest_revision = releasesdata[-1][0] # the latest copied rev
     else:
         latest_revision = 0
     notsubmitted = [entry for entry in currentlog 
