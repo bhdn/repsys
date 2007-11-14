@@ -451,7 +451,8 @@ def commit(target=".", message=None):
     if mirrored:
         newurl = mirror.switchto_parent(svn, url, target)
         print "relocated to", newurl
-    # we can't use the svn object here because pexpect hides VISUAL
+    # we can't use the svn object here because svn --non-interactive option
+    # hides VISUAL
     mopt = ""
     if message is not None:
         mopt = "-m \"%s\"" % message
