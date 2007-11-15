@@ -25,7 +25,15 @@ class SVN:
         svn_command = config.get("global", "svn-command",
                         "SVN_SSH='ssh -o \"BatchMode yes\"' svn")
         cmdstr = svn_command + " " + " ".join(args)
-        return execcmd(cmdstr, **kwargs)
+        try:
+            return execcmd(cmdstr, **kwargs)
+        except Error, e:
+            if "Permission denied" in e.message:
+                raise Error, ("%s\n"
+                        "Seems ssh-agent is not setup, see "
+                        "http://wiki.mandriva.com/en/Development/Docs/Contributor_Tricks#SSH_configuration"
+                        " for more information." % e)
+            raise
 
     def _execsvn_success(self, *args, **kwargs):
         status, output = self._execsvn(*args, **kwargs)
