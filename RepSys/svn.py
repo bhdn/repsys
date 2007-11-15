@@ -30,7 +30,7 @@ class SVN:
         except Error, e:
             if "Permission denied" in e.message:
                 raise Error, ("%s\n"
-                        "Seems ssh-agent is not setup, see "
+                        "Seems ssh-agent or ForwardAgent are not setup, see "
                         "http://wiki.mandriva.com/en/Development/Docs/Contributor_Tricks#SSH_configuration"
                         " for more information." % e)
             raise
