@@ -53,9 +53,9 @@ def parse_options():
     parser.add_option("--define", action="append")
     opts, args = parser.parse_args()
     if not args:
-        name, rev = get_submit_info(".")
-        args = name, str(rev)
-        print "submitting %s at revision %s..." % args
+        name, url, rev = get_submit_info(".")
+        args = url, str(rev)
+        print "submitting %s at revision %s (%s)" % (name, rev, url)
     elif len(args) > 2:
         raise Error, "invalid arguments"
     opts.pkgdirurl = default_parent(args[0])
