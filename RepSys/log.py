@@ -53,7 +53,7 @@ def getrelease(pkgdirurl, rev=None, macros=[], exported=None):
     will be used.
     """
     from RepSys.rpmutil import rpm_macros_defs
-    svn = SVN(baseurl=pkgdirurl)
+    svn = SVN()
     pkgcurrenturl = os.path.join(pkgdirurl, "current")
     specurl = os.path.join(pkgcurrenturl, "SPECS")
     if exported is None:
@@ -377,7 +377,7 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
         template=None, macros=[], exported=None):
     concat = config.get("log", "concat", "").split()
     revoffset = get_revision_offset()
-    svn = SVN(baseurl=pkgdirurl)
+    svn = SVN()
     pkgreleasesurl = os.path.join(pkgdirurl, "releases")
     pkgcurrenturl = os.path.join(pkgdirurl, "current")
     releaseslog = svn.log(pkgreleasesurl, noerror=1)
@@ -427,9 +427,9 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
             
     # look for commits that have been not submitted (released) yet
     # this is done by getting all log entries newer (greater revision no.)
-    # than releasesdata[0] (in the case it exists)
+    # than releasesdata[-1] (in the case it exists)
     if releasesdata:
-        latest_revision = releasesdata[0][0] # "relrevision"
+        latest_revision = releasesdata[-1][0] # the latest copied rev
     else:
         latest_revision = 0
     notsubmitted = [entry for entry in currentlog 
@@ -471,7 +471,7 @@ def specfile_svn2rpm(pkgdirurl, specfile, rev=None, size=None,
     # Merge old changelog, if available
     oldurl = config.get("log", "oldurl")
     if oldurl:
-        svn = SVN(baseurl=pkgdirurl)
+        svn = SVN()
         tmpdir = tempfile.mktemp()
         try:
             pkgname = RepSysTree.pkgname(pkgdirurl)
