@@ -55,7 +55,7 @@ def parse_options():
     if not args:
         name, url, rev = get_submit_info(".")
         args = url, str(rev)
-        print "submitting %s at revision %s (%s)" % (name, rev, url)
+        print "submitting revision %s of %s" % (name, rev, url)
     elif len(args) > 2:
         raise Error, "invalid arguments"
     opts.pkgdirurl = default_parent(args[0])
