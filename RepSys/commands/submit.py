@@ -55,6 +55,7 @@ def parse_options():
     if not args:
         name, url, rev = get_submit_info(".")
         args = url, str(rev)
+        #FIXME bad place for output
         print "Submitting %s at revision %s" % (name, rev)
         print "URL: " + url
     elif len(args) > 2:
