@@ -516,6 +516,6 @@ def get_submit_info(path):
     if max == -1:
         raise Error, "revision tag not found in 'svn info' output"
     
-    return name, max
+    return name, url, max
 
 # vim:et:ts=4:sw=4
