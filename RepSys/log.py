@@ -164,6 +164,11 @@ def group_releases_by_author(releases):
     allauthors = []
     grouped = []
     for release in releases:
+
+        if not release.visible:
+            grouped.append(release)
+            continue
+
         authors = {}
         latest = None
         for revision in release.revisions:
@@ -187,10 +192,6 @@ def group_releases_by_author(releases):
                 # skipping author with only silented lines
                 continue
             decorated.append((revdeco[0][0], author))
-
-        if not decorated:
-            # skipping release with only authors with silented lines
-            continue
 
         decorated.sort(reverse=1)
         release.authors = [t[1] for t in decorated]
