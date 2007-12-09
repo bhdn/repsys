@@ -164,8 +164,13 @@ def group_releases_by_author(releases):
     allauthors = []
     grouped = []
     for release in releases:
-
-        if not release.visible:
+        if not release.visible and release.revisions:
+            first = release.revisions[0]
+            release.revision = first.revision
+            release.author_name = first.author_name
+            release.author_email = first.author_email
+            release.date = first.date
+            release.raw_date = first.raw_date
             grouped.append(release)
             continue
 
