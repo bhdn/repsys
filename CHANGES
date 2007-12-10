@@ -1,5 +1,6 @@
 * 1.6.19.2
-- fixed emptylog message, which was not being shown when needed
+- fixed emptylog message, which was not being shown when needed; imported
+  packages submitted without visible message will have this message now
 
 * 1.6.19.1
 - fixed bad url used when using -v in getsrpm
