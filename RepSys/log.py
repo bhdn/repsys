@@ -206,10 +206,8 @@ def group_releases_by_author(releases):
             release.raw_date = firstrev.raw_date
             release.date = firstrev.date
 
-        #release.date = first.revisions[0].date
         release.date = latest.date
         release.raw_date = latest.raw_date
-        #release.revision = first.revisions[0].revision
         release.revision = latest.revision
 
         grouped.append(release)
