@@ -164,50 +164,44 @@ def group_releases_by_author(releases):
     allauthors = []
     grouped = []
     for release in releases:
-        if not release.visible and release.revisions:
-            first = release.revisions[0]
-            release.revision = first.revision
-            release.author_name = first.author_name
-            release.author_email = first.author_email
-            release.date = first.date
-            release.raw_date = first.raw_date
-            grouped.append(release)
-            continue
 
+        # group revisions of the release by author
         authors = {}
         latest = None
         for revision in release.revisions:
             authors.setdefault(revision.author, []).append(revision)
 
-        # all the mess below is to sort by author and by revision number
+        # create _Authors and sort them by their latest revisions
         decorated = []
         for authorname, revs in authors.iteritems():
             author = _Author()
             author.name = revs[0].author_name
             author.email = revs[0].author_email
-            revdeco = [(r.revision, r) for r in revs]
-            revdeco.sort(reverse=1)
-            author.revisions = [t[1] for t in revdeco]
+            author.revisions = revs
             revlatest = author.revisions[0]
             # keep the latest revision even for silented authors (below)
             if latest is None or revlatest.revision > latest.revision:
                 latest = revlatest
             count = sum(len(rev.lines) for rev in author.revisions)
             if count == 0:
-                # skipping author with only silented lines
+                author.visible = False
                 continue
-            decorated.append((revdeco[0][0], author))
-
+            decorated.append((revlatest.revision, author))
         decorated.sort(reverse=1)
+
         release.authors = [t[1] for t in decorated]
-        # the difference between a released and a not released _Release is
-        # the way the release numbers is obtained. So, when this is a
-        # released, we already have it, but if we don't, we should get de
-        # version/release string using getrelease and then get the first
-        first, release.authors = release.authors[0], release.authors[1:]
-        release.author_name = first.name
-        release.author_email = first.email
-        release.release_revisions = first.revisions
+
+        if release.visible:
+            firstrel, release.authors = release.authors[0], release.authors[1:]
+            release.author_name = firstrel.name
+            release.author_email = firstrel.email
+            release.release_revisions = firstrel.revisions
+        else:
+            firstrev = release.revisions[0]
+            release.author_name = firstrev.author_name
+            release.author_email = firstrev.author_email
+            release.raw_date = firstrev.raw_date
+            release.date = firstrev.date
 
         #release.date = first.revisions[0].date
         release.date = latest.date
