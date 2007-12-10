@@ -179,24 +179,25 @@ def group_releases_by_author(releases):
             author.email = revs[0].author_email
             author.revisions = revs
             revlatest = author.revisions[0]
-            # keep the latest revision even for silented authors (below)
+            # keep the latest revision even for completely invisible
+            # authors (below)
             if latest is None or revlatest.revision > latest.revision:
                 latest = revlatest
             count = sum(len(rev.lines) for rev in author.revisions)
             if count == 0:
-                author.visible = False
                 continue
             decorated.append((revlatest.revision, author))
         decorated.sort(reverse=1)
 
-        release.authors = [t[1] for t in decorated]
-
         if release.visible:
+            release.authors = [t[1] for t in decorated]
             firstrel, release.authors = release.authors[0], release.authors[1:]
             release.author_name = firstrel.name
             release.author_email = firstrel.email
             release.release_revisions = firstrel.revisions
         else:
+            # we don't care about other possible authors in completely
+            # invisible releases
             firstrev = release.revisions[0]
             release.author_name = firstrev.author_name
             release.author_email = firstrev.author_email
