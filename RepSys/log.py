@@ -185,6 +185,8 @@ def group_releases_by_author(releases):
                 latest = revlatest
             count = sum(len(rev.lines) for rev in author.revisions)
             if count == 0:
+                # only sort those visible authors, invisible ones are used
+                # only in "latest"
                 continue
             decorated.append((revlatest.revision, author))
         decorated.sort(reverse=1)
