@@ -1,3 +1,6 @@
+* 1.6.19.3
+- fixed incompatibility with Python-2.4 on urlparse
+
 * 1.6.19.2
 - fixed emptylog message, which was not being shown when needed
 - template: hide the first release when it has only invisible lines
