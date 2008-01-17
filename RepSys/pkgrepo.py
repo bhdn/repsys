@@ -9,9 +9,6 @@ import os
 import string
 import sha
 
-def upload_target():
-    pass
-
 def svn_basedir(target):
     svn = SVN()
     info = svn.info2(target)
@@ -102,16 +99,19 @@ def get_chksum(path):
     return digest
 
 def _update_sources(path, entries):
-    if os.path.isdir(path):
-        for name in os.listdir(path):
-            fpath = os.path.join(path, name)
-            if os.path.isdir(fpath):
-                continue # we don't handle subdirs
-            _update_sources(fpath)
+    if os.path.exists(path):
+        if os.path.isdir(path):
+            for name in os.listdir(path):
+                fpath = os.path.join(path, name)
+                if os.path.isdir(fpath):
+                    continue # we don't handle subdirs
+                _update_sources(fpath)
+        else:
+            sum = get_chksum(path)
+            name = os.path.basename(path)
+            entries[name] = sum
     else:
-        sum = get_chksum(path)
-        name = os.path.basename(path)
-        entries[name] = sum
+        del entries[name]
 
 def update_sources(path):
     spath = sources_path(path)
@@ -123,5 +123,15 @@ def upload(path):
     base = config.get("pkgrepo", "command", "rsync -ar -essh")
     target = target_url(path)
     execcmd("%s \"%s\" \"%s\"" % (base, path, target))
+    update_sources(path)
+
+def remove(path):
+    # we don't care what will happen to the sources file in the tarballs
+    # repository, we just remove the reference to it
+    if os.path.exists(path):
+        try:
+            os.unlink(path)
+        except (OSError, IOError), e:
+            raise Error, "failed to unlink file: %s" % e
     update_sources(path)
 
