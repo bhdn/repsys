@@ -1,6 +1,3 @@
-"""
-The package repository.
-"""
 from RepSys import Error, config
 from RepSys.util import execcmd
 from RepSys.rpmutil import get_submit_info
