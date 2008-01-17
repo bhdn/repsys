@@ -40,6 +40,7 @@ Examples:
     repsys submit https://repos/svn/mdv/cooker/foo 14800
     repsys submit -r 14800 https://repos/svn/mdv/cooker/foo
     repsys submit -l https://repos
+    repsys submit --define section=main/testing -t 2008.0
 """
 
 def parse_options():
