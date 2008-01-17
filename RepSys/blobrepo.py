@@ -31,7 +31,7 @@ class _LazyContextTargetConfig:
             raise KeyError, name
 
 def target_url(path):
-    format = config.get("pkgrepo", "target",
+    format = config.get("blobrepo", "target",
             "svn.mandriva.com:/tarballs/${svndir}")
     tmpl = string.Template(format)
     try:
@@ -76,7 +76,7 @@ def dump_sources(path, entries):
 
 def sources_path(path):
     # returns the 'sources' file path for a give file path or directory
-    sname = config.get("pkgrepo", "sources-file", "sources")
+    sname = config.get("blobrepo", "sources-file", "sources")
     sdir = path
     if not os.path.isdir(path):
         sdir = os.path.dirname(path)
@@ -117,7 +117,7 @@ def update_sources(path):
     dump_sources(spath, entries)
     
 def upload(path):
-    base = config.get("pkgrepo", "command", "rsync -ar -essh")
+    base = config.get("blobrepo", "command", "rsync -ar -essh")
     target = target_url(path)
     execcmd("%s \"%s\" \"%s\"" % (base, path, target))
     update_sources(path)
