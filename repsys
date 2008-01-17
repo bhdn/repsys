@@ -20,7 +20,6 @@ Useful commands:
     rpmlog
     changed
     authoremail
-    putsrpm
     switch
 
 Run "repsys COMMAND --help" for more information.
