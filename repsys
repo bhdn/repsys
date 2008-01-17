@@ -26,8 +26,6 @@ Useful commands:
 
 Run "repsys COMMAND --help" for more information.
 
-Run "repsys --help-plugins" for help on loaded plugins.
-
 Written by Gustavo Niemeyer <gustavo@niemeyer.net>
 """
 
