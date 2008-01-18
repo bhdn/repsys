@@ -147,6 +147,11 @@ def remove(path):
     # we don't care what will happen to the sources file in the tarballs
     # repository, we just remove the reference to it
     if os.path.exists(path):
+        spath = sources_path(path)
+        entries = parse_sources(spath)
+        name = os.path.basename(path)
+        if name not in entries:
+            raise Error, "the file %s is not in the sources list" % path
         try:
             os.unlink(path)
         except (OSError, IOError), e:
