@@ -1,0 +1,19 @@
+#!/bin/sh -ex
+LPATH=$1
+TARGET=$2
+HOST=$3
+RPATH=$4
+OPTS="-ar"
+
+if [ -n "${HOST}" ]; then
+    OPTS="${OPTS} -e \"ssh -o 'BatchMode yes'\""
+    DIR=`mktemp -d`
+    mkdir -p ${DIR}${RPATH}
+    rsync ${OPTS} ${DIR}/ ${HOST}:/
+else
+    mkdir -p ${RPATH}
+fi
+
+rsync ${OPTS} ${LPATH} ${TARGET}
+
+rm -rf ${DIR}

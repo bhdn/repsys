@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from RepSys import Error, config, RepSysTree
-from RepSys import mirror
+from RepSys import mirror, blobrepo
 from RepSys.svn import SVN
 from RepSys.simplerpm import SRPM
 from RepSys.log import specfile_svn2rpm
@@ -460,6 +460,18 @@ def commit(target=".", message=None):
     if mirrored:
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
+
+def upload(path, commit=False):
+    added, deleted = blobrepo.upload(path)
+    if commit:
+        svn = SVN()
+        lines = ["SILENT: changed sources list:\n"]
+        for name in added:
+            lines.append("A\t" + name)
+        for name in deleted:
+            lines.append("D\t" + name)
+        log = "\n".join(lines)
+        svn.commit(path, log=log)
 
 def switch(mirrorurl=None):
     svn  = SVN()
