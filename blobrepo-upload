@@ -6,10 +6,11 @@ RPATH=$4
 OPTS="-ar"
 
 if [ -n "${HOST}" ]; then
-    OPTS="${OPTS} -e \"ssh -o 'BatchMode yes'\""
+    OPTS="${OPTS} -essh"
     DIR=`mktemp -d`
     mkdir -p ${DIR}${RPATH}
-    rsync ${OPTS} ${DIR}/ ${HOST}:/
+    (cd $DIR;
+    rsync -ar ${OPTS} . ${HOST}:/)
 else
     mkdir -p ${RPATH}
 fi
