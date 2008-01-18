@@ -473,6 +473,14 @@ def upload(path, commit=False):
         log = "\n".join(lines)
         svn.commit(path, log=log)
 
+def blobrepo_delete(path, commit=False):
+    added, deleted = blobrepo.remove(path)
+    if commit:
+        for name in added:
+            lines.append("A\t" + name)
+        for name in deleted:
+            lines.append("D\t" + name)
+
 def switch(mirrorurl=None):
     svn  = SVN()
     topdir = _getpkgtopdir()

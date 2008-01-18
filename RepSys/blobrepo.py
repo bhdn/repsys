@@ -99,6 +99,7 @@ def get_chksum(path):
     return digest
 
 def _update_sources(path, entries, added, deleted):
+    name = os.path.basename(path)
     if os.path.exists(path):
         if os.path.isdir(path):
             for name in os.listdir(path):
@@ -114,7 +115,10 @@ def _update_sources(path, entries, added, deleted):
 
     else:
         deleted.append(name)
-        del entries[name]
+        try:
+            del entries[name]
+        except KeyError:
+            pass
 
 def update_sources(path):
     spath = sources_path(path)
