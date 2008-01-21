@@ -464,8 +464,9 @@ def commit(target=".", message=None):
 
 def upload(path, commit=False):
     added, deleted = blobrepo.upload(path)
+    svn = SVN()
+    svn.add(blobrepo.sources_path(path))
     if commit:
-        svn = SVN()
         lines = ["SILENT: changed sources list:\n"]
         for name in added:
             lines.append("A\t" + name)
