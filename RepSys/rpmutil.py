@@ -284,6 +284,8 @@ def mark_release(pkgdirurl, version, release, revision):
     releasesurl = "/".join([pkgdirurl, "releases"])
     versionurl = "/".join([releasesurl, version])
     releaseurl = "/".join([versionurl, release])
+    currenturl = os.path.join(pkgdirurl, "current")
+    blobrepo.markrelease(currenturl, releaseurl, version, release, revision)
     if svn.ls(releaseurl, noerror=1):
         raise Error, "release already exists"
     svn.mkdir(releasesurl, noerror=1,
@@ -293,7 +295,6 @@ def mark_release(pkgdirurl, version, release, revision):
     pristineurl = os.path.join(pkgdirurl, "pristine")
     svn.remove(pristineurl, noerror=1,
                log="Removing previous pristine/ directory.")
-    currenturl = os.path.join(pkgdirurl, "current")
     svn.copy(currenturl, pristineurl,
              log="Copying release %s-%s to pristine/ directory." %
                  (version, release))

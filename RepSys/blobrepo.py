@@ -1,4 +1,4 @@
-from RepSys import Error, config
+from RepSys import Error, RepSysTree, config
 from RepSys.util import execcmd
 from RepSys.svn import SVN
 
@@ -158,3 +158,21 @@ def remove(path):
             raise Error, "failed to unlink file: %s" % e
     ad = update_sources(path)
     return ad
+
+def markrelease(pkgdirurl, releaseurl, version, release, revision):
+    base = config.get("blobrepo", "markrelease-command",
+            "/usr/share/repsys/blobrepo-markrelease")
+    target = target_url(pkgdirurl)
+    newtarget = target_url(releaseurl)
+    try:
+        host, path = target.split(":", 1)
+    except ValueError:
+        host = ""
+        path = target
+    try:
+        ignored, newpath = target.split(":", 1)
+    except ValueError:
+        newpath = newtarget
+    cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"" % (base, pkgdirurl, target, host, path, newpath)
+    execcmd(cmd)
+
