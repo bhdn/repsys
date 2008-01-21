@@ -15,6 +15,7 @@ uploaded or removed.
 
 Options:
     -c      automatically commit the 'sources' file
+    -A      do not 'svn add' the 'sources' file
     -h      help
 
 """
@@ -22,6 +23,8 @@ Options:
 def parse_options():
     parser = OptionParser(help=HELP)
     parser.add_option("-c", dest="commit", type="string")
+    parser.add_option("-A", dest="addsources", default=True,
+            action="store_false")
     opts, args = parser.parse_args()
     if len(args):
         opts.path = args[0]

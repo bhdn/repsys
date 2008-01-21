@@ -462,10 +462,11 @@ def commit(target=".", message=None):
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
 
-def upload(path, commit=False):
+def upload(path, commit=False, addsources=False):
     added, deleted = blobrepo.upload(path)
     svn = SVN()
-    svn.add(blobrepo.sources_path(path))
+    if addsources:
+        svn.add(blobrepo.sources_path(path))
     if commit:
         lines = ["SILENT: changed sources list:\n"]
         for name in added:
