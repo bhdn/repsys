@@ -170,7 +170,7 @@ def markrelease(pkgdirurl, releaseurl, version, release, revision):
         host = ""
         path = target
     try:
-        ignored, newpath = target.split(":", 1)
+        ignored, newpath = newtarget.split(":", 1)
     except ValueError:
         newpath = newtarget
     cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"" % (base, pkgdirurl, target, host, path, newpath)
