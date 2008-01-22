@@ -375,7 +375,8 @@ def checkout(pkgdirurl, path=None, revision=None, use_mirror=True):
         print "checking out from mirror", current
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
-
+    download_blobs(path)
+    
 def _getpkgtopdir(basedir=None):
     if basedir is None:
         basedir = os.getcwd()
@@ -464,6 +465,11 @@ def commit(target=".", message=None, logfile=None):
     if mirrored:
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
+
+def download_blobs(target):
+    blobtarget = os.path.join(target, "SOURCES")
+    for msg in blobrepo.download(blobtarget):
+        print msg
 
 def upload(path, commit=False, addsources=False):
     added, deleted = blobrepo.upload(path)

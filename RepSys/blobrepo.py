@@ -6,6 +6,8 @@ import os
 import string
 import sha
 
+DEFAULT_TARGET = "svn.mandriva.com:/tarballs/${svndir}"
+
 def svn_basedir(target):
     svn = SVN()
     info = svn.info2(target)
@@ -24,6 +26,8 @@ class _LazyContextTargetConfig:
 
     def __getitem__(self, name):
         from RepSys.rpmutil import get_submit_info
+        if not self.path:
+            return ""
         if name == "svndir":
             return svn_basedir(self.path)
         elif name == "pkgname":
@@ -32,11 +36,16 @@ class _LazyContextTargetConfig:
             raise KeyError, name
 
 def target_url(path):
-    format = config.get("blobrepo", "target",
-            "svn.mandriva.com:/tarballs/${svndir}")
+    format = config.get("blobrepo", "target", DEFAULT_TARGET)
     tmpl = string.Template(format)
+    if path:
+        context = _LazyContextTargetConfig(path)
+    else:
+        # allow us to fetch get the base path of the target, without svn
+        #FIXME horrible solution!
+        context = _LazyContextTargetConfig(None)
     try:
-        target = tmpl.substitute(_LazyContextTargetConfig(path))
+        target = tmpl.safe_substitute(context)
     except KeyError, e:
         raise Error, "invalid variable in 'target' config option: %s" % e
     return target 
@@ -51,6 +60,12 @@ def file_hash(path):
         sum.update(block)
     f.close()
     return sum.hexdigest()
+
+def check_hash(path, sum):
+    newsum = file_hash(path)
+    if newsum != sum:
+        raise Error, "different checksums for %s: %s != %s" % (path, newsum,
+                sum)
 
 def parse_sources(path, force=False):
     if not os.path.exists(path) and not force:
@@ -139,7 +154,7 @@ def upload(path):
         host = ""
         rpath = target
     cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\"" % (base, path, target, host, rpath)
-    execcmd(cmd)
+    execcmd(cmd, show=True)
     ad = update_sources(path)
     return ad
 
@@ -174,5 +189,56 @@ def markrelease(pkgdirurl, releaseurl, version, release, revision):
     except ValueError:
         newpath = newtarget
     cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"" % (base, pkgdirurl, target, host, path, newpath)
-    execcmd(cmd)
+    execcmd(cmd, show=True)
 
+def download_url(url, target):
+    fmt = config.get("blobrepo", "download-cmd",
+            "curl -s -C - -o \"${dest}\" \"${url}\"")
+    tmpl = string.Template(fmt)
+    name = os.path.basename(url)
+    dest = os.path.join(target, name)
+    context = {"url": url, "dest": dest}
+    try:
+        cmd = tmpl.substitute(context)
+    except KeyError, e:
+        raise Error, "invalid variable in 'download-cmd' "\
+                "configuration option: %s" % e
+    execcmd(cmd, show=True)
+
+def download(target, checksum=False):
+    # downloads the sources from a given location
+    spath = sources_path(target)
+    if not os.path.exists(spath):
+        # nothing to do
+        return
+    entries = parse_sources(spath)
+    basedir = svn_basedir(spath)
+    source = config.get("blobrepo", "source", None)
+    if source is None:
+        # default to http URL based on target address
+        targeturl = target_url(None)
+        try:
+            host, path = targeturl.split(":", 1)
+        except ValueError:
+            # seems to be a local path
+            source = "file://" + targeturl #TODO use urlparse
+        else:
+            source = "http://" + host + os.path.normpath("/" + path)
+    baseurl = source + basedir #FIXME normalize with mirror._normdirurl
+    for name, sum in entries.iteritems():
+        bpath = os.path.join(target, name)
+        if os.path.exists(bpath):
+            # Optimization: do not try to download files that are already
+            # here. Would this one be a problem with partially downloaded
+            # files?
+            try:
+                check_hash(bpath, sum)
+            except Error:
+                pass
+            else:
+                continue
+        bloburl = os.path.join(baseurl, name)
+        yield "downloading %s" % bloburl
+        download_url(bloburl, target)
+        check_hash(bpath, sum)
+        yield "checking %s" % bpath
