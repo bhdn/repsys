@@ -468,8 +468,7 @@ def commit(target=".", message=None, logfile=None):
 
 def download_blobs(target):
     blobtarget = os.path.join(target, "SOURCES")
-    for msg in blobrepo.download(blobtarget):
-        print msg
+    blobrepo.download(blobtarget)
 
 def upload(path, commit=False, addsources=False):
     added, deleted = blobrepo.upload(path)

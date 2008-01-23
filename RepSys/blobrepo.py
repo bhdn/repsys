@@ -11,6 +11,12 @@ DEFAULT_TARGET = "svn.mandriva.com:/tarballs/${svndir}"
 def svn_basedir(target):
     svn = SVN()
     info = svn.info2(target)
+    if info is None:
+        # unversioned resource
+        newtarget = os.path.dirname(target)
+        info = svn.info2(newtarget)
+        assert info is not None, "svn_basedir should not be used with a "\
+                "non-versioned directory"
     root = info["Repository Root"]
     url = info["URL"]
     kind = info["Node Kind"]
@@ -18,6 +24,12 @@ def svn_basedir(target):
     if kind == "directory":
         return path
     return os.path.dirname(path)
+
+def svn_root(target):
+    svn = SVN()
+    info = svn.info2(target)
+    assert info is not None
+    return info["Repository Root"]
 
 class _LazyContextTargetConfig:
     #XXX add more useful information, such as "distro branch"
@@ -35,7 +47,7 @@ class _LazyContextTargetConfig:
         else:
             raise KeyError, name
 
-def target_url(path):
+def target_url(path, **kwargs):
     format = config.get("blobrepo", "target", DEFAULT_TARGET)
     tmpl = string.Template(format)
     if path:
@@ -178,7 +190,8 @@ def markrelease(pkgdirurl, releaseurl, version, release, revision):
     base = config.get("blobrepo", "markrelease-command",
             "/usr/share/repsys/blobrepo-markrelease")
     target = target_url(pkgdirurl)
-    newtarget = target_url(releaseurl)
+    root = svn_root(pkgdirurl)
+    newtarget = releaseurl[len(root):]
     try:
         host, path = target.split(":", 1)
     except ValueError:
@@ -191,54 +204,25 @@ def markrelease(pkgdirurl, releaseurl, version, release, revision):
     cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"" % (base, pkgdirurl, target, host, path, newpath)
     execcmd(cmd, show=True)
 
-def download_url(url, target):
-    fmt = config.get("blobrepo", "download-cmd",
-            "curl -s -C - -o \"${dest}\" \"${url}\"")
-    tmpl = string.Template(fmt)
-    name = os.path.basename(url)
-    dest = os.path.join(target, name)
-    context = {"url": url, "dest": dest}
-    try:
-        cmd = tmpl.substitute(context)
-    except KeyError, e:
-        raise Error, "invalid variable in 'download-cmd' "\
-                "configuration option: %s" % e
-    execcmd(cmd, show=True)
-
 def download(target, checksum=False):
-    # downloads the sources from a given location
+    targeturl = target_url(target)
     spath = sources_path(target)
     if not os.path.exists(spath):
-        # nothing to do
+        # we don't have external sources
         return
     entries = parse_sources(spath)
-    basedir = svn_basedir(spath)
-    source = config.get("blobrepo", "source", None)
-    if source is None:
-        # default to http URL based on target address
-        targeturl = target_url(None)
-        try:
-            host, path = targeturl.split(":", 1)
-        except ValueError:
-            # seems to be a local path
-            source = "file://" + targeturl #TODO use urlparse
-        else:
-            source = "http://" + host + os.path.normpath("/" + path)
-    baseurl = source + basedir #FIXME normalize with mirror._normdirurl
+    try:
+        host, path = targeturl.split(":", 1)
+    except ValueError:
+        host = ""
+        path = targeturl
+    paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
+    base = config.get("blobrepo", "download-command",
+            "/usr/share/repsys/blobrepo-download")
+    pathsline = " ".join(paths)
+    cmd = "%s \"%s\" \"%s\" \"%s\" %s" % (base, host, path, target,
+            pathsline)
+    execcmd(cmd, show=True)
     for name, sum in entries.iteritems():
         bpath = os.path.join(target, name)
-        if os.path.exists(bpath):
-            # Optimization: do not try to download files that are already
-            # here. Would this one be a problem with partially downloaded
-            # files?
-            try:
-                check_hash(bpath, sum)
-            except Error:
-                pass
-            else:
-                continue
-        bloburl = os.path.join(baseurl, name)
-        yield "downloading %s" % bloburl
-        download_url(bloburl, target)
         check_hash(bpath, sum)
-        yield "checking %s" % bpath
