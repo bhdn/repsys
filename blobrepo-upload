@@ -10,7 +10,7 @@ if [ -n "${HOST}" ]; then
     DIR=`mktemp -d`
     mkdir -p ${DIR}${RPATH}
     (cd $DIR;
-    rsync -r ${OPTS} . ${HOST}:/)
+    rsync -r . ${HOST}:/)
 else
     mkdir -p ${RPATH}
 fi
