@@ -166,7 +166,7 @@ def upload(path):
         host = ""
         rpath = target
     cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\"" % (base, path, target, host, rpath)
-    execcmd(cmd, show=True)
+    execcmd(cmd)
     ad = update_sources(path)
     return ad
 
@@ -202,7 +202,7 @@ def markrelease(pkgdirurl, releaseurl, version, release, revision):
     except ValueError:
         newpath = newtarget
     cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"" % (base, pkgdirurl, target, host, path, newpath)
-    execcmd(cmd, show=True)
+    execcmd(cmd)
 
 def download(target, url=None):
     targeturl = target_url(url or target)
@@ -222,7 +222,7 @@ def download(target, url=None):
     pathsline = " ".join(paths)
     cmd = "%s \"%s\" \"%s\" \"%s\" %s" % (base, host, path, target,
             pathsline)
-    execcmd(cmd, show=True)
+    execcmd(cmd)
     for name, sum in entries.iteritems():
         bpath = os.path.join(target, name)
         check_hash(bpath, sum)
