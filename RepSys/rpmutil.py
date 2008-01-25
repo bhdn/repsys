@@ -67,6 +67,7 @@ def get_srpm(pkgdirurl,
         else:
             raise Error, "unsupported get_srpm mode: %s" % mode
         svn.export(geturl, tmpdir, rev=revision)
+        download_blobs(tmpdir, geturl)
         srpmsdir = os.path.join(tmpdir, "SRPMS")
         os.mkdir(srpmsdir)
         specsdir = os.path.join(tmpdir, "SPECS")
@@ -466,9 +467,13 @@ def commit(target=".", message=None, logfile=None):
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
 
-def download_blobs(target):
-    blobtarget = os.path.join(target, "SOURCES")
-    blobrepo.download(blobtarget)
+def download_blobs(target, pkgdirurl=None):
+    sourcesdir = "SOURCES"
+    url = None
+    blobtarget = os.path.join(target, sourcesdir)
+    if pkgdirurl:
+        url = os.path.join(pkgdirurl, sourcesdir)
+    blobrepo.download(blobtarget, url)
 
 def upload(path, commit=False, addsources=False):
     added, deleted = blobrepo.upload(path)

@@ -204,8 +204,8 @@ def markrelease(pkgdirurl, releaseurl, version, release, revision):
     cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"" % (base, pkgdirurl, target, host, path, newpath)
     execcmd(cmd, show=True)
 
-def download(target, checksum=False):
-    targeturl = target_url(target)
+def download(target, url=None):
+    targeturl = target_url(url or target)
     spath = sources_path(target)
     if not os.path.exists(spath):
         # we don't have external sources
