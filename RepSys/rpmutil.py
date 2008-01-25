@@ -382,7 +382,7 @@ def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
     if use_blobrepo:
         download_blobs(path)
     
-def _getpkgtopdir(basedir=None):
+def getpkgtopdir(basedir=None):
     if basedir is None:
         basedir = os.getcwd()
     cwd = os.getcwd()
@@ -395,7 +395,7 @@ def _getpkgtopdir(basedir=None):
 
 def sync(dryrun=False):
     svn = SVN()
-    topdir = _getpkgtopdir()
+    topdir = getpkgtopdir()
     # run svn info because svn st does not complain when topdir is not an
     # working copy
     svn.info(topdir or ".")
@@ -479,8 +479,8 @@ def download_blobs(target, pkgdirurl=None):
         url = os.path.join(pkgdirurl, sourcesdir)
     blobrepo.download(blobtarget, url)
 
-def upload(path, commit=False, addsources=False):
-    added, deleted = blobrepo.upload(path)
+def upload(paths, commit=False, addsources=False):
+    added, deleted = blobrepo.upload(paths)
     svn = SVN()
     if addsources:
         svn.add(blobrepo.sources_path(path))
@@ -503,7 +503,7 @@ def blobrepo_delete(path, commit=False):
 
 def switch(mirrorurl=None):
     svn  = SVN()
-    topdir = _getpkgtopdir()
+    topdir = getpkgtopdir()
     info = svn.info2(topdir)
     wcurl = info.get("URL")
     if wcurl is None:
