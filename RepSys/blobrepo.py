@@ -99,8 +99,10 @@ def parse_sources(path, force=False):
 
 def dump_sources(path, entries):
     f = open(path, "w")
-    for name, sum in entries.iteritems():
+    
+    for name in sorted(entries.keys()):
         #FIXME Unicode!
+        sum = entries[name]
         f.write(sum + " " + name + "\n")
     f.close()
 
