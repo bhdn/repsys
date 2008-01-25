@@ -4,6 +4,7 @@ from RepSys.svn import SVN
 
 import os
 import string
+import stat
 import sha
 
 DEFAULT_TARGET = "svn.mandriva.com:/tarballs/${svndir}"
@@ -99,7 +100,6 @@ def parse_sources(path, force=False):
 
 def dump_sources(path, entries):
     f = open(path, "w")
-    
     for name in sorted(entries.keys()):
         #FIXME Unicode!
         sum = entries[name]
@@ -158,18 +158,46 @@ def update_sources(path):
     dump_sources(spath, entries)
     return added, deleted
 
-def upload(path):
+def find_blobs(paths):
+    # for now match file name or size
+    raw = config.get("blobrepo", "upload-match",
+            "\.(gz|bz2|zip|Z|tar|xar|rpm|7z|lzma)$")
+    expr = re.compile(raw)
+    new = []
+    for path in paths:
+        if os.path.isdir(path):
+            for name in os.listdir(path):
+                if expr.search(name):
+                    new.append(os.path.join(path, name))
+                elif:
+                    fpath = os.path.join(path, name)
+                    st = os.stat(fpath)
+                    if st[stat.ST_SIZE] > 0x100000: # 1MiB
+                        new.append(fpath)
+        else:
+            name = os.path.basename(path)
+            if expr.search(name):
+                new.append(path)
+    return new
+
+def upload(paths, auto=False):
     base = config.get("blobrepo", "upload-command", 
             "/usr/share/repsys/blobrepo-upload")
+    if auto:
+        paths = find_blobs(paths)
+    if not paths:
+        raise Error, "nothing to upload" # is it an error?
     target = target_url(path)
     try:
         host, rpath = target.split(":", 1)
     except ValueError:
         host = ""
         rpath = target
-    cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\"" % (base, path, target, host, rpath)
+    pathsline = " ".join(paths)
+    cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" %s" % (base, path, target, host,
+            rpath, pathsline)
     execcmd(cmd)
-    ad = update_sources(path)
+    ad = update_sources(paths)
     return ad
 
 def remove(path):
@@ -193,6 +221,7 @@ def markrelease(pkgdirurl, releaseurl, version, release, revision):
             "/usr/share/repsys/blobrepo-markrelease")
     target = target_url(pkgdirurl)
     root = svn_root(pkgdirurl)
+    #FIXME completely wrong, should be from target_url
     newtarget = releaseurl[len(root):]
     try:
         host, path = target.split(":", 1)
@@ -228,3 +257,4 @@ def download(target, url=None):
     for name, sum in entries.iteritems():
         bpath = os.path.join(target, name)
         check_hash(bpath, sum)
+

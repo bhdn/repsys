@@ -479,8 +479,11 @@ def download_blobs(target, pkgdirurl=None):
         url = os.path.join(pkgdirurl, sourcesdir)
     blobrepo.download(blobtarget, url)
 
-def upload(paths, commit=False, addsources=False):
-    added, deleted = blobrepo.upload(paths)
+def upload(paths, auto=False, commit=False, addsources=False):
+    if auto and not paths:
+        topdir = getpkgtopdir()
+        paths = [os.path.join(topdir, "SOURCES")]
+    added, deleted = blobrepo.upload(paths, auto)
     svn = SVN()
     if addsources:
         svn.add(blobrepo.sources_path(path))

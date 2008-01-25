@@ -14,6 +14,7 @@ If the path is a directory, all the contents of the directory will be
 uploaded or removed.
 
 Options:
+    -a      find all possible binary sources inside PATH
     -c      automatically commit the 'sources' file
     -A      do not 'svn add' the 'sources' file
     -h      help
@@ -25,9 +26,10 @@ def parse_options():
     parser.add_option("-c", dest="commit", type="string")
     parser.add_option("-A", dest="addsources", default=True,
             action="store_false")
+    parser.add_option("-a", dest="auto", default=False, action="store_true")
     opts, args = parser.parse_args()
     if len(args):
-        opts.path = args[0]
+        opts.paths = args
     else:
         raise Error, "you need to provide a path"
     return opts
