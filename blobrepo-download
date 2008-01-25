@@ -1,0 +1,16 @@
+#!/bin/sh -ex
+HOST=$1
+RPATH=$2
+TARGET=$3
+
+shift
+shift
+shift
+
+if [ -n "$HOST" ]; then
+    line="$HOST:$@"
+    rsync -ar "$line" $TARGET
+else
+    rsync -ar $@ $TARGET
+fi
+
