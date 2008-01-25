@@ -46,7 +46,8 @@ def get_srpm(pkgdirurl,
              submit = False,
              template = None,
              macros = [],
-             verbose = 0):
+             verbose = 0,
+             use_blobrepo = False):
     svn = SVN()
     tmpdir = tempfile.mktemp()
     topdir = "--define '_topdir %s'" % tmpdir
@@ -67,7 +68,8 @@ def get_srpm(pkgdirurl,
         else:
             raise Error, "unsupported get_srpm mode: %s" % mode
         svn.export(geturl, tmpdir, rev=revision)
-        download_blobs(tmpdir, geturl)
+        if use_blobrepo:
+            download_blobs(tmpdir, geturl)
         srpmsdir = os.path.join(tmpdir, "SRPMS")
         os.mkdir(srpmsdir)
         specsdir = os.path.join(tmpdir, "SPECS")
@@ -363,7 +365,8 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
             "nocurrent": nocurrent,
             "nopristine": nopristine}
 
-def checkout(pkgdirurl, path=None, revision=None, use_mirror=True):
+def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
+        use_blobrepo=False):
     o_pkgdirurl = pkgdirurl
     pkgdirurl = default_parent(o_pkgdirurl)
     current = os.path.join(pkgdirurl, "current")
@@ -376,7 +379,8 @@ def checkout(pkgdirurl, path=None, revision=None, use_mirror=True):
         print "checking out from mirror", current
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
-    download_blobs(path)
+    if use_blobrepo:
+        download_blobs(path)
     
 def _getpkgtopdir(basedir=None):
     if basedir is None:

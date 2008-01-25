@@ -16,6 +16,7 @@ repository.
 Options:
     -r REV  Revision to checkout
     -o      Do not use the mirror (use official server)
+    -S      Do not download sources from the blob repository
     -h      Show this message
 
 Examples:
@@ -28,6 +29,8 @@ def parse_options():
     parser = OptionParser(help=HELP)
     parser.add_option("-r", dest="revision")
     parser.add_option("-o", dest="use_mirror", default=True,
+            action="store_false")
+    parser.add_option("-S", dest="use_blobrepo", default=True,
             action="store_false")
     opts, args = parser.parse_args()
     if len(args) not in (1, 2):

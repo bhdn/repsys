@@ -29,6 +29,7 @@ Options:
     -n      Rename the package to include the revision number
     -l      Use subversion log to build rpm %changelog
     -T FILE Template to be used to generate the %changelog
+    -S      Do not download sources from the blob repository
     -h      Show this message
 
 Examples:
@@ -73,6 +74,8 @@ def parse_options():
     parser.add_option("-n", dest="revname", action="store_true")
     parser.add_option("-l", dest="svnlog", action="store_true")
     parser.add_option("-T", dest="template", type="string", default=None)
+    parser.add_option("-S", dest="use_blobrepo", default=True,
+            action="store_false")
     opts, args = parser.parse_args()
     del opts.__ignore
     if len(args) != 1:
