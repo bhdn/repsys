@@ -23,7 +23,8 @@ Options:
 
 def parse_options():
     parser = OptionParser(help=HELP)
-    parser.add_option("-c", dest="commit", type="string")
+    parser.add_option("-c", dest="commit", default=False,
+            action="store_true")
     parser.add_option("-A", dest="addsources", default=True,
             action="store_false")
     parser.add_option("-a", dest="auto", default=False, action="store_true")

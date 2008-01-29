@@ -17,7 +17,8 @@ Options:
 
 def parse_options():
     parser = OptionParser(help=HELP)
-    parser.add_option("-c", dest="commit", type="string")
+    parser.add_option("-c", dest="commit", default=False,
+            action="store_true")
     opts, args = parser.parse_args()
     if len(args):
         opts.path = args[0]
