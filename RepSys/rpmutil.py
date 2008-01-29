@@ -479,32 +479,36 @@ def download_blobs(target, pkgdirurl=None):
         url = os.path.join(pkgdirurl, sourcesdir)
     blobrepo.download(blobtarget, url)
 
+def _sources_log(added, deleted):
+    lines = ["SILENT: changed sources list:\n"]
+    for name in added:
+        lines.append("A\t" + name)
+    for name in deleted:
+        lines.append("D\t" + name)
+    log = "\n".join(lines)
+    return log
+
 def upload(paths, auto=False, commit=False, addsources=False):
     if auto and not paths:
         topdir = getpkgtopdir()
         paths = [os.path.join(topdir, "SOURCES")]
     added, deleted = blobrepo.upload(paths, auto)
-    svn = SVN()
     if addsources or commit:
+        svn = SVN()
         spath = blobrepo.sources_path(paths[0])
         if addsources:
             svn.add(spath)
         if commit:
-            lines = ["SILENT: changed sources list:\n"]
-            for name in added:
-                lines.append("A\t" + name)
-            for name in deleted:
-                lines.append("D\t" + name)
-            log = "\n".join(lines)
+            log = _sources_log(added, deleted)
             svn.commit(spath, log=log)
 
 def blobrepo_delete(paths, commit=False):
     added, deleted = blobrepo.remove(paths)
     if commit:
-        for name in added:
-            lines.append("A\t" + name)
-        for name in deleted:
-            lines.append("D\t" + name)
+        svn = SVN()
+        spath = blobrepo.sources_path(paths[0])
+        log = _sources_log(added, deleted)
+        svn.commit(spath, log=log)
 
 def switch(mirrorurl=None):
     svn  = SVN()
