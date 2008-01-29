@@ -6,8 +6,59 @@ import os
 import string
 import stat
 import sha
+import shutil
+import tempfile
 
 DEFAULT_TARGET = "svn.mandriva.com:/tarballs/${svndir}"
+
+def copy_remote(sources, dest, sourcehost=None, desthost=None,
+        archive=False, recurse=False):
+    """Simple inteface for rsync"""
+    args = ["rsync"]
+    if archive:
+        args.append("-a")
+    if recurse:
+        args.append("-r")
+    if sourcehost:
+        # "svn.mandriva.com:/foo/a /foo/b"
+        #TODO space escaping needed for sources
+        args.append("\"" + sourcehost + ":" + " ".join(sources) + "\"")
+    else:
+        args.extend(sources)
+    if desthost:
+        args.append(desthost + ":" + dest)
+    else:
+        args.append(dest)
+    execcmd(*args)
+
+def makedirs_remote(path, host):
+    tmpdir = tempfile.mkdtemp(prefix="repsys-makedirs")
+    try:
+        newpath = os.path.normpath(tmpdir + "/" + path)
+        os.makedirs(newpath)
+        copy_remote(sources=[tmpdir + "/"], dest="/", desthost=host, recurse=True)
+    finally:
+        if os.path.exists(tmpdir):
+            shutil.rmtree(tmpdir)
+
+def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False):
+    if desthost is None:
+        # we only need dest to contain the host name
+        try:
+            desthost, dpath = dest.split(":", 1)
+        except ValueError:
+            dpath = dest
+    if makedirs:
+        if desthost:
+            makedirs_remote(dpath, desthost)
+        else:
+            os.makedirs(dpath)
+    if sourcehost or desthost:
+        copy_remote(sources=sources, sourcehost=sourcehost, dest=dpath,
+                desthost=desthost, recurse=True, archive=True)
+    else:
+        for source in sources:
+            shutil.copy2(source, dpath) #TODO no symlinks
 
 def svn_basedir(target):
     svn = SVN()
@@ -149,12 +200,19 @@ def _update_sources(path, entries, added, deleted):
         except KeyError:
             pass
 
-def update_sources(path):
-    spath = sources_path(path)
+def update_sources(paths):
+    spath = sources_path(paths[0])
     entries = parse_sources(spath)
     added = []
     deleted = []
-    _update_sources(path, entries, added, deleted)
+    for path in paths:
+        name = os.path.basename(path)
+        if os.path.exists(path):
+            entries[name] = get_chksum(path)
+            added.append(name)
+        else:
+            deleted.append(name)
+            entries.pop(name, None)
     dump_sources(spath, entries)
     return added, deleted
 
@@ -169,7 +227,7 @@ def find_blobs(paths):
             for name in os.listdir(path):
                 if expr.search(name):
                     new.append(os.path.join(path, name))
-                elif:
+                elif not os.path.isdir(path):
                     fpath = os.path.join(path, name)
                     st = os.stat(fpath)
                     if st[stat.ST_SIZE] > 0x100000: # 1MiB
@@ -187,33 +245,26 @@ def upload(paths, auto=False):
         paths = find_blobs(paths)
     if not paths:
         raise Error, "nothing to upload" # is it an error?
-    target = target_url(path)
-    try:
-        host, rpath = target.split(":", 1)
-    except ValueError:
-        host = ""
-        rpath = target
-    pathsline = " ".join(paths)
-    cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" %s" % (base, path, target, host,
-            rpath, pathsline)
-    execcmd(cmd)
+    target = target_url(paths[0])
+    copy(sources=paths, dest=target, makedirs=True)
     ad = update_sources(paths)
     return ad
 
-def remove(path):
+def remove(paths):
     # we don't care what will happen to the sources file in the tarballs
     # repository, we just remove the reference to it
-    if os.path.exists(path):
-        spath = sources_path(path)
-        entries = parse_sources(spath)
-        name = os.path.basename(path)
-        if name not in entries:
-            raise Error, "the file %s is not in the sources list" % path
-        try:
-            os.unlink(path)
-        except (OSError, IOError), e:
-            raise Error, "failed to unlink file: %s" % e
-    ad = update_sources(path)
+    spath = sources_path(paths[0])
+    entries = parse_sources(spath)
+    for path in paths:
+        if os.path.exists(path):
+            name = os.path.basename(path)
+            if name not in entries:
+                raise Error, "the file %s is not in the sources list" % path
+            try:
+                os.unlink(path)
+            except (OSError, IOError), e:
+                raise Error, "failed to unlink file: %s" % e
+    ad = update_sources(paths)
     return ad
 
 def markrelease(pkgdirurl, releaseurl, version, release, revision):
@@ -245,15 +296,16 @@ def download(target, url=None):
     try:
         host, path = targeturl.split(":", 1)
     except ValueError:
-        host = ""
+        host = None
         path = targeturl
     paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
-    base = config.get("blobrepo", "download-command",
-            "/usr/share/repsys/blobrepo-download")
-    pathsline = " ".join(paths)
-    cmd = "%s \"%s\" \"%s\" \"%s\" %s" % (base, host, path, target,
-            pathsline)
-    execcmd(cmd)
+    #base = config.get("blobrepo", "download-command",
+    #        "/usr/share/repsys/blobrepo-download")
+    #pathsline = " ".join(paths)
+    #cmd = "%s \"%s\" \"%s\" \"%s\" %s" % (base, host, path, target,
+    #        pathsline)
+    #execcmd(cmd)
+    copy(sources=paths, sourcehost=host, dest=target)
     for name, sum in entries.iteritems():
         bpath = os.path.join(target, name)
         check_hash(bpath, sum)

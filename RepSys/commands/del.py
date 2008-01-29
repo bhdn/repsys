@@ -21,7 +21,7 @@ def parse_options():
             action="store_true")
     opts, args = parser.parse_args()
     if len(args):
-        opts.path = args[0]
+        opts.paths = args
     else:
         raise Error, "you need to provide a path"
     return opts

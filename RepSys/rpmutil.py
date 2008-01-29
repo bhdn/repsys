@@ -485,19 +485,21 @@ def upload(paths, auto=False, commit=False, addsources=False):
         paths = [os.path.join(topdir, "SOURCES")]
     added, deleted = blobrepo.upload(paths, auto)
     svn = SVN()
-    if addsources:
-        svn.add(blobrepo.sources_path(path))
-    if commit:
-        lines = ["SILENT: changed sources list:\n"]
-        for name in added:
-            lines.append("A\t" + name)
-        for name in deleted:
-            lines.append("D\t" + name)
-        log = "\n".join(lines)
-        svn.commit(path, log=log)
+    if addsources or commit:
+        spath = blobrepo.sources_path(paths[0])
+        if addsources:
+            svn.add(spath)
+        if commit:
+            lines = ["SILENT: changed sources list:\n"]
+            for name in added:
+                lines.append("A\t" + name)
+            for name in deleted:
+                lines.append("D\t" + name)
+            log = "\n".join(lines)
+            svn.commit(spath, log=log)
 
-def blobrepo_delete(path, commit=False):
-    added, deleted = blobrepo.remove(path)
+def blobrepo_delete(paths, commit=False):
+    added, deleted = blobrepo.remove(paths)
     if commit:
         for name in added:
             lines.append("A\t" + name)
