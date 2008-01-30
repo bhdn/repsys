@@ -472,12 +472,13 @@ def commit(target=".", message=None, logfile=None):
                 "later"
 
 def download_binaries(target, pkgdirurl=None):
-    sourcesdir = "SOURCES"
-    url = None
-    blobtarget = os.path.join(target, sourcesdir)
-    if pkgdirurl:
-        url = os.path.join(pkgdirurl, sourcesdir)
-    binrepo.download(blobtarget, url)
+    if config.getbool("binrepo", "enabled"):
+        sourcesdir = "SOURCES"
+        url = None
+        blobtarget = os.path.join(target, sourcesdir)
+        if pkgdirurl:
+            url = os.path.join(pkgdirurl, sourcesdir)
+        binrepo.download(blobtarget, url)
 
 def _sources_log(added, deleted):
     lines = ["SILENT: changed sources list:\n"]
@@ -503,6 +504,9 @@ def upload(paths, auto=False, commit=False, addsources=False):
             svn.commit(spath, log=log)
 
 def binrepo_delete(paths, commit=False):
+    if not config.getbool("binrepo", "enabled"):
+        raise Error, "you must enable binary repository support on "\
+                "repsys.conf"
     added, deleted = binrepo.remove(paths)
     if commit:
         svn = SVN()
