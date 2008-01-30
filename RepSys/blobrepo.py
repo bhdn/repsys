@@ -9,6 +9,8 @@ import sha
 import shutil
 import tempfile
 
+#TODO logging for markrelease
+
 DEFAULT_TARGET = "svn.mandriva.com:/tarballs/${svndir}"
 
 def copy_remote(sources, dest, sourcehost=None, desthost=None,
@@ -52,13 +54,17 @@ def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False):
         if desthost:
             makedirs_remote(dpath, desthost)
         else:
-            os.makedirs(dpath)
+            try:
+                os.makedirs(dpath)
+            except OSError, e:
+                if e.errno != 17: # already exists
+                    raise
     if sourcehost or desthost:
         copy_remote(sources=sources, sourcehost=sourcehost, dest=dpath,
                 desthost=desthost, recurse=True, archive=True)
     else:
         for source in sources:
-            shutil.copy2(source, dpath) #TODO no symlinks
+            execcmd("cp -al %s %s" % (source, dpath))
 
 def svn_basedir(target):
     svn = SVN()
@@ -268,23 +274,15 @@ def remove(paths):
     return ad
 
 def markrelease(pkgdirurl, releaseurl, version, release, revision):
-    base = config.get("blobrepo", "markrelease-command",
-            "/usr/share/repsys/blobrepo-markrelease")
-    target = target_url(pkgdirurl)
+    source = target_url(pkgdirurl)
     root = svn_root(pkgdirurl)
-    #FIXME completely wrong, should be from target_url
-    newtarget = releaseurl[len(root):]
-    try:
-        host, path = target.split(":", 1)
-    except ValueError:
-        host = ""
-        path = target
-    try:
-        ignored, newpath = newtarget.split(":", 1)
-    except ValueError:
-        newpath = newtarget
-    cmd = "%s \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"" % (base, pkgdirurl, target, host, path, newpath)
-    execcmd(cmd)
+    relpath = releaseurl[len(root):]
+    target = os.path.normpath(target_url(None) + "/" + relpath)
+    #XXX rsync doesn't support remote paths in both src and dest, so we
+    # assume we can do it only locally
+    spath = source[source.find(":")+1:]
+    tpath = target[target.find(":")+1:]
+    copy([spath], tpath, makedirs=True)
 
 def download(target, url=None):
     targeturl = target_url(url or target)
