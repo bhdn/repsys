@@ -288,7 +288,9 @@ def mark_release(pkgdirurl, version, release, revision):
     versionurl = "/".join([releasesurl, version])
     releaseurl = "/".join([versionurl, release])
     currenturl = os.path.join(pkgdirurl, "current")
-    binrepo.markrelease(currenturl, releaseurl, version, release, revision)
+    cursources = os.path.join(currenturl, "SOURCES")
+    relsources = os.path.join(releaseurl, "SOURCES")
+    binrepo.markrelease(cursources, relsources, version, release, revision)
     if svn.ls(releaseurl, noerror=1):
         raise Error, "release already exists"
     svn.mkdir(releasesurl, noerror=1,

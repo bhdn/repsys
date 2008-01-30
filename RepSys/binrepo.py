@@ -8,6 +8,7 @@ import stat
 import sha
 import shutil
 import tempfile
+from cStringIO import StringIO
 
 #TODO logging for markrelease
 
@@ -44,6 +45,11 @@ def makedirs_remote(path, host):
             shutil.rmtree(tmpdir)
 
 def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False):
+    """rsync-like copy
+
+    Note that a copy between two dirs will result in overwriting the
+    latter.
+    """
     if desthost is None:
         # we only need dest to contain the host name
         try:
@@ -64,6 +70,13 @@ def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False):
                 desthost=desthost, recurse=True, archive=True)
     else:
         for source in sources:
+            if os.path.isdir(source) and os.path.exists(dpath):
+                #FIXME ugly workaround to behave consistently between
+                # remote and local copies:
+                try:
+                    os.rmdir(dpath)
+                except OSError, e:
+                    raise Error, "can't overwrite directory: %s" % e
             execcmd("cp -al %s %s" % (source, dpath))
 
 def svn_basedir(target):
@@ -277,16 +290,22 @@ def remove(paths):
     ad = update_sources(paths)
     return ad
 
-def markrelease(pkgdirurl, releaseurl, version, release, revision):
-    source = target_url(pkgdirurl)
-    root = svn_root(pkgdirurl)
-    relpath = releaseurl[len(root):]
+def markrelease(srcurl, desturl, version, release, revision):
+    svn = SVN()
+    source = target_url(srcurl)
+    root = svn_root(srcurl)
+    relpath = desturl[len(root):]
     target = os.path.normpath(target_url(None) + "/" + relpath)
     #XXX rsync doesn't support remote paths in both src and dest, so we
     # assume we can do it only locally
+    # so we strip the hostname:
     spath = source[source.find(":")+1:]
     tpath = target[target.find(":")+1:]
-    copy([spath], tpath, makedirs=True)
+    sname = config.get("binrepo", "sources-file", "sources")
+    sourcesurl = os.path.join(srcurl, sname)
+    entries = parse_sources_stream(StringIO(svn.cat(sourcesurl)))
+    paths = [os.path.join(spath, name) for name in entries]
+    copy(paths, tpath, makedirs=True)
 
 def download(target, url=None):
     targeturl = target_url(url or target)
