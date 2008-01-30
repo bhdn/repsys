@@ -106,7 +106,7 @@ class _LazyContextTargetConfig:
             raise KeyError, name
 
 def target_url(path, **kwargs):
-    format = config.get("blobrepo", "target", DEFAULT_TARGET)
+    format = config.get("binrepo", "target", DEFAULT_TARGET)
     tmpl = string.Template(format)
     if path:
         context = _LazyContextTargetConfig(path)
@@ -165,7 +165,7 @@ def dump_sources(path, entries):
 
 def sources_path(path):
     # returns the 'sources' file path for a give file path or directory
-    sname = config.get("blobrepo", "sources-file", "sources")
+    sname = config.get("binrepo", "sources-file", "sources")
     sdir = path
     if not os.path.isdir(path):
         sdir = os.path.dirname(path)
@@ -222,9 +222,9 @@ def update_sources(paths):
     dump_sources(spath, entries)
     return added, deleted
 
-def find_blobs(paths):
+def find_binaries(paths):
     # for now match file name or size
-    raw = config.get("blobrepo", "upload-match",
+    raw = config.get("binrepo", "upload-match",
             "\.(gz|bz2|zip|Z|tar|xar|rpm|7z|lzma)$")
     expr = re.compile(raw)
     new = []
@@ -245,10 +245,10 @@ def find_blobs(paths):
     return new
 
 def upload(paths, auto=False):
-    base = config.get("blobrepo", "upload-command", 
-            "/usr/share/repsys/blobrepo-upload")
+    base = config.get("binrepo", "upload-command", 
+            "/usr/share/repsys/binrepo-upload")
     if auto:
-        paths = find_blobs(paths)
+        paths = find_binaries(paths)
     if not paths:
         raise Error, "nothing to upload" # is it an error?
     target = target_url(paths[0])
@@ -297,8 +297,8 @@ def download(target, url=None):
         host = None
         path = targeturl
     paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
-    #base = config.get("blobrepo", "download-command",
-    #        "/usr/share/repsys/blobrepo-download")
+    #base = config.get("binrepo", "download-command",
+    #        "/usr/share/repsys/binrepo-download")
     #pathsline = " ".join(paths)
     #cmd = "%s \"%s\" \"%s\" \"%s\" %s" % (base, host, path, target,
     #        pathsline)

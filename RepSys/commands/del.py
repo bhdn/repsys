@@ -1,6 +1,6 @@
 from RepSys import Error
 from RepSys.command import *
-from RepSys.rpmutil import blobrepo_delete
+from RepSys.rpmutil import binrepo_delete
 
 HELP = """\
 Usage: repsys del [OPTIONS] [PATH]
@@ -27,4 +27,4 @@ def parse_options():
     return opts
 
 def main():
-    do_command(parse_options, blobrepo_delete)
+    do_command(parse_options, binrepo_delete)

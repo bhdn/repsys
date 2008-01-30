@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from RepSys import Error, config, RepSysTree
-from RepSys import mirror, blobrepo
+from RepSys import mirror, binrepo
 from RepSys.svn import SVN
 from RepSys.simplerpm import SRPM
 from RepSys.log import specfile_svn2rpm
@@ -47,7 +47,7 @@ def get_srpm(pkgdirurl,
              template = None,
              macros = [],
              verbose = 0,
-             use_blobrepo = False):
+             use_binrepo = False):
     svn = SVN()
     tmpdir = tempfile.mktemp()
     topdir = "--define '_topdir %s'" % tmpdir
@@ -68,8 +68,8 @@ def get_srpm(pkgdirurl,
         else:
             raise Error, "unsupported get_srpm mode: %s" % mode
         svn.export(geturl, tmpdir, rev=revision)
-        if use_blobrepo:
-            download_blobs(tmpdir, geturl)
+        if use_binrepo:
+            download_binaries(tmpdir, geturl)
         srpmsdir = os.path.join(tmpdir, "SRPMS")
         os.mkdir(srpmsdir)
         specsdir = os.path.join(tmpdir, "SPECS")
@@ -288,7 +288,7 @@ def mark_release(pkgdirurl, version, release, revision):
     versionurl = "/".join([releasesurl, version])
     releaseurl = "/".join([versionurl, release])
     currenturl = os.path.join(pkgdirurl, "current")
-    blobrepo.markrelease(currenturl, releaseurl, version, release, revision)
+    binrepo.markrelease(currenturl, releaseurl, version, release, revision)
     if svn.ls(releaseurl, noerror=1):
         raise Error, "release already exists"
     svn.mkdir(releasesurl, noerror=1,
@@ -366,7 +366,7 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
             "nopristine": nopristine}
 
 def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
-        use_blobrepo=False):
+        use_binrepo=False):
     o_pkgdirurl = pkgdirurl
     pkgdirurl = default_parent(o_pkgdirurl)
     current = os.path.join(pkgdirurl, "current")
@@ -379,7 +379,7 @@ def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
         print "checking out from mirror", current
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
-    if use_blobrepo:
+    if use_binrepo:
         download_blobs(path)
     
 def getpkgtopdir(basedir=None):
@@ -477,7 +477,7 @@ def download_blobs(target, pkgdirurl=None):
     blobtarget = os.path.join(target, sourcesdir)
     if pkgdirurl:
         url = os.path.join(pkgdirurl, sourcesdir)
-    blobrepo.download(blobtarget, url)
+    binrepo.download(blobtarget, url)
 
 def _sources_log(added, deleted):
     lines = ["SILENT: changed sources list:\n"]
@@ -492,21 +492,21 @@ def upload(paths, auto=False, commit=False, addsources=False):
     if auto and not paths:
         topdir = getpkgtopdir()
         paths = [os.path.join(topdir, "SOURCES")]
-    added, deleted = blobrepo.upload(paths, auto)
+    added, deleted = binrepo.upload(paths, auto)
     if addsources or commit:
         svn = SVN()
-        spath = blobrepo.sources_path(paths[0])
+        spath = binrepo.sources_path(paths[0])
         if addsources:
             svn.add(spath)
         if commit:
             log = _sources_log(added, deleted)
             svn.commit(spath, log=log)
 
-def blobrepo_delete(paths, commit=False):
-    added, deleted = blobrepo.remove(paths)
+def binrepo_delete(paths, commit=False):
+    added, deleted = binrepo.remove(paths)
     if commit:
         svn = SVN()
-        spath = blobrepo.sources_path(paths[0])
+        spath = binrepo.sources_path(paths[0])
         log = _sources_log(added, deleted)
         svn.commit(spath, log=log)
 
