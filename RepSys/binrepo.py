@@ -13,7 +13,7 @@ import tempfile
 
 DEFAULT_TARGET = "svn.mandriva.com:/tarballs/${svndir}"
 
-def copy_remote(sources, dest, sourcehost=None, desthost=None,
+def copy_rsync(sources, dest, sourcehost=None, desthost=None,
         archive=False, recurse=False):
     """Simple inteface for rsync"""
     args = ["rsync"]
@@ -38,7 +38,7 @@ def makedirs_remote(path, host):
     try:
         newpath = os.path.normpath(tmpdir + "/" + path)
         os.makedirs(newpath)
-        copy_remote(sources=[tmpdir + "/"], dest="/", desthost=host, recurse=True)
+        copy_rsync(sources=[tmpdir + "/"], dest="/", desthost=host, recurse=True)
     finally:
         if os.path.exists(tmpdir):
             shutil.rmtree(tmpdir)
@@ -60,7 +60,7 @@ def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False):
                 if e.errno != 17: # already exists
                     raise
     if sourcehost or desthost:
-        copy_remote(sources=sources, sourcehost=sourcehost, dest=dpath,
+        copy_rsync(sources=sources, sourcehost=sourcehost, dest=dpath,
                 desthost=desthost, recurse=True, archive=True)
     else:
         for source in sources:
