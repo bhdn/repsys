@@ -137,14 +137,9 @@ def check_hash(path, sum):
         raise Error, "different checksums for %s: %s != %s" % (path, newsum,
                 sum)
 
-def parse_sources(path, force=False):
-    if not os.path.exists(path) and not force:
-        return {}
-    basedir = os.path.dirname(path)
-    spath = os.path.join(basedir, "sources")
+def parse_sources_stream(stream):
     entries = {}
-    f = open(spath)
-    for rawline in f:
+    for rawline in stream:
         line = rawline.strip()
         try:
             sum, name = line.split(None, 1)
@@ -152,6 +147,15 @@ def parse_sources(path, force=False):
             # failed to unpack, line format error
             raise Error, "invalid line in sources file: %s" % rawline
         entries[name] = sum
+    return entries
+
+def parse_sources(path, force=False):
+    if not os.path.exists(path) and not force:
+        return {}
+    basedir = os.path.dirname(path)
+    spath = os.path.join(basedir, "sources")
+    f = open(spath)
+    entries = parse_sources_stream(f)
     f.close()
     return entries
 
