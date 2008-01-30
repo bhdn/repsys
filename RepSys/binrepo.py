@@ -303,7 +303,12 @@ def markrelease(srcurl, desturl, version, release, revision):
     tpath = target[target.find(":")+1:]
     sname = config.get("binrepo", "sources-file", "sources")
     sourcesurl = os.path.join(srcurl, sname)
-    entries = parse_sources_stream(StringIO(svn.cat(sourcesurl)))
+    try:
+        stream = StringIO(svn.cat(sourcesurl))
+    except Error:
+        # we don't have a sources file, so there is nothing to copy
+        return
+    entries = parse_sources_stream(stream)
     paths = [os.path.join(spath, name) for name in entries]
     copy(paths, tpath, makedirs=True)
 
