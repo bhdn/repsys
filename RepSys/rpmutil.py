@@ -380,7 +380,7 @@ def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
     if use_binrepo:
-        download_blobs(path)
+        download_binaries(path)
     
 def getpkgtopdir(basedir=None):
     if basedir is None:
@@ -471,7 +471,7 @@ def commit(target=".", message=None, logfile=None):
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
 
-def download_blobs(target, pkgdirurl=None):
+def download_binaries(target, pkgdirurl=None):
     sourcesdir = "SOURCES"
     url = None
     blobtarget = os.path.join(target, sourcesdir)
