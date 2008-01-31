@@ -14,6 +14,9 @@ from cStringIO import StringIO
 
 DEFAULT_TARGET = "svn.mandriva.com:/tarballs/${svndir}"
 
+class ChecksumError(Error):
+    pass
+
 def copy_rsync(sources, dest, sourcehost=None, desthost=None,
         archive=False, recurse=False):
     """Simple inteface for rsync"""
@@ -147,7 +150,7 @@ def file_hash(path):
 def check_hash(path, sum):
     newsum = file_hash(path)
     if newsum != sum:
-        raise Error, "different checksums for %s: %s != %s" % (path, newsum,
+        raise ChecksumError, "different checksums for %s: %s != %s" % (path, newsum,
                 sum)
 
 def parse_sources_stream(stream):
@@ -311,6 +314,15 @@ def markrelease(srcurl, desturl, version, release, revision):
     entries = parse_sources_stream(stream)
     paths = [os.path.join(spath, name) for name in entries]
     copy(paths, tpath, makedirs=True)
+    # ensure have markreleased the right files:
+    try:
+        for name, sum in entries.iteritems():
+            path = os.path.join(spath, name)
+            check_hash(path, sum)
+            paths.append(path)
+    except ChecksumError:
+        shutil.rmtree(tpath)
+        raise
 
 def download(target, url=None, check=True):
     targeturl = target_url(url or target)
