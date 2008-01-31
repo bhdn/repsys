@@ -307,7 +307,7 @@ def markrelease(srcurl, desturl, version, release, revision):
     sname = config.get("binrepo", "sources-file", "sources")
     sourcesurl = os.path.join(srcurl, sname)
     try:
-        stream = StringIO(svn.cat(sourcesurl))
+        stream = StringIO(svn.cat(sourcesurl, rev=revision))
     except Error:
         # we don't have a sources file, so there is nothing to copy
         return
