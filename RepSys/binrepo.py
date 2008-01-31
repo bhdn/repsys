@@ -325,12 +325,6 @@ def download(target, url=None):
         host = None
         path = targeturl
     paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
-    #base = config.get("binrepo", "download-command",
-    #        "/usr/share/repsys/binrepo-download")
-    #pathsline = " ".join(paths)
-    #cmd = "%s \"%s\" \"%s\" \"%s\" %s" % (base, host, path, target,
-    #        pathsline)
-    #execcmd(cmd)
     copy(sources=paths, sourcehost=host, dest=target)
     for name, sum in entries.iteritems():
         bpath = os.path.join(target, name)
