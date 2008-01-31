@@ -47,7 +47,8 @@ def get_srpm(pkgdirurl,
              template = None,
              macros = [],
              verbose = 0,
-             use_binrepo = False):
+             use_binrepo = False,
+             binrepo_check = True):
     svn = SVN()
     tmpdir = tempfile.mktemp()
     topdir = "--define '_topdir %s'" % tmpdir
@@ -69,7 +70,7 @@ def get_srpm(pkgdirurl,
             raise Error, "unsupported get_srpm mode: %s" % mode
         svn.export(geturl, tmpdir, rev=revision)
         if use_binrepo:
-            download_binaries(tmpdir, geturl)
+            download_binaries(tmpdir, geturl, check=binrepo_check)
         srpmsdir = os.path.join(tmpdir, "SRPMS")
         os.mkdir(srpmsdir)
         specsdir = os.path.join(tmpdir, "SPECS")
@@ -368,7 +369,7 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
             "nopristine": nopristine}
 
 def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
-        use_binrepo=False):
+        use_binrepo=False, binrepo_check=True):
     o_pkgdirurl = pkgdirurl
     pkgdirurl = default_parent(o_pkgdirurl)
     current = os.path.join(pkgdirurl, "current")
@@ -382,7 +383,7 @@ def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
     if use_binrepo:
-        download_binaries(path)
+        download_binaries(path, check=binrepo_check)
     
 def getpkgtopdir(basedir=None):
     if basedir is None:
@@ -473,14 +474,14 @@ def commit(target=".", message=None, logfile=None):
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
 
-def download_binaries(target, pkgdirurl=None):
+def download_binaries(target, pkgdirurl=None, check=True):
     if config.getbool("binrepo", "enabled"):
         sourcesdir = "SOURCES"
         url = None
         blobtarget = os.path.join(target, sourcesdir)
         if pkgdirurl:
             url = os.path.join(pkgdirurl, sourcesdir)
-        binrepo.download(blobtarget, url)
+        binrepo.download(blobtarget, url, check)
 
 def _sources_log(added, deleted):
     lines = ["SILENT: changed sources list:\n"]

@@ -312,7 +312,7 @@ def markrelease(srcurl, desturl, version, release, revision):
     paths = [os.path.join(spath, name) for name in entries]
     copy(paths, tpath, makedirs=True)
 
-def download(target, url=None):
+def download(target, url=None, check=True):
     targeturl = target_url(url or target)
     spath = sources_path(target)
     if not os.path.exists(spath):
@@ -326,7 +326,7 @@ def download(target, url=None):
         path = targeturl
     paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
     copy(sources=paths, sourcehost=host, dest=target)
-    for name, sum in entries.iteritems():
-        bpath = os.path.join(target, name)
-        check_hash(bpath, sum)
-
+    if check:
+        for name, sum in entries.iteritems():
+            bpath = os.path.join(target, name)
+            check_hash(bpath, sum)
