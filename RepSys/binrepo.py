@@ -1,6 +1,7 @@
 from RepSys import Error, RepSysTree, config
 from RepSys.util import execcmd
 from RepSys.svn import SVN
+from RepSys.mirror import same_base
 
 import os
 import string
@@ -8,11 +9,12 @@ import stat
 import sha
 import shutil
 import tempfile
+import urlparse
 from cStringIO import StringIO
 
 #TODO logging for markrelease
 
-DEFAULT_TARGET = "svn.mandriva.com:/tarballs/${svndir}"
+DEFAULT_TARBALLS_REPO = "/tarballs"
 
 class ChecksumError(Error):
     pass
@@ -105,36 +107,28 @@ def svn_root(target):
     assert info is not None
     return info["Repository Root"]
 
-class _LazyContextTargetConfig:
-    #XXX add more useful information, such as "distro branch"
-    def __init__(self, path):
-        self.path = path
+def enabled(url):
+    use = config.getbool("global", "use-binaries-repository", False)
+    default_parent = config.get("global", "default_parent", None)
+    if url and use and default_parent and same_base(url, default_parent):
+        return True
+    return False
 
-    def __getitem__(self, name):
-        from RepSys.rpmutil import get_submit_info
-        if not self.path:
-            return ""
-        if name == "svndir":
-            return svn_basedir(self.path)
-        elif name == "pkgname":
-            return get_submit_info(self.path)[0]
-        else:
-            raise KeyError, name
-
-def target_url(path, **kwargs):
-    format = config.get("binrepo", "target", DEFAULT_TARGET)
-    tmpl = string.Template(format)
+def target_url(path=None):
+    from RepSys.rpmutil import get_submit_info
+    base = config.get("global", "binaries-repository", None)
+    if base is None:
+        default_parent = config.get("global", "default_parent", None)
+        if default_parent is None:
+            raise Error, "no binaries-repository nor default_parent "\
+                    "configured"
+        comps = urlparse.urlparse(default_parent)
+        base = comps[1] + ":" + DEFAULT_TARBALLS_REPO
     if path:
-        context = _LazyContextTargetConfig(path)
+        target = os.path.normpath(base + "/" + svn_basedir(path))
     else:
-        # allow us to fetch get the base path of the target, without svn
-        #FIXME horrible solution!
-        context = _LazyContextTargetConfig(None)
-    try:
-        target = tmpl.safe_substitute(context)
-    except KeyError, e:
-        raise Error, "invalid variable in 'target' config option: %s" % e
-    return target 
+        target = base
+    return target
 
 def file_hash(path):
     sum = sha.new()
@@ -295,11 +289,11 @@ def remove(paths):
 
 def markrelease(srcurl, desturl, version, release, revision):
     svn = SVN()
-    target_root = target_url(None)
+    target_root = target_url()
     source = target_url(srcurl)
     root = svn_root(srcurl)
     relpath = desturl[len(root):]
-    target = os.path.normpath(target_url(None) + "/" + relpath)
+    target = os.path.normpath(target_root + "/" + relpath)
     #XXX rsync doesn't support remote paths in both src and dest, so we
     # assume we can do it only locally
     # so we strip the hostname:

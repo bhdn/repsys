@@ -475,7 +475,10 @@ def commit(target=".", message=None, logfile=None):
                 "later"
 
 def download_binaries(target, pkgdirurl=None, check=True):
-    if config.getbool("binrepo", "enabled"):
+    refurl = pkgdirurl
+    if refurl is None:
+        refurl = binrepo.svn_root(target)
+    if binrepo.enabled(refurl):
         sourcesdir = "SOURCES"
         url = None
         bintarget = os.path.join(target, sourcesdir)
@@ -507,9 +510,10 @@ def upload(paths, auto=False, commit=False, addsources=False):
             svn.commit(spath, log=log)
 
 def binrepo_delete(paths, commit=False):
-    if not config.getbool("binrepo", "enabled"):
-        raise Error, "you must enable binary repository support on "\
-                "repsys.conf"
+    #TODO handle files tracked by svn
+    refurl = binrepo.svn_root(paths[0])
+    if not binrepo.enabled(refurl):
+        raise Error, "binary repository is not enabled for %s" % refurl
     added, deleted = binrepo.remove(paths)
     if commit:
         svn = SVN()
