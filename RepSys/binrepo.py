@@ -295,6 +295,7 @@ def remove(paths):
 
 def markrelease(srcurl, desturl, version, release, revision):
     svn = SVN()
+    target_root = target_url(None)
     source = target_url(srcurl)
     root = svn_root(srcurl)
     relpath = desturl[len(root):]
@@ -304,6 +305,7 @@ def markrelease(srcurl, desturl, version, release, revision):
     # so we strip the hostname:
     spath = source[source.find(":")+1:]
     tpath = target[target.find(":")+1:]
+    tmproot = target_root[target_root.find(":")+1:]
     sname = config.get("binrepo", "sources-file", "sources")
     sourcesurl = os.path.join(srcurl, sname)
     try:
@@ -313,16 +315,25 @@ def markrelease(srcurl, desturl, version, release, revision):
         return
     entries = parse_sources_stream(stream)
     paths = [os.path.join(spath, name) for name in entries]
-    copy(paths, tpath, makedirs=True)
-    # ensure have markreleased the right files:
+    # we use target_url as tmproot trying to be 'hardlink friendly'
+    tmpdir = tempfile.mkdtemp(prefix="repsys-markrelease-", dir=tmproot)
+    tmppaths = []
     try:
+        # Check if the files we are going to markrelease are the right
+        # ones.
+        # We copy them to a temporary directory in order to be sure it will
+        # not be changed after we have checked it. Note the comment about
+        # being 'hardlink friendly': we are assuming rsync will also be
+        # hardlink friendly and will create another file even to just
+        # change some file in current/. Of course a dangerous assumption.
+        copy(paths, tmpdir, makedirs=True)
         for name, sum in entries.iteritems():
-            path = os.path.join(spath, name)
+            path = os.path.join(tmpdir, name)
             check_hash(path, sum)
-            paths.append(path)
-    except ChecksumError:
-        shutil.rmtree(tpath)
-        raise
+            tmppaths.append(path)
+        copy(tmppaths, tpath, makedirs=True)
+    finally:
+        shutil.rmtree(tmpdir)
 
 def download(target, url=None, check=True):
     targeturl = target_url(url or target)
