@@ -478,10 +478,10 @@ def download_binaries(target, pkgdirurl=None, check=True):
     if config.getbool("binrepo", "enabled"):
         sourcesdir = "SOURCES"
         url = None
-        blobtarget = os.path.join(target, sourcesdir)
+        bintarget = os.path.join(target, sourcesdir)
         if pkgdirurl:
             url = os.path.join(pkgdirurl, sourcesdir)
-        binrepo.download(blobtarget, url, check)
+        binrepo.download(bintarget, url, check)
 
 def _sources_log(added, deleted):
     lines = ["SILENT: changed sources list:\n"]

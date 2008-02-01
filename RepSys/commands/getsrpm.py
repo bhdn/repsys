@@ -29,7 +29,7 @@ Options:
     -n      Rename the package to include the revision number
     -l      Use subversion log to build rpm %changelog
     -T FILE Template to be used to generate the %changelog
-    -S      Do not download sources from the blob repository
+    -S      Do not download sources from the binary repository
     -C      Do not check integrity of files fetched from the binary
             repository
     -h      Show this message
