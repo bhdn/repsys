@@ -388,13 +388,19 @@ def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
 def getpkgtopdir(basedir=None):
     if basedir is None:
         basedir = os.getcwd()
-    cwd = os.getcwd()
-    dirname = os.path.basename(cwd)
-    if dirname == "SPECS" or dirname == "SOURCES":
-        topdir = os.pardir
     else:
-        topdir = ""
-    return topdir
+        basedir = os.path.abspath(basedir)
+    while not ispkgtopdir(basedir):
+        if basedir == "/":
+            raise Error, "can't find top package directories SOURCES and SPECS"
+        basedir = os.path.dirname(basedir)
+    return basedir
+
+def ispkgtopdir(path=None):
+    if path is None:
+        path = os.getcwd()
+    names = os.listdir(path)
+    return (".svn" in names and "SPECS" in names and "SOURCES" in names)
 
 def sync(dryrun=False):
     svn = SVN()
