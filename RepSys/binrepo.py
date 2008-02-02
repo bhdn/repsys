@@ -311,7 +311,6 @@ def markrelease(srcurl, desturl, version, release, revision):
     paths = [os.path.join(spath, name) for name in entries]
     # we use target_url as tmproot trying to be 'hardlink friendly'
     tmpdir = tempfile.mkdtemp(prefix="repsys-markrelease-", dir=tmproot)
-    tmppaths = []
     try:
         # Check if the files we are going to markrelease are the right
         # ones.
@@ -321,6 +320,7 @@ def markrelease(srcurl, desturl, version, release, revision):
         # hardlink friendly and will create another file even to just
         # change some file in current/. Of course a dangerous assumption.
         copy(paths, tmpdir, makedirs=True)
+        tmppaths = []
         for name, sum in entries.iteritems():
             path = os.path.join(tmpdir, name)
             check_hash(path, sum)
