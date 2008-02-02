@@ -484,7 +484,8 @@ def download_binaries(target, pkgdirurl=None, check=True):
         bintarget = os.path.join(target, sourcesdir)
         if pkgdirurl:
             url = os.path.join(pkgdirurl, sourcesdir)
-        binrepo.download(bintarget, url, check)
+        for status in binrepo.download(bintarget, url, check):
+            print status
 
 def _sources_log(added, deleted):
     lines = ["SILENT: changed sources list:\n"]

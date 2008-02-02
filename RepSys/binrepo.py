@@ -342,8 +342,11 @@ def download(target, url=None, check=True):
         host = None
         path = targeturl
     paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
+    yield "Fetching %s" % " ".join(entries)
     copy(sources=paths, sourcehost=host, dest=target)
+    yield "Checking files"
     if check:
         for name, sum in entries.iteritems():
             bpath = os.path.join(target, name)
             check_hash(bpath, sum)
+    yield "Done"
