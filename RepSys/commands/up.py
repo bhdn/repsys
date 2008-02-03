@@ -3,7 +3,7 @@ from RepSys.command import *
 from RepSys.rpmutil import update
 
 HELP = """\
-Usage: repsys up <PATH>
+Usage: repsys up [PATH]
 
 Update the package working copy and synchronize all binaries.
 
