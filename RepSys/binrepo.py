@@ -8,6 +8,7 @@ import string
 import stat
 import sha
 import shutil
+import re
 import tempfile
 import urlparse
 from cStringIO import StringIO
@@ -236,25 +237,29 @@ def update_sources(paths):
     dump_sources(spath, entries)
     return added, deleted
 
-def find_binaries(paths):
-    # for now match file name or size
+def is_binary(path):
     raw = config.get("binrepo", "upload-match",
             "\.(gz|bz2|zip|Z|tar|xar|rpm|7z|lzma)$")
+    maxsize = config.getint("binrepo", "upload-match-size", "1048576")
     expr = re.compile(raw)
+    name = os.path.basename(path)
+    if expr.search(name):
+        return True
+    st = os.stat(path)
+    if st[stat.ST_SIZE] >= maxsize: # 1MiB
+        return True
+    return False
+
+def find_binaries(paths):
     new = []
     for path in paths:
         if os.path.isdir(path):
             for name in os.listdir(path):
-                if expr.search(name):
-                    new.append(os.path.join(path, name))
-                elif not os.path.isdir(path):
-                    fpath = os.path.join(path, name)
-                    st = os.stat(fpath)
-                    if st[stat.ST_SIZE] > 0x100000: # 1MiB
-                        new.append(fpath)
+                fpath = os.path.join(path, name)
+                if is_binary(fpath):
+                    new.append(fpath)
         else:
-            name = os.path.basename(path)
-            if expr.search(name):
+            if is_binary(path):
                 new.append(path)
     return new
 
@@ -263,6 +268,10 @@ def upload(paths, auto=False):
             "/usr/share/repsys/binrepo-upload")
     if auto:
         paths = find_binaries(paths)
+    else:
+        for path in paths:
+            if os.path.isdir(path):
+                raise Error, "can't upload directories, try with -a"
     if not paths:
         raise Error, "nothing to upload" # is it an error?
     target = target_url(paths[0])
