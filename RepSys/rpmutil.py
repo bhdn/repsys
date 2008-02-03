@@ -420,8 +420,6 @@ def sync(dryrun=False):
     try:
         rpm.addMacro("_topdir", os.path.abspath(topdir))
         spec = rpm.TransactionSet().parseSpec(specpath)
-        if basedir == "/":
-            raise Error, "can't find top package directories SOURCES and SPECS"
     except rpm.error, e:
         raise Error, "could not load spec file: %s" % e
     sources = [os.path.basename(name)
