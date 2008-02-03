@@ -22,7 +22,7 @@ class ChecksumError(Error):
 def copy_rsync(sources, dest, sourcehost=None, desthost=None,
         archive=False, recurse=False):
     """Simple inteface for rsync"""
-    args = ["rsync"]
+    args = ["rsync", "-i", "--log-format=\"%i %n\""]
     if archive:
         args.append("-a")
     if recurse:
@@ -37,7 +37,7 @@ def copy_rsync(sources, dest, sourcehost=None, desthost=None,
         args.append(desthost + ":" + dest)
     else:
         args.append(dest)
-    execcmd(*args)
+    execcmd(show=True, *args)
 
 def makedirs_remote(path, host):
     tmpdir = tempfile.mkdtemp(prefix="repsys-makedirs")
@@ -341,12 +341,23 @@ def download(target, url=None, check=True):
     except ValueError:
         host = None
         path = targeturl
-    paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
-    yield "Fetching %s" % " ".join(entries)
-    copy(sources=paths, sourcehost=host, dest=target)
+    if os.path.isdir(target):
+        paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
+        targetdir = target
+    else:
+        paths = [os.path.join(path, os.path.basename(target))]
+        name = os.path.basename(target)
+        targetdir = os.path.dirname(target)
+        if name not in entries:
+            raise Error, "file not uploaded yet (not found in "\
+                    "sources file): %s" % target
+    copy(sources=paths, sourcehost=host, dest=targetdir)
     yield "Checking files"
     if check:
-        for name, sum in entries.iteritems():
-            bpath = os.path.join(target, name)
+        for path in paths:
+            name = os.path.basename(path)
+            bpath = os.path.join(targetdir, name)
+            sum = entries[name]
             check_hash(bpath, sum)
     yield "Done"
+

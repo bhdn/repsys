@@ -420,6 +420,8 @@ def sync(dryrun=False):
     try:
         rpm.addMacro("_topdir", os.path.abspath(topdir))
         spec = rpm.TransactionSet().parseSpec(specpath)
+        if basedir == "/":
+            raise Error, "can't find top package directories SOURCES and SPECS"
     except rpm.error, e:
         raise Error, "could not load spec file: %s" % e
     sources = [os.path.basename(name)
@@ -491,6 +493,39 @@ def download_binaries(target, pkgdirurl=None, check=True):
         if pkgdirurl:
             url = os.path.join(pkgdirurl, sourcesdir)
         for status in binrepo.download(bintarget, url, check):
+            print status
+
+def update(target=None):
+    svn = SVN()
+    svn_target = None
+    br_target = None
+    if target:
+        info = svn.info2(target) 
+        spath = binrepo.sources_path(target)
+        if info is None:
+            # probably something kept in the binary repository
+            if os.path.exists(spath):
+                entries = binrepo.parse_sources(spath)
+                name = os.path.basename(target)
+                if name in entries:
+                    br_target = target
+                    svn_target = spath
+        else:
+            svn_target = target
+            if info["Node Kind"] == "directory":
+                if os.path.exists(spath):
+                    br_target = target
+    else:
+        top = getpkgtopdir()
+        svn_target = top
+        br_target = os.path.join(top, "SOURCES")
+    if not br_target and not svn_target:
+        raise Error, "target not in SVN nor in binaries "\
+                "repository: %s" % target
+    if svn_target:
+        svn.update(svn_target, show=True)
+    if br_target:
+        for status in binrepo.download(br_target):
             print status
 
 def _sources_log(added, deleted):
