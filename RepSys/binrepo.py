@@ -105,7 +105,10 @@ def svn_basedir(target):
 def svn_root(target):
     svn = SVN()
     info = svn.info2(target)
-    assert info is not None
+    if info is None:
+        newtarget = os.path.dirname(target)
+        info = svn.info2(newtarget)
+        assert info is not None
     return info["Repository Root"]
 
 def enabled(url):
