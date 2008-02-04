@@ -474,7 +474,6 @@ def sync(dryrun=False):
             binrepo.upload_pending(path)
 
 def commit(target=".", message=None, logfile=None):
-    import pdb; pdb.set_trace()
     topdir = getpkgtopdir(target)
     sourcesdir = os.path.join(topdir, "SOURCES")
     binrepo.commit(sourcesdir) #TODO make it optional
