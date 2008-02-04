@@ -463,7 +463,7 @@ def sync(dryrun=False):
     for path in toremove_br:
         print "DB\t%s" % path
         if not dryrun:
-            binrepo.remove_from_sources(path)
+            binrepo.delete_pending(path)
     for path in toadd_svn:
         print "A\t%s" % path
         if not dryrun:

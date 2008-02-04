@@ -16,6 +16,8 @@ from cStringIO import StringIO
 #TODO logging for markrelease
 
 DEFAULT_TARBALLS_REPO = "/tarballs"
+BINLIST_PENDING = "repsys-upload"
+BINLIST_DELETE = "repsys-delete"
 
 class ChecksumError(Error):
     pass
@@ -266,27 +268,50 @@ def upload(paths, auto=False):
     ad = update_sources(paths)
     return ad
 
-def _pending_file_path(dirpath):
-    fpath = os.path.join(dirpath, ".svn", "repsys-pending")
+def _binary_list_path(dirpath, name):
+    fpath = os.path.join(dirpath, ".svn", name)
     return fpath
 
-def upload_pending(path):
+def _append_binary_list(path, listname):
     if os.path.isdir(path):
         raise Error, "only files can be uploaded"
     basedir = os.path.dirname(path)
-    ppath = _pending_file_path(basedir)
+    ppath = _binary_list_path(basedir, listname)
     f = open(ppath, "a+")
     f.write(os.path.basename(path) + "\n")
     f.close()
 
-def commit(dirpath):
-    ppath = _pending_file_path(dirpath)
-    if os.path.isfile(ppath):
-        f = open(ppath, "r")
-        pending = [line.rstrip() for line in f]
-        f.close()
-        upload(pending)
+def _get_binary_list(dirpath, listname):
+    ppath = _binary_list_path(dirpath, listname)
+    if not os.path.exists(ppath):
+        return []
+    f = open(ppath)
+    entries = [line.rstrip() for line in f]
+    f.close()
+    return entries
+
+def _delete_binary_list(dirpath, listname):
+    ppath = _binary_list_path(dirpath, listname)
+    if os.path.exists(ppath):
         os.unlink(ppath)
+
+def upload_pending(path):
+    _append_binary_list(path, BINLIST_PENDING)
+
+def delete_pending(path):
+    _append_binary_list(path, BINLIST_DELETE)
+
+def commit(dirpath):
+    pending = [os.path.join(dirpath, name) for name in
+                        _get_binary_list(dirpath, BINLIST_PENDING)]
+    if pending:
+        upload(pending)
+        _delete_binary_list(dirpath, BINLIST_PENDING)
+    delete = [os.path.join(dirpath, name) for name in
+                        _get_binary_list(dirpath, BINLIST_DELETE)]
+    if delete:
+        remove(delete)
+        _delete_binary_list(dirpath, BINLIST_DELETE)
 
 def remove(paths):
     # we don't care what will happen to the sources file in the tarballs
