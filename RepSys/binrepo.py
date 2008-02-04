@@ -202,28 +202,6 @@ def get_chksum(path):
     digest = sha1.hexdigest()
     return digest
 
-def _update_sources(path, entries, added, deleted):
-    name = os.path.basename(path)
-    if os.path.exists(path):
-        if os.path.isdir(path):
-            for name in os.listdir(path):
-                fpath = os.path.join(path, name)
-                if os.path.isdir(fpath):
-                    continue # we don't handle subdirs
-                _update_sources(fpath, entries, added, deleted)
-        else:
-            sum = get_chksum(path)
-            name = os.path.basename(path)
-            entries[name] = sum
-            added.append(name)
-
-    else:
-        deleted.append(name)
-        try:
-            del entries[name]
-        except KeyError:
-            pass
-
 def update_sources(paths):
     spath = sources_path(paths[0])
     entries = parse_sources(spath)
