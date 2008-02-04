@@ -449,12 +449,13 @@ def sync(dryrun=False):
         if entry == ".svn" or entry == "sources":
             continue
         status = sourcesst.get(entry)
-        if status is None and entry not in sources:
-            path = os.path.join(sourcesdir, entry)
-            if binrepo.is_tracked(path):
-                toremove_br.append(path)
-            else:
+        #import pdb; pdb.set_trace()
+        path = os.path.join(sourcesdir, entry)
+        if entry not in sources:
+            if status is None: # file is tracked by svn
                 toremove_svn.append(path)
+            elif binrepo.is_tracked(path):
+                toremove_br.append(path)
     for path in toremove_svn:
         print "D\t%s" % path
         if not dryrun:

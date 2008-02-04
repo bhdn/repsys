@@ -294,8 +294,8 @@ def upload_pending(path):
         raise Error, "only files can be uploaded"
     basedir = os.path.dirname(path)
     ppath = _pending_file_path(basedir)
-    f = open(os.path.basename(ppath), "a+")
-    f.write(path + "\n")
+    f = open(ppath, "a+")
+    f.write(os.path.basename(path) + "\n")
     f.close()
 
 def commit(dirpath):
