@@ -145,8 +145,8 @@ def file_hash(path):
 def check_hash(path, sum):
     newsum = file_hash(path)
     if newsum != sum:
-        raise ChecksumError, "different checksums for %s: %s != %s" % (path, newsum,
-                sum)
+        raise ChecksumError, "different checksums for %s: expected %s, "\
+                "but %s was found" % (path, sum, newsum)
 
 def parse_sources_stream(stream):
     entries = {}
@@ -332,7 +332,10 @@ def markrelease(srcurl, desturl, version, release, revision):
         tmppaths = []
         for name, sum in entries.iteritems():
             path = os.path.join(tmpdir, name)
-            check_hash(path, sum)
+            try:
+                check_hash(path, sum)
+            except ChecksumError, e:
+                raise Error, "can't create release: %s" % e
             tmppaths.append(path)
         copy(tmppaths, tpath, makedirs=True)
     finally:
