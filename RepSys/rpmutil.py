@@ -500,7 +500,8 @@ def commit(target=".", message=None, logfile=None):
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
     topdir = getpkgtopdir(target)
-    binrepo.commit(topdir) #TODO make it optionall
+    sourcesdir = os.path.join(topdir, "SOURCES")
+    binrepo.commit(sourcesdir) #TODO make it optional
 
 def download_binaries(target, pkgdirurl=None, check=True):
     refurl = pkgdirurl
