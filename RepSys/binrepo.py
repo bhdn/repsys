@@ -300,11 +300,12 @@ def upload_pending(path):
 
 def commit(dirpath):
     ppath = _pending_file_path(dirpath)
-    f = open(ppath, "r")
-    pending = [line.rstrip() for line in f]
-    f.close()
-    upload(pending)
-    os.unlink(ppath)
+    if os.path.isfile(ppath):
+        f = open(ppath, "r")
+        pending = [line.rstrip() for line in f]
+        f.close()
+        upload(pending)
+        os.unlink(ppath)
 
 def remove(paths):
     # we don't care what will happen to the sources file in the tarballs

@@ -498,6 +498,8 @@ def commit(target=".", message=None, logfile=None):
     if mirrored:
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
+    topdir = getpkgtopdir(target)
+    binrepo.commit(topdir) #TODO make it optionall
 
 def download_binaries(target, pkgdirurl=None, check=True):
     refurl = pkgdirurl
