@@ -302,13 +302,14 @@ def delete_pending(path):
     _append_binary_list(path, BINLIST_DELETE)
 
 def commit(dirpath):
-    pending = [os.path.join(dirpath, name) for name in
-                        _get_binary_list(dirpath, BINLIST_PENDING)]
+    fetch = (lambda listname:
+                [os.path.join(dirpath, name) for name in
+                    _get_binary_list(dirpath, listname)])
+    pending = fetch(BINLIST_PENDING)
+    delete = fetch(BINLIST_DELETE)
     if pending:
         upload(pending)
         _delete_binary_list(dirpath, BINLIST_PENDING)
-    delete = [os.path.join(dirpath, name) for name in
-                        _get_binary_list(dirpath, BINLIST_DELETE)]
     if delete:
         remove(delete)
         _delete_binary_list(dirpath, BINLIST_DELETE)

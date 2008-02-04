@@ -474,6 +474,10 @@ def sync(dryrun=False):
             binrepo.upload_pending(path)
 
 def commit(target=".", message=None, logfile=None):
+    import pdb; pdb.set_trace()
+    topdir = getpkgtopdir(target)
+    sourcesdir = os.path.join(topdir, "SOURCES")
+    binrepo.commit(sourcesdir) #TODO make it optional
     svn = SVN()
     status = svn.status(target, quiet=True)
     if not status:
@@ -499,9 +503,6 @@ def commit(target=".", message=None, logfile=None):
     if mirrored:
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
-    topdir = getpkgtopdir(target)
-    sourcesdir = os.path.join(topdir, "SOURCES")
-    binrepo.commit(sourcesdir) #TODO make it optional
 
 def download_binaries(target, pkgdirurl=None, check=True):
     refurl = pkgdirurl
