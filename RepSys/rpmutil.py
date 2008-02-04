@@ -404,7 +404,7 @@ def ispkgtopdir(path=None):
     names = os.listdir(path)
     return (".svn" in names and "SPECS" in names and "SOURCES" in names)
 
-def sync(dryrun=False):
+def sync(dryrun=False, ci=False):
     svn = SVN()
     topdir = getpkgtopdir()
     # run svn info because svn st does not complain when topdir is not an
@@ -449,7 +449,6 @@ def sync(dryrun=False):
         if entry == ".svn" or entry == "sources":
             continue
         status = sourcesst.get(entry)
-        #import pdb; pdb.set_trace()
         path = os.path.join(sourcesdir, entry)
         if entry not in sources:
             if status is None: # file is tracked by svn
@@ -472,6 +471,8 @@ def sync(dryrun=False):
         print "AB\t%s" % path
         if not dryrun:
             binrepo.upload_pending(path)
+    if commit:
+        commit(topdir)
 
 def commit(target=".", message=None, logfile=None):
     topdir = getpkgtopdir(target)
