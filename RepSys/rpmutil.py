@@ -386,14 +386,16 @@ def checkout(pkgdirurl, path=None, revision=None, use_mirror=True,
         download_binaries(path, check=binrepo_check)
     
 def getpkgtopdir(basedir=None):
+    #FIXME this implementation doesn't work well with relative path names,
+    # which is something we need in order to have a friendlier output
     if basedir is None:
-        basedir = os.getcwd()
-    else:
-        basedir = os.path.abspath(basedir)
+        basedir = os.path.curdir
     while not ispkgtopdir(basedir):
-        if basedir == "/":
+        if os.path.abspath(basedir) == "/":
             raise Error, "can't find top package directories SOURCES and SPECS"
-        basedir = os.path.dirname(basedir)
+        basedir = os.path.join(basedir, os.path.pardir)
+    if basedir.startswith("./"):
+        basedir = basedir[2:]
     return basedir
 
 def ispkgtopdir(path=None):
@@ -407,7 +409,7 @@ def sync(dryrun=False):
     topdir = getpkgtopdir()
     # run svn info because svn st does not complain when topdir is not an
     # working copy
-    svn.info(topdir or ".")
+    svn.info(topdir)
     specsdir = os.path.join(topdir, "SPECS/")
     sourcesdir = os.path.join(topdir, "SOURCES/")
     for path in (specsdir, sourcesdir):
