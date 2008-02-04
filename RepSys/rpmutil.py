@@ -428,32 +428,49 @@ def sync(dryrun=False):
             for name, no, flags in spec.sources()]
     sourcesst = dict((os.path.basename(path), st)
             for st, path in svn.status(sourcesdir, noignore=True))
-    toadd = []
+    toadd_br = []
+    toadd_svn = []
+    toremove_svn = []
+    toremove_br = []
     for source in sources:
         sourcepath = os.path.join(sourcesdir, source)
         if sourcesst.get(source):
             if os.path.isfile(sourcepath):
-                toadd.append(sourcepath)
+                if not binrepo.is_tracked(sourcepath):
+                    if binrepo.is_binary(sourcepath):
+                        toadd_br.append(sourcepath)
+                    else:
+                        toadd_svn.append(sourcepath)
             else:
                 sys.stderr.write("warning: %s not found\n" % sourcepath)
     # rm entries not found in sources and still in svn
     found = os.listdir(sourcesdir)
-    toremove = []
     for entry in found:
-        if entry == ".svn":
+        if entry == ".svn" or entry == "sources":
             continue
         status = sourcesst.get(entry)
         if status is None and entry not in sources:
             path = os.path.join(sourcesdir, entry)
-            toremove.append(path)
-    for path in toremove:
+            if binrepo.is_tracked(path):
+                toremove_br.append(path)
+            else:
+                toremove_svn.append(path)
+    for path in toremove_svn:
         print "D\t%s" % path
         if not dryrun:
             svn.remove(path, local=True)
-    for path in toadd:
+    for path in toremove_br:
+        print "DB\t%s" % path
+        if not dryrun:
+            binrepo.remove_from_sources(path)
+    for path in toadd_svn:
         print "A\t%s" % path
         if not dryrun:
             svn.add(path, local=True)
+    for path in toadd_br:
+        print "AB\t%s" % path
+        if not dryrun:
+            binrepo.upload_pending(path)
 
 def commit(target=".", message=None, logfile=None):
     svn = SVN()

@@ -263,6 +263,12 @@ def find_binaries(paths):
                 new.append(path)
     return new
 
+def is_tracked(path):
+    spath = sources_path(path)
+    entries = parse_sources(spath)
+    name = os.path.basename(path)
+    return name in entries
+
 def upload(paths, auto=False):
     base = config.get("binrepo", "upload-command", 
             "/usr/share/repsys/binrepo-upload")
@@ -278,6 +284,27 @@ def upload(paths, auto=False):
     copy(sources=paths, dest=target, makedirs=True)
     ad = update_sources(paths)
     return ad
+
+def _pending_file_path(dirpath):
+    fpath = os.path.join(dirpath, ".svn", "repsys-pending")
+    return fpath
+
+def upload_pending(path):
+    if os.path.isdir(path):
+        raise Error, "only files can be uploaded"
+    basedir = os.path.dirname(path)
+    ppath = _pending_file_path(basedir)
+    f = open(os.path.basename(ppath), "a+")
+    f.write(path + "\n")
+    f.close()
+
+def commit(dirpath):
+    ppath = _pending_file_path(dirpath)
+    f = open(ppath, "r")
+    pending = [line.rstrip() for line in f]
+    f.close()
+    upload(pending)
+    os.unlink(ppath)
 
 def remove(paths):
     # we don't care what will happen to the sources file in the tarballs
@@ -295,6 +322,17 @@ def remove(paths):
                 raise Error, "failed to unlink file: %s" % e
     ad = update_sources(paths)
     return ad
+
+def remove_from_sources(path):
+    #FIXME merge with remove() and update_sources()
+    spath = sources_path(path)
+    entries = parse_sources(spath)
+    name = os.path.basename(path)
+    try:
+        del entries[name]
+    except KeyError:
+        pass
+    dump_sources(spath, entries)
 
 def markrelease(srcurl, desturl, version, release, revision):
     svn = SVN()
