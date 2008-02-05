@@ -62,7 +62,8 @@ def get_srpm(pkgdirurl,
              submit = False,
              template = None,
              macros = [],
-             verbose = 0):
+             verbose = 0,
+             strict = False):
     svn = SVN()
     tmpdir = tempfile.mktemp()
     topdir = "--define '_topdir %s'" % tmpdir
@@ -82,6 +83,12 @@ def get_srpm(pkgdirurl,
             geturl = os.path.join(pkgdirurl, "current")
         else:
             raise Error, "unsupported get_srpm mode: %s" % mode
+        strict = strict or config.getbool("submit", "strict-revision", False)
+        if strict and not rev_touched_url(geturl, revision):
+            #FIXME would be nice to have the revision number even when
+            # revision is None
+            raise Error, "the revision %s does not change anything "\
+                    "inside %s" % (revision or "HEAD", geturl)
         svn.export(geturl, tmpdir, rev=revision)
         srpmsdir = os.path.join(tmpdir, "SRPMS")
         os.mkdir(srpmsdir)
