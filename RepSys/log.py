@@ -298,7 +298,8 @@ def make_release(author=None, revision=None, date=None, lines=None,
 
 
 def dump_file(releases, currentlog=None, template=None):
-    templpath = template or config.get("template", "path", None)
+    templpath = template or config.get("template", "path",
+            "/usr/share/repsys/default.chlog")
     params = {}
     if templpath is None or not os.path.exists(templpath):
         params["source"] = default_template
