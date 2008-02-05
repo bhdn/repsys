@@ -19,20 +19,21 @@ Usage: repsys getsrpm [OPTIONS] REPPKGURL
 Generates the source RPM (.srpm) file of a given package.
 
 Options:
-    -c      Use files in current/ directory (default)
-    -p      Use files in pristine/ directory
-    -v VER  Use files from the version specified by VER (e.g. 2.2.1-2cl)
-    -r REV  Use files from current directory, in revision REV (e.g. 1001)
-    -t DIR  Put SRPM file in directory DIR when done (default is ".")
-    -P USER Define the RPM packager inforamtion to USER
-    -s FILE Run script with "FILE TOPDIR SPECFILE" command
-    -n      Rename the package to include the revision number
-    -l      Use subversion log to build rpm %changelog
-    -T FILE Template to be used to generate the %changelog
-    -S      Do not download sources from the binary repository
-    -C      Do not check integrity of files fetched from the binary
-            repository
-    -h      Show this message
+    -c         Use files in current/ directory (default)
+    -p         Use files in pristine/ directory
+    -v VER     Use files from the version specified by VER (e.g. 2.2.1-2cl)
+    -r REV     Use files from current directory, in revision REV (e.g. 1001)
+    -t DIR     Put SRPM file in directory DIR when done (default is ".")
+    -P USER    Define the RPM packager inforamtion to USER
+    -s FILE    Run script with "FILE TOPDIR SPECFILE" command
+    -n         Rename the package to include the revision number
+    -l         Use subversion log to build rpm %changelog
+    -T FILE    Template to be used to generate the %changelog
+    -h         Show this message
+    -S         Do not download sources from the binary repository
+    -C         Do not check integrity of files fetched from the binary
+               repository
+    --strict   Check if the given revision contains changes in REPPKGURL
 
 Examples:
     repsys getsrpm python
@@ -80,6 +81,8 @@ def parse_options():
             action="store_false")
     parser.add_option("-C", dest="binrepo_check", default=True,
             action="store_false")
+    parser.add_option("--strict", dest="strict", default=False,
+            action="store_true")
     opts, args = parser.parse_args()
     del opts.__ignore
     if len(args) != 1:
