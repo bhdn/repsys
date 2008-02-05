@@ -93,7 +93,7 @@ def parse_options():
                       action="store_true",
                       help="list submit targets available")
     opts, args = parser.parse_args()
-    if not args:
+    if not opts.list_targets and not args:
         parser.error("you must supply a package url")
     return opts, args
 
