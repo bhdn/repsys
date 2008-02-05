@@ -21,6 +21,12 @@ import shutil
 locale.setlocale(locale.LC_ALL, "C")
 
 default_template = """
+#if not $releases_by_author[-1].visible
+  ## Hide the first release that contains no changes. It must be a
+  ## reimported package and the log gathered from misc/ already should
+  ## contain a correct entry for the version-release:
+  #set $releases_by_author = $releases_by_author[:-1]
+#end if
 #for $rel in $releases_by_author
 * $rel.date $rel.author_name <$rel.author_email> $rel.version-$rel.release
 + Revision: $rel.revision
