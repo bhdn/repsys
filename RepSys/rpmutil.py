@@ -386,7 +386,7 @@ def _getpkgtopdir(basedir=None):
         topdir = ""
     return topdir
 
-def sync(dryrun=False):
+def sync(dryrun=False, download=False):
     svn = SVN(noauth=True)
     topdir = _getpkgtopdir()
     # run svn info because svn st does not complain when topdir is not an
@@ -406,18 +406,27 @@ def sync(dryrun=False):
         spec = rpm.TransactionSet().parseSpec(specpath)
     except rpm.error, e:
         raise Error, "could not load spec file: %s" % e
-    sources = [os.path.basename(name)
-            for name, no, flags in spec.sources()]
-    sourcesst = dict((os.path.basename(path), st)
+    sources = dict((os.path.basename(name), name)
+            for name, no, flags in spec.sources())
+    sourcesst = dict((os.path.basename(path), (path, st))
             for st, path in svn.status(sourcesdir, noignore=True))
     toadd = []
-    for source in sources:
+    for source, url in sources.iteritems():
         sourcepath = os.path.join(sourcesdir, source)
-        if sourcesst.get(source):
+        pst = sourcesst.get(source)
+        if pst:
             if os.path.isfile(sourcepath):
                 toadd.append(sourcepath)
             else:
-                sys.stderr.write("warning: %s not found\n" % sourcepath)
+                sys.stderr.write("warning: %s not found, skipping\n" % sourcepath)
+        elif download and not os.path.isfile(sourcepath):
+            print "%s not found, downloading from %s" % (sourcepath, url)
+            cmd = "wget -c -O '%s' '%s'" % (sourcepath, url)
+            execcmd(cmd, show=True)
+            if os.path.isfile(sourcepath):
+                toadd.append(sourcepath)
+            else:
+                raise Error, "file not found: %s" % sourcepath
     # rm entries not found in sources and still in svn
     found = os.listdir(sourcesdir)
     toremove = []
