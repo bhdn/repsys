@@ -9,6 +9,7 @@ from RepSys.command import default_parent
 import rpm
 import tempfile
 import shutil
+import string
 import glob
 import sys
 import os
@@ -444,7 +445,14 @@ def sync(dryrun=False, download=False):
                 sys.stderr.write("warning: %s not found, skipping\n" % sourcepath)
         elif download and not os.path.isfile(sourcepath):
             print "%s not found, downloading from %s" % (sourcepath, url)
-            cmd = "wget -c -O '%s' '%s'" % (sourcepath, url)
+            fmt = config.get("global", "download-command",
+                    "wget -c -O '$dest' $url")
+            context = {"dest": sourcepath, "url": url}
+            try:
+                cmd = string.Template(fmt).substitute(context)
+            except KeyError, e:
+                raise Error, "invalid variable %r in download-command "\
+                        "configuration option" % e
             execcmd(cmd, show=True)
             if os.path.isfile(sourcepath):
                 toadd.append(sourcepath)
