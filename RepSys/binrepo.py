@@ -52,7 +52,8 @@ def makedirs_remote(path, host):
         if os.path.exists(tmpdir):
             shutil.rmtree(tmpdir)
 
-def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False):
+def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False,
+        hardlink=False):
     """rsync-like copy
 
     Note that a copy between two dirs will result in overwriting the
@@ -77,6 +78,9 @@ def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False):
         copy_rsync(sources=sources, sourcehost=sourcehost, dest=dpath,
                 desthost=desthost, recurse=True, archive=True)
     else:
+        opts = "-a"
+        if hardlink:
+            opts += "l"
         for source in sources:
             if os.path.isdir(source) and os.path.exists(dpath):
                 #FIXME ugly workaround to behave consistently between
@@ -85,7 +89,7 @@ def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False):
                     os.rmdir(dpath)
                 except OSError, e:
                     raise Error, "can't overwrite directory: %s" % e
-            execcmd("cp -al %s %s" % (source, dpath))
+            execcmd("cp %s %s %s" % (opts, source, dpath))
 
 def svn_basedir(target):
     svn = SVN()
@@ -383,7 +387,7 @@ def markrelease(srcurl, desturl, version, release, revision):
             except ChecksumError, e:
                 raise Error, "can't create release: %s" % e
             tmppaths.append(path)
-        copy(tmppaths, tpath, makedirs=True)
+        copy(tmppaths, tpath, makedirs=True, hardlink=True)
     finally:
         shutil.rmtree(tmpdir)
 
