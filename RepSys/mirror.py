@@ -7,16 +7,16 @@ from RepSys.svn import SVN
 def _normdirurl(url):
     """normalize url for relocate_path needs"""
     parsed = urlparse.urlparse(url)
-    path = os.path.normpath(parsed.path)
-    newurl = urlparse.urlunparse((parsed.scheme, parsed.netloc, path,
-        parsed.params, parsed.query, parsed.fragment))
+    path = os.path.normpath(parsed[2])
+    newurl = urlparse.urlunparse((parsed[0], parsed[1], path,
+        parsed[3], parsed[4], parsed[5]))
     return newurl
 
 def _joinurl(url, relpath):
     parsed = urlparse.urlparse(url)
-    newpath = os.path.join(parsed.path, relpath)
-    newurl = urlparse.urlunparse((parsed.scheme, parsed.netloc, newpath,
-        parsed.params, parsed.query, parsed.fragment))
+    newpath = os.path.join(parsed[2], relpath)
+    newurl = urlparse.urlunparse((parsed[0], parsed[1], newpath,
+        parsed[3], parsed[4], parsed[5]))
     return newurl
 
 def same_base(parent, url):
@@ -45,7 +45,7 @@ def enabled(wcurl=None):
     return enabled
 
 def mirror_relocate(oldparent, newparent, url, wcpath):
-    svn = SVN(noauth=True)
+    svn = SVN()
     newurl = relocate_path(oldparent, newparent, url)
     svn.switch(newurl, url, path=wcpath, relocate="True")
     return newurl
