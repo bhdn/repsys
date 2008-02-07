@@ -409,7 +409,7 @@ def _getpkgtopdir(basedir=None):
         topdir = ""
     return topdir
 
-def sync(dryrun=False):
+def sync(dryrun=False, download=False):
     svn = SVN()
     topdir = _getpkgtopdir()
     # run svn info because svn st does not complain when topdir is not an
