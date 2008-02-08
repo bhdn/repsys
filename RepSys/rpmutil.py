@@ -9,6 +9,7 @@ from RepSys.command import default_parent
 import rpm
 import tempfile
 import shutil
+import string
 import glob
 import sys
 import os
@@ -63,9 +64,9 @@ def get_srpm(pkgdirurl,
              template = None,
              macros = [],
              verbose = 0,
+             strict = False,
              use_binrepo = False,
              binrepo_check = True):
-             strict = False):
     svn = SVN()
     tmpdir = tempfile.mktemp()
     topdir = "--define '_topdir %s'" % tmpdir
@@ -427,7 +428,7 @@ def ispkgtopdir(path=None):
     names = os.listdir(path)
     return (".svn" in names and "SPECS" in names and "SOURCES" in names)
 
-def sync(dryrun=False, ci=False):
+def sync(dryrun=False, ci=False, download=False):
     svn = SVN()
     topdir = getpkgtopdir()
     # run svn info because svn st does not complain when topdir is not an
@@ -447,15 +448,15 @@ def sync(dryrun=False, ci=False):
         spec = rpm.TransactionSet().parseSpec(specpath)
     except rpm.error, e:
         raise Error, "could not load spec file: %s" % e
-    sources = [os.path.basename(name)
-            for name, no, flags in spec.sources()]
-    sourcesst = dict((os.path.basename(path), st)
+    sources = dict((os.path.basename(name), name)
+            for name, no, flags in spec.sources())
+    sourcesst = dict((os.path.basename(path), (path, st))
             for st, path in svn.status(sourcesdir, noignore=True))
     toadd_br = []
     toadd_svn = []
     toremove_svn = []
     toremove_br = []
-    for source in sources:
+    for source, url in sources.iteritems():
         sourcepath = os.path.join(sourcesdir, source)
         if sourcesst.get(source):
             if os.path.isfile(sourcepath):
@@ -466,6 +467,24 @@ def sync(dryrun=False, ci=False):
                         toadd_svn.append(sourcepath)
             else:
                 sys.stderr.write("warning: %s not found\n" % sourcepath)
+        elif download and not os.path.isfile(sourcepath):
+            print "%s not found, downloading from %s" % (sourcepath, url)
+            fmt = config.get("global", "download-command",
+                    "wget -c -O '$dest' $url")
+            context = {"dest": sourcepath, "url": url}
+            try:
+                cmd = string.Template(fmt).substitute(context)
+            except KeyError, e:
+                raise Error, "invalid variable %r in download-command "\
+                        "configuration option" % e
+            execcmd(cmd, show=True)
+            if os.path.isfile(sourcepath):
+                if binrepo.is_binary(sourcepath):
+                    toadd_br.append(sourcepath)
+                else:
+                    toadd_svn.append(sourcepath)
+            else:
+                raise Error, "file not found: %s" % sourcepath
     # rm entries not found in sources and still in svn
     found = os.listdir(sourcesdir)
     for entry in found:
