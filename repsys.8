@@ -1,0 +1,159 @@
+.\" repsys - Package repository management tool
+.TH "repsys" "8" "2008 Feb 8" "Bogdano Arendartchuk" ""
+.SH "NAME"
+repsys \- Package souces repository management tool
+.SH "SYNOPSIS"
+\fBrepsys\fP command [options] [arguments]
+.SH "DESCRIPTION"
+\fBrepsys\fP is the tool used to manage RPM packages in a subversion repository. It is used to create, tag releases, generate .src.rpm, generate changelog, and request new package releases for build. It mostly acts as a interface to svn(1) commands and small task scripts run on the build system side over ssh(1).
+
+Most of the \fBrepsys\fP commands operate on a given package URL, these URLs can be omitted when the configuration option \fBdefault_parent\fP is set.
+
+Detailed help on commands is available running \fBrepsys <command> \-\-help\fP.
+.SH "BASIC USAGE"
+.SS "Setup"
+\fBrepsys\fP does not handle the authentication interface used by svn. So it is usually required to setup ssh\-agent(1) if the repository access method is over SSH (svn+ssh:// URLs), or performing some simple operation in order to obtain a authentication token.
+
+.nf
+For more information related how to setup ssh-agent, see:
+http://wiki.mandriva.com/en/Development/Docs/Contributor_Tricks#SSH_configuration
+.fi
+
+Users that don't have an ssh account in the default repository URL can set the option \fBmirror\fP pointing to a non-authenticated, read-only repository (such as http://svn.mandriva.com/svn/packages/cooker).
+.SS "Examples"
+.PP
+.IP "\fBrepsys co foo\fP"
+Obtains a working copy of the package foo.
+.IP "\fBrepsys ci\fP"
+Commits pending changes in the working copy.
+.IP "\fBrepsys submit foo \-r 12345\fP"
+Requests the package foo in the revision 12345 to be built and, if successful, to be uploaded to the RPMs repository.
+.IP "\fBrepsys submit foo \-r 12345 -t 2008.0 \-\-define section=main/testing\fP"
+Will submit the package foo and, upon successful build will have its RPMs placed inside the main/testing media of the 2008.0 repository.
+.IP "\fBrepsys submit\fP"
+submit run without parameters will use package name and revision found in the working copy in the current directory.
+.SH "COMMANDS"
+For detailed help on commands run \fBrepsys <command> \-\-help\fP.
+.PP
+.IP "\fBco\fP"
+checkout a package
+.IP "\fBci\fP"
+commit changes
+.IP "\fBsubmit\fP"
+submit a package in a given revision for build
+.IP "\fBsync\fP"
+add-remove all file changes from the .spec
+.IP "\fBgetspec\fP"
+prints the spec 
+.IP "\fBrpmlog\fP"
+prints the RPM changelog generated from SVN
+.IP "\fBgetsrpm\fP"
+creates the source RPM
+.IP "\fBcreate\fP"
+create the structure of a new package
+.IP "\fBchanged\fP"
+shows changes not submitted
+.IP "\fBauthoremail\fP"
+prints the e-mail of a given svn author
+.IP "\fBswitch\fP"
+relocate to mirror or upstream repository
+.IP "\fBmarkrelease\fP"
+creates a tag for a given package revision and version
+.SH "REPOSITORY LAYOUT"
+.nf
+A detailed description can be found at:
+http://wiki.mandriva.com/en/Development/Packaging/RepositorySystem
+.fi
+
+The svn repository used by \fBrepsys\fP consists of a set of branches in the top directory, followed by package directories having the internal package structure.
+
+The internal package layout contains a directory \fBcurrent/\fP, which contains the latest version of the package (equivalent to "trunk" in software repositories). The directory \fBreleases/\fP contain copies of older submitted packages that have been already released, it is organized in the \fB<version>/<release>\fP format (equivalent to "tags" directories).
+
+URLs used in \fBrepsys\fP commands refer to the package directory, and never to \fBcurrent\fP. In other words, the http://host/svn/cooker/foo is valid, whereas http://host/svn/cooker/foo/current is not.
+
+One example layout:
+
+\fB
+/packages/cooker
+     |
+     +\- 2007.0/
+     +\- 2007.1/
+     +\- 2008.0/
+     +\- cooker/
+        ...
+        +\- rsync/
+        +\- coreutils/
+        +\- make/
+        +\- foo/
+           +\- current/
+           |  +\- SOURCES/
+           |  +\- SPECS/
+           +\- releases/
+              ...
+              +\- 1.0
+                 +\- 1mdk/
+                    +\- SOURCES/
+                    +\- SPECS/
+                 +\- 2mdk/
+                 ...
+\fP
+.SH "CONFIGURATION"
+.SS "Introduction"
+The main configuration file is \fB/etc/repsys.conf\fP, it is in the .ini format. It is basically defined by a set of \fB[name]\fP sections, with a set of variables defined by \fBname = value\fP.
+
+If existing, the file ~/.repsys/config is also loaded.
+.SS "The [global] section"
+.PP
+.IP "\fBdefault_parent = URL\fP"
+Contains the base URL used to access packages in the svn repository when only package names are used in commands. For example, if \fBrepsys co trafshow\fP is run and default_parent is http://host/svn/cooker/, the URL http://host/svn/cooker/trafshow will be used.
+.IP "\fBmirror = URL\fP"
+The URL of an alternative and read\-only repository to be used when checking out packages. \fBrepsys ci\fP will automatically relocate to default_parent when comitting.
+.IP "\fBurl\-map = MATCH\-REGEXP REPLACE\-EXPR\fP"
+This option is used on server-side to remap remote URLs brought by the user when running \fBrepsys submit\fP to local (and probably faster) URLs. \fBMATCH\-REGEXP\fP is a Python regular expression matching the components that must be reused in the local URL. \fbREPLACE\-EXPR\fP is a replace expression that should expand in the final URL. Example: \fBsvn\+ssh://svn\.mandriva\.com/(.*) file:///\1\fP
+.IP "\fBtempdir = PATH\fP"
+The directory to be used as base for temporay directories and files created by repsys.
+.IP "\fBdownload\-command\fP"
+Command used to download generic remote URLs. It is currently used when running \fBrepsys sync \-d\fP
+.IP "\fBsvn\-command\fP"
+The base command used to execute svn(1). Runs through system(3).
+.IP "\fBverbose = yes/no\fP"
+Increase the verbosity of repsys output, printing commands being run and complete traceback when unhanlded errors happen.
+.SS "The [submit] section"
+.IP "\fBhost\fP"
+.IP "\fBdefault\fP"
+.SS "The [users] section"
+.IP "\fBX\fP"
+DESC
+.IP "\fBX\fP"
+DESC
+.SS "The [helper] section"
+.IP "\fBX\fP"
+DESC
+.SS "The [submit]"
+.SH "MIRRORS"
+.SH "CHANGELOGS"
+.SH "PLUGINS"
+.SH "SERVER SETUP"
+.SH "ENVIRONMENT VARIABLES"
+.PP
+.IP "\fBREPSYS_CONF\fP"
+Sets the configuration file to be read by \fBrepsys\fP
+.SH "FILES"
+.nf 
+~/.repsys/config
+/etc/repsys.conf
+/usr/share/repsys/
+/usr/share/doc/repsys/
+.fi 
+.SH "SEE ALSO"
+mdvsys(1), svn(1), ssh\-agent(1)
+
+.nf 
+http://wiki.mandriva.com/en/Development/Packaging/RepositorySystem/Quickstart
+.fi 
+.SH "AUTHOR"
+.nf 
+repsys was originally written by Gustavo Niemeyer <gustavo@niemeyer.net>
+for the Conectiva Linux distribution. Currently it is being mantained by
+Mandriva contributors and employees.
+.fi 
