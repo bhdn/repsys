@@ -20,6 +20,17 @@ Usage: repsys submit [OPTIONS] [URL [REVISION]]
 
 Submits the package from URL to the submit host.
 
+The submit host will try to build the package, and upon successful
+completion will 'tag' the package and upload it to the official
+repositories.
+
+The status of the submit can visualized at:
+
+http://kenobi.mandriva.com/bs/output.php
+
+If no URL and revision are specified, the latest changed revision in 
+the package working copy of the current directory will be used.
+
 Options:
     -t TARGET  Submit given package URL to given target
     -l         Just list available targets
@@ -37,13 +48,14 @@ Examples:
     repsys submit https://repos/svn/mdv/cooker/foo 14800
     repsys submit -r 14800 https://repos/svn/mdv/cooker/foo
     repsys submit -l https://repos
+    repsys submit --define section=main/testing -t 2008.0
 """
 
 def parse_options():
     parser = OptionParser(help=HELP)
     parser.defaults["revision"] = ""
     parser.add_option("-t", dest="target", default="Cooker")
-    parser.add_option("-l", dest="list", action="store_true")
+    parser.add_option("-l", action="callback", callback=list_targets)
     parser.add_option("-r", dest="revision", type="string", nargs=1)
     parser.add_option("-s", dest="submithost", type="string", nargs=1,
             default=None)
@@ -51,15 +63,8 @@ def parse_options():
     opts, args = parser.parse_args()
     if not args:
         name, rev = get_submit_info(".")
-        try:
-            yn = raw_input("Submit '%s', revision %d (y/N)? " % (name, rev))
-        except KeyboardInterrupt:
-            yn = "n"
-        if yn.lower() in ("y", "yes"):
-            args = name, str(rev)
-        else:
-            print "Cancelled."
-            sys.exit(1)
+        args = name, str(rev)
+        print "submitting %s at revision %s..." % args
     elif len(args) > 2:
         raise Error, "invalid arguments"
     opts.pkgdirurl = default_parent(args[0])
@@ -71,6 +76,16 @@ def parse_options():
     elif not opts.list:
         raise Error, "provide -l or a revision number"
     return opts
+
+def list_targets(option, opt, val, parser):
+    host = config.get("submit", "host")
+    if host is None:
+        raise Error, "no submit host defined in repsys.conf"
+    createsrpm = get_helper("create-srpm")
+    #TODO make it configurable
+    command = "ssh %s %s --list" % (host, createsrpm)
+    execcmd(command, show=True)
+    sys.exit(0)
 
 def submit(pkgdirurl, revision, target, list=0, define=[], submithost=None):
     #if not NINZ:

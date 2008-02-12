@@ -8,6 +8,8 @@ try:
 except ImportError:
     raise Error, "repsys requires the package python-cheetah"
 
+from cStringIO import StringIO
+
 import sys
 import os
 import re
@@ -21,19 +23,35 @@ import shutil
 locale.setlocale(locale.LC_ALL, "C")
 
 default_template = """
+#if not $releases_by_author[-1].visible
+  ## Hide the first release that contains no changes. It must be a
+  ## reimported package and the log gathered from misc/ already should
+  ## contain a correct entry for the version-release:
+  #set $releases_by_author = $releases_by_author[:-1]
+#end if
 #for $rel in $releases_by_author
 * $rel.date $rel.author_name <$rel.author_email> $rel.version-$rel.release
- ##
- #if not $rel.released
-  (not released yet)
++ Revision: $rel.revision
+## #if not $rel.released
+##+ Status: not released
+## #end if
+ #if not $rel.visible
++ rebuild (emptylog)
  #end if
  #for $rev in $rel.release_revisions
   #for $line in $rev.lines
-  $line
+$line
   #end for
  #end for
 
  #for $author in $rel.authors
+  #if $author.revisions and not $author.revisions[0].lines
+    #continue
+  #end if
+  ##alternatively, one could use:
+  ###if $author.email == "root"
+  ## #continue
+  ###end if
   + $author.name <$author.email>
   #for $rev in $author.revisions
     #for $line in $rev.lines
@@ -53,7 +71,7 @@ def getrelease(pkgdirurl, rev=None, macros=[], exported=None):
     will be used.
     """
     from RepSys.rpmutil import rpm_macros_defs
-    svn = SVN(baseurl=pkgdirurl)
+    svn = SVN()
     pkgcurrenturl = os.path.join(pkgdirurl, "current")
     specurl = os.path.join(pkgcurrenturl, "SPECS")
     if exported is None:
@@ -164,49 +182,50 @@ def group_releases_by_author(releases):
     allauthors = []
     grouped = []
     for release in releases:
+
+        # group revisions of the release by author
         authors = {}
         latest = None
         for revision in release.revisions:
             authors.setdefault(revision.author, []).append(revision)
 
-        # all the mess below is to sort by author and by revision number
+        # create _Authors and sort them by their latest revisions
         decorated = []
         for authorname, revs in authors.iteritems():
             author = _Author()
             author.name = revs[0].author_name
             author.email = revs[0].author_email
-            revdeco = [(r.revision, r) for r in revs]
-            revdeco.sort(reverse=1)
-            author.revisions = [t[1] for t in revdeco]
+            author.revisions = revs
             revlatest = author.revisions[0]
-            # keep the latest revision even for silented authors (below)
+            # keep the latest revision even for completely invisible
+            # authors (below)
             if latest is None or revlatest.revision > latest.revision:
                 latest = revlatest
             count = sum(len(rev.lines) for rev in author.revisions)
             if count == 0:
-                # skipping author with only silented lines
+                # only sort those visible authors, invisible ones are used
+                # only in "latest"
                 continue
-            decorated.append((revdeco[0][0], author))
-
-        if not decorated:
-            # skipping release with only authors with silented lines
-            continue
-
+            decorated.append((revlatest.revision, author))
         decorated.sort(reverse=1)
-        release.authors = [t[1] for t in decorated]
-        # the difference between a released and a not released _Release is
-        # the way the release numbers is obtained. So, when this is a
-        # released, we already have it, but if we don't, we should get de
-        # version/release string using getrelease and then get the first
-        first, release.authors = release.authors[0], release.authors[1:]
-        release.author_name = first.name
-        release.author_email = first.email
-        release.release_revisions = first.revisions
 
-        #release.date = first.revisions[0].date
+        if release.visible:
+            release.authors = [t[1] for t in decorated]
+            firstrel, release.authors = release.authors[0], release.authors[1:]
+            release.author_name = firstrel.name
+            release.author_email = firstrel.email
+            release.release_revisions = firstrel.revisions
+        else:
+            # we don't care about other possible authors in completely
+            # invisible releases
+            firstrev = release.revisions[0]
+            release.author_name = firstrev.author_name
+            release.author_email = firstrev.author_email
+            release.raw_date = firstrev.raw_date
+            release.date = firstrev.date
+
         release.date = latest.date
         release.raw_date = latest.raw_date
-        #release.revision = first.revisions[0].revision
         release.revision = latest.revision
 
         grouped.append(release)
@@ -298,7 +317,8 @@ def make_release(author=None, revision=None, date=None, lines=None,
 
 
 def dump_file(releases, currentlog=None, template=None):
-    templpath = template or config.get("template", "path", None)
+    templpath = template or config.get("template", "path",
+            "/usr/share/repsys/default.chlog")
     params = {}
     if templpath is None or not os.path.exists(templpath):
         params["source"] = default_template
@@ -377,7 +397,7 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
         template=None, macros=[], exported=None):
     concat = config.get("log", "concat", "").split()
     revoffset = get_revision_offset()
-    svn = SVN(baseurl=pkgdirurl)
+    svn = SVN()
     pkgreleasesurl = os.path.join(pkgdirurl, "releases")
     pkgcurrenturl = os.path.join(pkgdirurl, "current")
     releaseslog = svn.log(pkgreleasesurl, noerror=1)
@@ -425,11 +445,11 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
         releases.append(release)
         prevrevision = relrevision
             
-    # look for commits that have been not submited (released) yet
-    # this is done by getting all log entries newer (revision larger)
-    # than releaseslog[0] (in the case it exists)
-    if releaseslog:
-        latest_revision = releaseslog[0].revision
+    # look for commits that have been not submitted (released) yet
+    # this is done by getting all log entries newer (greater revision no.)
+    # than releasesdata[-1] (in the case it exists)
+    if releasesdata:
+        latest_revision = releasesdata[-1][0] # the latest copied rev
     else:
         latest_revision = 0
     notsubmitted = [entry for entry in currentlog 
@@ -446,32 +466,71 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
     data = dump_file(releases[::-1], currentlog=currentlog, template=template)
     return data
 
+def _split_changelog(stream):
+    current = None
+    count = 0
+    def finish(entry):
+        lines = entry[2]
+        # strip newlines at the end
+        for i in xrange(len(lines)-1, -1, -1):
+            if lines[i] != "\n":
+                break
+            del lines[i]
+        return entry
+    for line in stream:
+        if line.startswith("*"):
+            if current:
+                yield finish(current)
+            fields = line.split()
+            rawdate = " ".join(fields[:5])
+            try:
+                date = time.strptime(rawdate, "* %a %b %d %Y")
+            except ValueError, e:
+                raise Error, "failed to parse spec changelog: %s" % e
+            curlines = [line]
+            current = (date, count, curlines)
+            # count used to ensure stable sorting when changelog entries
+            # have the same date, otherwise it would also compare the
+            # changelog lines
+            count -= 1
+        elif current:
+            curlines.append(line)
+        else:
+            pass # not good, but ignore
+    if current:
+        yield finish(current)
 
+def sort_changelog(stream):
+    entries = _split_changelog(stream)
+    log = StringIO()
+    for time, count, elines in sorted(entries, reverse=True):
+        log.writelines(elines)
+        log.write("\n")
+    return log
 
-def specfile_svn2rpm(pkgdirurl, specfile, rev=None, size=None,
-        submit=False, template=None, macros=[], exported=None):
-    newlines = []
+def split_spec_changelog(stream):
+    chlog = StringIO()
+    spec = StringIO()
     found = 0
-    
-    # Strip old changelogs
-    for line in open(specfile):
+    for line in stream:
         if line.startswith("%changelog"):
             found = 1
         elif not found:
-            newlines.append(line)
+            spec.write(line)
+        elif found:
+            chlog.write(line)
         elif line.startswith("%"):
             found = 0
-            newlines.append(line)
+            spec.write(line)
+    spec.seek(0)
+    chlog.seek(0)
+    return spec, chlog
 
-    # Create new changelog
-    newlines.append("\n\n%changelog\n")
-    newlines.append(svn2rpm(pkgdirurl, rev=rev, size=size, submit=submit,
-        template=template, macros=macros, exported=exported))
-
-    # Merge old changelog, if available
+def get_old_log(pkgdirurl):
+    chlog = StringIO()
     oldurl = config.get("log", "oldurl")
     if oldurl:
-        svn = SVN(baseurl=pkgdirurl)
+        svn = SVN()
         tmpdir = tempfile.mktemp()
         try:
             pkgname = RepSysTree.pkgname(pkgdirurl)
@@ -486,20 +545,74 @@ def specfile_svn2rpm(pkgdirurl, specfile, rev=None, size=None,
                 logfile = os.path.join(tmpdir, "log")
                 if os.path.isfile(logfile):
                     file = open(logfile)
-                    newlines.append("\n")
+                    chlog.write("\n") # TODO needed?
                     log = file.read()
                     log = escape_macros(log)
-                    newlines.append(log)
+                    chlog.write(log)
                     file.close()
         finally:
             if os.path.isdir(tmpdir):
                 shutil.rmtree(tmpdir)
+    chlog.seek(0)
+    return chlog
 
-    # Write new specfile
-    file = open(specfile, "w")
-    file.write("".join(newlines))
-    file.close()
+def get_changelog(pkgdirurl, another=None, svn=True, rev=None, size=None,
+        submit=False, sort=False, template=None, macros=[], exported=None,
+        oldlog=False):
+    """Generates the changelog for a given package URL
 
+    @another:   a stream with the contents of a changelog to be merged with
+                the one generated
+    @svn:       enable changelog from svn
+    @rev:       generate the changelog with the changes up to the given
+                revision
+    @size:      the number of revisions to be used (as in svn log --limit)
+    @submit:    defines whether the latest unreleased log entries should have
+                the version parsed from the spec file
+    @sort:      should changelog entries be reparsed and sorted after appending
+                the oldlog?
+    @template:  the path to the cheetah template used to generate the
+                changelog from svn
+    @macros:    a list of tuples containing macros to be defined when
+                parsing the version in the changelog
+    @exported:  the path of a directory containing an already existing
+                checkout of the package, so that the spec file can be
+                parsed from there
+    @oldlog:    if set it will try to append the old changelog file defined
+                in oldurl in repsys.conf
+    """
+    newlog = StringIO()
+    if svn:
+        rawsvnlog = svn2rpm(pkgdirurl, rev=rev, size=size, submit=submit,
+                template=template, macros=macros, exported=exported)
+        newlog.write(rawsvnlog)
+    if another:
+        newlog.writelines(another)
+    if oldlog:
+        newlog.writelines(get_old_log(pkgdirurl))
+    if sort:
+        newlog.seek(0)
+        newlog = sort_changelog(newlog)
+    newlog.seek(0)
+    return newlog
+
+def specfile_svn2rpm(pkgdirurl, specfile, rev=None, size=None,
+        submit=False, sort=False, template=None, macros=[], exported=None):
+    fi = open(specfile)
+    spec, oldchlog = split_spec_changelog(fi)
+    fi.close()
+    another = None
+    if config.getbool("log", "merge-spec", False):
+        another = oldchlog
+    sort = sort or config.getbool("log", "sort", False)
+    chlog = get_changelog(pkgdirurl, another=another, rev=rev, size=size,
+                submit=submit, sort=sort, template=template, macros=macros,
+                exported=exported, oldlog=True)
+    fo = open(specfile, "w")
+    fo.writelines(spec)
+    fo.write("\n\n%changelog\n")
+    fo.writelines(chlog)
+    fo.close()
 
 if __name__ == "__main__":
     l = svn2rpm(sys.argv[1])
