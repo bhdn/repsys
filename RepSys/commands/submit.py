@@ -12,7 +12,7 @@ import subprocess
 import xmlrpclib
 
 HELP = """\
-Usage: repsys submit [OPTIONS] [URL@[REVISION] ...]
+Usage: repsys submit [OPTIONS] [URL[@REVISION] ...]
 
 Submits the package from URL to the submit host.
 
