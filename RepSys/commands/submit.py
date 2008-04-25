@@ -79,7 +79,7 @@ def list_targets(option, opt, val, parser):
     execcmd(command, show=True)
     sys.exit(0)
 
-def submit(urls, target, list=0, define=[], submithost=None):
+def submit(urls, target, define=[], submithost=None):
     #if not NINZ:
     #    raise Error, "you must have NINZ installed to use this command"
     if submithost is None:
@@ -93,8 +93,6 @@ def submit(urls, target, list=0, define=[], submithost=None):
             del type, user, port, path, rest
     # runs a create-srpm in the server through ssh, which will make a
     # copy of the rpm in the export directory
-    if list:
-        raise Error, "unable to list targets from svn+ssh:// URLs"
     createsrpm = get_helper("create-srpm")
     urlsline = subprocess.list2cmdline(urls)
     args = ["ssh", submithost, createsrpm, "-t", target]
