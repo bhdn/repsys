@@ -87,7 +87,6 @@ def submit(urls, target, define=[], submithost=None):
     # runs a create-srpm in the server through ssh, which will make a
     # copy of the rpm in the export directory
     createsrpm = get_helper("create-srpm")
-    urlsline = subprocess.list2cmdline(urls)
     args = ["ssh", submithost, createsrpm, "-t", target]
     for entry in define:
         args.append("--define")
