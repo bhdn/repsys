@@ -16,7 +16,7 @@ import re
 import xmlrpclib
 
 HELP = """\
-Usage: repsys submit [OPTIONS] [URL [REVISION]]
+Usage: repsys submit [OPTIONS] [URL@[REVISION] ...]
 
 Submits the package from URL to the submit host.
 
@@ -28,8 +28,8 @@ The status of the submit can visualized at:
 
 http://kenobi.mandriva.com/bs/output.php
 
-If no URL and revision are specified, the latest changed revision in 
-the package working copy of the current directory will be used.
+If no URL and revision are specified, the latest changed revision in the
+package working copy of the current directory will be used.
 
 Options:
     -t TARGET  Submit given package URL to given target
@@ -44,9 +44,9 @@ Options:
 
 Examples:
     repsys submit
-    repsys submit foo 14800
-    repsys submit https://repos/svn/mdv/cooker/foo 14800
-    repsys submit -r 14800 https://repos/svn/mdv/cooker/foo
+    repsys submit foo@14800
+    repsys submit foo@14800 bar baz@11001
+    repsys submit https://repos/svn/mdv/cooker/foo
     repsys submit -l https://repos
     repsys submit --define section=main/testing -t 2008.0
 """
@@ -87,7 +87,7 @@ def list_targets(option, opt, val, parser):
     execcmd(command, show=True)
     sys.exit(0)
 
-def submit(pkgdirurl, revision, target, list=0, define=[], submithost=None):
+def submit(urls, target, list=0, define=[], submithost=None):
     #if not NINZ:
     #    raise Error, "you must have NINZ installed to use this command"
     if submithost is None:
@@ -105,7 +105,7 @@ def submit(pkgdirurl, revision, target, list=0, define=[], submithost=None):
         raise Error, "unable to list targets from svn+ssh:// URLs"
     createsrpm = get_helper("create-srpm")
     command = "ssh %s %s '%s' -r %s -t %s" % (
-            submithost, createsrpm, pkgdirurl, revision, target)
+            submithost, createsrpm, urls, target)
     if define:
         command += " " + " ".join([ "--define " + x for x in define ])
     status, output = execcmd(command)
