@@ -9,11 +9,6 @@ import sys
 import re
 import subprocess
 
-#try:
-#    import NINZ.client
-#except ImportError:
-#    NINZ = None
-
 import xmlrpclib
 
 HELP = """\
@@ -80,8 +75,6 @@ def list_targets(option, opt, val, parser):
     sys.exit(0)
 
 def submit(urls, target, define=[], submithost=None):
-    #if not NINZ:
-    #    raise Error, "you must have NINZ installed to use this command"
     if submithost is None:
         submithost = config.get("submit", "host")
         if submithost is None:
