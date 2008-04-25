@@ -7,6 +7,7 @@ import urllib
 import getopt
 import sys
 import re
+import subprocess
 
 #try:
 #    import NINZ.client
@@ -44,11 +45,11 @@ Options:
 
 Examples:
     repsys submit
-    repsys submit foo@14800
+    repsys submit foo
     repsys submit foo@14800 bar baz@11001
     repsys submit https://repos/svn/mdv/cooker/foo
     repsys submit -l https://repos
-    repsys submit --define section=main/testing -t 2008.0
+    repsys submit --define section=main/testing -t 2008.1
 """
 
 def parse_options():
@@ -63,18 +64,9 @@ def parse_options():
     opts, args = parser.parse_args()
     if not args:
         name, rev = get_submit_info(".")
-        args = name, str(rev)
-        print "submitting %s at revision %s..." % args
-    elif len(args) > 2:
-        raise Error, "invalid arguments"
-    opts.pkgdirurl = default_parent(args[0])
-    if len(args) == 2:
-        opts.revision = re.compile(r".*?(\d+).*").sub(r"\1", args[1])
-    elif len(args) == 1 and opts.revision:
-        # accepts -r 3123 http://foo/bar
-        pass
-    elif not opts.list:
-        raise Error, "provide -l or a revision number"
+        args = ["%s@%s" % (name, str(rev))]
+        print "submitting %s at revision %s..." % (name, rev)
+    opts.urls = [default_parent(nameurl) for nameurl in args]
     return opts
 
 def list_targets(option, opt, val, parser):
@@ -104,17 +96,19 @@ def submit(urls, target, list=0, define=[], submithost=None):
     if list:
         raise Error, "unable to list targets from svn+ssh:// URLs"
     createsrpm = get_helper("create-srpm")
-    command = "ssh %s %s '%s' -r %s -t %s" % (
-            submithost, createsrpm, urls, target)
-    if define:
-        command += " " + " ".join([ "--define " + x for x in define ])
+    urlsline = subprocess.list2cmdline(urls)
+    args = ["ssh", submithost, createsrpm, "-t", target]
+    for entry in define:
+        args.append("--define")
+        args.append(entry)
+    args.extend(urls)
+    command = subprocess.list2cmdline(args)
     status, output = execcmd(command)
     if status == 0:
         print "Package submitted!"
     else:
         sys.stderr.write(output)
         sys.exit(status)
-
 
 def main():
     do_command(parse_options, submit)
