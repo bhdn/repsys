@@ -15,15 +15,12 @@ class CmdIface:
     def author_email(self, author):
         return config.get("users", author)
 
-    def submit_package(self, urls, packagerev, targetname, 
-            dontmapurl_=0, define=[]):
+    def submit_package(self, urls, targetname, dontmapurl_=0, define=[]):
         pw = pwd.getpwuid(os.getuid())
         username = pw[0]
         packager = config.get("users", username) or pw[4]
         if not packager:
             raise CmdError, "your email was not found"
-        elif not packagerev:
-            raise CmdError, "no revision provided"
         elif not targetname:
             raise CmdError, "no target provided"
         else:
@@ -33,10 +30,6 @@ class CmdIface:
                     break
             else:
                 raise CmdError, "target not found"
-            try:
-                tmp = int(packagerev)
-            except ValueError:
-                raise CmdError, "invalid revision provided"
             for url in urls:
                 for allowed in target.allowed:
                     if url.startswith(allowed):
@@ -49,10 +42,8 @@ class CmdIface:
             uploadsrpms = []
             for url in urls:
                 targetsrpms = get_srpm(url,
-                         revision=packagerev,
                          targetdirs=target.target,
                          packager=packager,
-                         revname=1,
                          svnlog=1,
                          scripts=target.scripts, 
                          macros=target.macros)
@@ -84,10 +75,8 @@ class CmdIface:
 
 
 def parse_options():
-    usage = "create-srpm <packageurl> -t <target> [-r <revision>]"
+    usage = "create-srpm <packageurl> -t <target>"
     parser = optparse.OptionParser(usage=usage)
-    parser.add_option("-r", "--revision", dest="revision", type="string",
-                      help="the revision number")
     parser.add_option("-t", "--target", type="string", dest="target",
                       help="target name")
     parser.add_option("-M", "--nomapping", action="store_true",
@@ -112,8 +101,8 @@ def main():
             for target in iface.submit_targets():
                 print target
         else:
-            iface.submit_package(args, opts.revision, opts.target,
-                    opts.urlmap, opts.define)
+            iface.submit_package(args, opts.target, opts.urlmap,
+                    opts.define)
     except Error, e:
         sys.stderr.write("error: %s\n" % str(e))
         sys.exit(1)
