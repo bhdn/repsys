@@ -8,6 +8,7 @@ import sys
 import os
 import pwd
 import optparse
+import subprocess
 
 class CmdError(Error): pass
 
@@ -47,18 +48,18 @@ class CmdIface:
                          svnlog=1,
                          scripts=target.scripts, 
                          macros=target.macros)
-                uploadsrpms.append(targetsrpms[0])
-            uploadsrpm = get_helper("upload-srpm")
-            if uploadsrpm:
-                upload_command = [ uploadsrpm ]
+                uploadsrpms.extend(targetsrpms)
+            uploadcmd = get_helper("upload-srpm")
+            if uploadcmd:
+                upload_command = [uploadcmd]
                 if define:
                     for x in define:
                         upload_command.append("--define")
                         upload_command.append(x)
                 upload_command.append(targetname)
                 upload_command.extend(uploadsrpms)
-                status, output = execcmd(" ".join(upload_command),
-                        noerror=1)
+                command = subprocess.list2cmdline(upload_command)
+                status, output = execcmd(command, noerror=1)
                 for srpm in uploadsrpms:
                     if os.path.isfile(srpm):
                         os.unlink(srpm)
