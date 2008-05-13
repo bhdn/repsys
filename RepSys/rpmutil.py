@@ -150,8 +150,6 @@ def get_srpm(pkgdirurl,
             urlrev = svn_url_rev(geturl)
             #FIXME duplicate glob line
             srpm = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))[0]
-            srpminfo = SRPM(srpm)
-            release = srpminfo.release
             srpmbase = os.path.basename(srpm)
             os.rename(srpm, "%s/@%s:%s" % (srpmsdir, urlrev, srpmbase))
         srpm = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))[0]
