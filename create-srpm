@@ -46,6 +46,7 @@ class CmdIface:
                          targetdirs=target.target,
                          packager=packager,
                          svnlog=1,
+                         revname=1,
                          scripts=target.scripts, 
                          macros=target.macros)
                 uploadsrpms.extend(targetsrpms)
