@@ -146,24 +146,30 @@ def get_srpm(pkgdirurl,
             (topdir, builddir, rpmdir, sourcedir, specdir, 
              srcrpmdir, patchdir, packager, spec, defs))
 
+        # copy the generated SRPMs to their target locations
+        targetsrpms = []
+        urlrev = None
         if revname:
             urlrev = svn_url_rev(geturl)
-            #FIXME duplicate glob line
-            srpm = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))[0]
-            srpmbase = os.path.basename(srpm)
-            os.rename(srpm, "%s/@%s:%s" % (srpmsdir, urlrev, srpmbase))
-        srpm = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))[0]
         if not targetdirs:
             targetdirs = (".",)
-        targetsrpms = []
-        for targetdir in targetdirs:
-            targetsrpm = os.path.join(os.path.realpath(targetdir), 
-                    os.path.basename(srpm))
-            targetsrpms.append(targetsrpm)
-            if verbose:
-                sys.stderr.write("Wrote: %s\n" %  targetsrpm)
-            execcmd("cp -f", srpm, targetdir)
-        os.unlink(srpm)
+        srpms = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))
+        if not srpms:
+            # something fishy happened
+            raise Error, "no SRPMS were found at %s" % srpmsdir
+        for srpm in srpms:
+            name = os.path.basename(srpm)
+            if revname:
+                name = "@%s:%s" % (urlrev, name)
+            for targetdir in targetdirs:
+                newpath = os.path.join(targetdir, name)
+                targetsrpms.append(newpath)
+                if os.path.exists(newpath):
+                    # should we warn?
+                    os.unlink(newpath)
+                shutil.copy(srpm, newpath)
+                if verbose:
+                    sys.stderr.write("Wrote: %s\n" %  newpath)
         return targetsrpms
     finally:
         if os.path.isdir(tmpdir):
