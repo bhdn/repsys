@@ -7,6 +7,7 @@ from RepSys.log import specfile_svn2rpm
 from RepSys.util import execcmd
 from RepSys.command import default_parent
 import rpm
+import urlparse
 import tempfile
 import shutil
 import string
@@ -34,6 +35,7 @@ def rpm_macros_defs(macros):
     args = " ".join(defs)
     return args
 
+#FIXME move it to another module
 def rev_touched_url(url, rev):
     svn = SVN()
     info = svn.info2(url)
@@ -49,6 +51,33 @@ def rev_touched_url(url, rev):
         if path and path.startswith(urlpath):
             touched = True
     return touched
+
+def svn_url_rev(url):
+    """Get the revision from a given URL
+
+    If the URL contains an explicit revision number (URL@REV), just use it
+    without even checking if the revision really exists.
+    """
+    parsed = urlparse.urlparse(url)
+    path = os.path.normpath(parsed[2])
+    dirs = path.rsplit("/", 1)
+    lastname = dirs[-1]
+    index = lastname.rfind("@")
+    rev = None
+    if index != -1:
+        rawrev = lastname[index+1:]
+        if rawrev:
+            try:
+                rev = int(rawrev)
+                if rev < 0:
+                    raise ValueError
+            except ValueError:
+                raise Error, "invalid revision specification on URL: %s" % url
+    if rev is None:
+        # if no revspec was found, ask the server
+        svn = SVN()
+        rev = svn.revision(url)
+    return rev
 
 def get_srpm(pkgdirurl,
              mode = "current",
@@ -81,6 +110,7 @@ def get_srpm(pkgdirurl,
         elif mode == "pristine":
             geturl = os.path.join(pkgdirurl, "pristine")
         elif mode == "current" or mode == "revision":
+            #FIXME we should handle revisions specified using @REV
             geturl = os.path.join(pkgdirurl, "current")
         else:
             raise Error, "unsupported get_srpm mode: %s" % mode
@@ -102,9 +132,6 @@ def get_srpm(pkgdirurl,
             submit = not not revision
             specfile_svn2rpm(pkgdirurl, spec, revision, submit=submit,
                     template=template, macros=macros, exported=tmpdir)
-        #FIXME revisioreal not needed if revision is None
-        #FIXME use geturl instead of pkgdirurl
-        revisionreal = svn.revision(pkgdirurl)
         for script in scripts:
             #FIXME revision can be "None"
             status, output = execcmd(script, tmpdir, spec, str(revision),
@@ -119,13 +146,14 @@ def get_srpm(pkgdirurl,
             (topdir, builddir, rpmdir, sourcedir, specdir, 
              srcrpmdir, patchdir, packager, spec, defs))
 
-        if revision and revisionreal:
+        if revname:
+            urlrev = svn_url_rev(geturl)
             #FIXME duplicate glob line
             srpm = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))[0]
             srpminfo = SRPM(srpm)
             release = srpminfo.release
             srpmbase = os.path.basename(srpm)
-            os.rename(srpm, "%s/@%s:%s" % (srpmsdir, revisionreal, srpmbase))
+            os.rename(srpm, "%s/@%s:%s" % (srpmsdir, urlrev, srpmbase))
         srpm = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))[0]
         if not targetdirs:
             targetdirs = (".",)
