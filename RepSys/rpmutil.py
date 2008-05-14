@@ -87,9 +87,14 @@ def strip_url_rev(url):
     parsed = list(urlparse.urlparse(url))
     path = os.path.normpath(parsed[2])
     dirs = path.rsplit("/", 1)
-    lastname = dirs[-1]
-    index = lastname.rfind("@")
-    parsed[2] = os.path.join(dirs[0], lastname[:index])
+    name = lastname = dirs[-1]
+    try:
+        index = lastname.rindex("@")
+    except ValueError:
+        pass
+    else:
+        name = lastname[:index]
+    parsed[2] = os.path.join(dirs[0], name)
     return urlparse.urlunparse(parsed)
 
 def get_srpm(pkgdirurl,
