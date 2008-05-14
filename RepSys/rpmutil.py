@@ -150,7 +150,7 @@ def get_srpm(pkgdirurl,
         targetsrpms = []
         urlrev = None
         if revname:
-            urlrev = svn_url_rev(geturl)
+            urlrev = revision or svn_url_rev(geturl)
         if not targetdirs:
             targetdirs = (".",)
         srpms = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))
