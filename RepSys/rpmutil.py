@@ -52,11 +52,14 @@ def rev_touched_url(url, rev):
             touched = True
     return touched
 
-def svn_url_rev(url):
+def svn_url_rev(url, retrieve=True):
     """Get the revision from a given URL
 
     If the URL contains an explicit revision number (URL@REV), just use it
     without even checking if the revision really exists.
+
+    The parameter retrieve defines whether it must ask the SVN server for
+    the revision number or not when it is not found in the URL.
     """
     parsed = urlparse.urlparse(url)
     path = os.path.normpath(parsed[2])
@@ -73,7 +76,7 @@ def svn_url_rev(url):
                     raise ValueError
             except ValueError:
                 raise Error, "invalid revision specification on URL: %s" % url
-    if rev is None:
+    if rev is None and retrieve:
         # if no revspec was found, ask the server
         svn = SVN()
         rev = svn.revision(url)
