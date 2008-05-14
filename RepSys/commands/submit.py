@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from RepSys import Error, config
 from RepSys.command import *
-from RepSys.rpmutil import get_spec, get_submit_info
+from RepSys.rpmutil import get_spec, get_submit_info, svn_url_rev
 from RepSys.util import get_auth, execcmd, get_helper
 import urllib
 import getopt
@@ -58,9 +58,10 @@ def parse_options():
     parser.add_option("--define", action="append")
     opts, args = parser.parse_args()
     if not args:
-        name, rev = get_submit_info(".")
-        args = ["%s@%s" % (name, str(rev))]
-        print "submitting %s at revision %s..." % (name, rev)
+        name, url, rev = get_submit_info(".")
+        args = ["%s@%s" % (url, str(rev))]
+        print "Submitting %s at revision %s" % (name, rev)
+        print "URL: %s" % url
     opts.urls = [default_parent(nameurl) for nameurl in args]
     return opts
 
