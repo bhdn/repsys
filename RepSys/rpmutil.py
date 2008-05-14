@@ -82,6 +82,16 @@ def svn_url_rev(url, retrieve=True):
         rev = svn.revision(url)
     return rev
 
+def strip_url_rev(url):
+    """Removes the @REV from a string in the URL@REV scheme"""
+    parsed = list(urlparse.urlparse(url))
+    path = os.path.normpath(parsed[2])
+    dirs = path.rsplit("/", 1)
+    lastname = dirs[-1]
+    index = lastname.rfind("@")
+    parsed[2] = os.path.join(dirs[0], lastname[:index])
+    return urlparse.urlunparse(parsed)
+
 def get_srpm(pkgdirurl,
              mode = "current",
              targetdirs = None,

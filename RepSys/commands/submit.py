@@ -49,19 +49,36 @@ Examples:
 
 def parse_options():
     parser = OptionParser(help=HELP)
-    parser.defaults["revision"] = ""
+    parser.defaults["revision"] = None
     parser.add_option("-t", dest="target", default="Cooker")
     parser.add_option("-l", action="callback", callback=list_targets)
     parser.add_option("-r", dest="revision", type="string", nargs=1)
     parser.add_option("-s", dest="submithost", type="string", nargs=1,
             default=None)
-    parser.add_option("--define", action="append")
+    parser.add_option("--define", action="append", default=[])
     opts, args = parser.parse_args()
     if not args:
         name, url, rev = get_submit_info(".")
         args = ["%s@%s" % (url, str(rev))]
         print "Submitting %s at revision %s" % (name, rev)
         print "URL: %s" % url
+    if opts.revision is not None:
+        # backwards compatibility with the old -r usage
+        if len(args) == 1:
+            args[0] = args[0] + "@" + opts.revision
+        else:
+            raise Error, "can't use -r REV with more than one package name"
+    del opts.revision
+    if len(args) == 2:
+        # prevent from using the old <name> <rev> syntax
+        try:
+            rev = int(args[1])
+        except ValueError:
+            # ok, it is a package name, let it pass
+            pass
+        else:
+            raise Error, "the format <name> <revision> is deprecated, "\
+                    "use <name>@<revision> instead"
     opts.urls = [default_parent(nameurl) for nameurl in args]
     return opts
 
