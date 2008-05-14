@@ -19,7 +19,8 @@ class SVNLogEntry:
 
 class SVN:
     def _execsvn(self, *args, **kwargs):
-        if not kwargs.get("show"):
+        localcmds = ("add", "revert", "cleanup")
+        if not kwargs.get("show") and args[0] not in localcmds:
             args = list(args)
             args.append("--non-interactive")
         svn_command = config.get("global", "svn-command",
@@ -33,7 +34,7 @@ class SVN:
                         "Seems ssh-agent or ForwardAgent are not setup, see "
                         "http://wiki.mandriva.com/en/Development/Docs/Contributor_Tricks#SSH_configuration"
                         " for more information." % e)
-            elif "authorization failed":
+            elif "authorization failed" in e.message:
                 raise Error, ("%s\n"
                         "Note that repsys does not support any HTTP "
                         "authenticated access." % e)
@@ -125,12 +126,14 @@ class SVN:
     def info(self, path, **kwargs):
         cmd = ["info", path]
         status, output = self._execsvn(local=True, *cmd, **kwargs)
-        if status == 0:
+        if status == 0 and "Not a versioned resource" not in output:
             return output.splitlines()
         return None
 
     def info2(self, *args, **kwargs):
         lines = self.info(*args, **kwargs)
+        if lines is None:
+            return None
         pairs = [[w.strip() for w in line.split(":", 1)] for line in lines]
         info = dict(pairs)
         return info
