@@ -545,6 +545,7 @@ def get_submit_info(path):
     if len(toks) < 2 or toks[-1] != "current":
         raise Error, "unexpected URL received from 'svn info'"
     name = toks[-2]
+    url = "/".join(toks[:-1])
 
     # Finally, guess revision.
     max = -1
