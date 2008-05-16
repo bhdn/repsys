@@ -16,7 +16,8 @@ class CmdIface:
     def author_email(self, author):
         return config.get("users", author)
 
-    def submit_package(self, urls, targetname, dontmapurl_=0, define=[]):
+    def submit_package(self, urls, revision, targetname, dontmapurl_=0,
+            define=[]):
         pw = pwd.getpwuid(os.getuid())
         username = pw[0]
         packager = config.get("users", username) or pw[4]
@@ -42,7 +43,7 @@ class CmdIface:
                 urls = [mapurl(url) for url in urls]
             uploadsrpms = []
             for url in urls:
-                revision = svn_url_rev(url)
+                revision = revision or svn_url_rev(url)
                 url = strip_url_rev(url)
                 targetsrpms = get_srpm(url,
                          revision=revision,
@@ -91,6 +92,8 @@ def parse_options():
     parser.add_option("--list", dest="list_targets", default=False,
                       action="store_true",
                       help="list submit targets available")
+    parser.add_option("-r", help="revision", dest="revision",
+            type="int", default=None)
     opts, args = parser.parse_args()
     if not opts.list_targets and not args:
         parser.error("you must supply a package url")
@@ -106,7 +109,7 @@ def main():
             for target in iface.submit_targets():
                 print target
         else:
-            iface.submit_package(args, opts.target, opts.urlmap,
+            iface.submit_package(args, opts.revision, opts.target, opts.urlmap,
                     opts.define)
     except Error, e:
         sys.stderr.write("error: %s\n" % str(e))
