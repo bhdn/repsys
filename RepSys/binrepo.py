@@ -25,7 +25,7 @@ class ChecksumError(Error):
 def copy_rsync(sources, dest, sourcehost=None, desthost=None,
         archive=False, recurse=False):
     """Simple inteface for rsync"""
-    args = ["rsync", "-i", "--log-format=\"%i %n\""]
+    args = ["rsync", "-i", "--out-format=\"%i %n\""]
     if archive:
         args.append("-a")
     if recurse:
