@@ -414,8 +414,8 @@ def download(target, url=None, check=True):
             raise Error, "file not uploaded yet (not found in "\
                     "sources file): %s" % target
     copy(sources=paths, sourcehost=host, dest=targetdir)
-    yield "Checking files"
     if check:
+        yield "Checking files"
         for path in paths:
             name = os.path.basename(path)
             bpath = os.path.join(targetdir, name)
