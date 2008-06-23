@@ -1,7 +1,7 @@
 Description
 ===========
 
-Support separate repositories for tarballso
+Support separate repositories for tarballs.
 
 TODO
 =====
@@ -11,4 +11,10 @@ TODO
 
 - Support no-tarballs-and-no-binrepo.lst repositories:
 
-  + Support checkout and getsrpm without binrepo.lst
+  + Support checkout and getsrpm without binrepo.lst;
+
+  + Enforce binrepo.lst on markrelease;
+
+- Support updates/:
+
+  + Merge the work from branch V1_6_X.feature.support-update-urls
