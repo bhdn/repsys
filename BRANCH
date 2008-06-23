@@ -36,6 +36,19 @@ already-transformed URL to the caller.
 All commands should have an option (probably -o, which is already used by
 co) to disable the use of mirrors.
 
+The problem with releases/
+--------------------------
+
+Functions that can't receive the final URL (with current/) as pkgdirurl:
+
+- mark_release
+
+- put_srpm
+
+- get_srpm
+
+- create_package
+
 Problems
 ========= 
 
