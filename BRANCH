@@ -1,0 +1,25 @@
+Description
+===========
+
+This branch is intended to allow repsys working with update/etc URLs
+without having to use absolute URLs.
+
+Ideas
+======
+
+Using relative paths:
+
+  $ repsys co 2008.1/mutt
+
+Using command line options to define which branch we are working:
+
+  $ repsys co -b 2008.1 mutt
+
+Anything else?
+
+Problems
+=========
+
+- Branches must have their own misc/ or 00-Changelogs directory (actually
+  this is not needed at all, as misc/ changelogs are not meant to be
+  changed, so they will always be 'valid' in whatever branch it is used)
