@@ -1,0 +1,14 @@
+Description
+===========
+
+Support separate repositories for tarballso
+
+TODO
+=====
+
+- Rename SOURCES/sources to SOURCES/binrepo.lst; less ambiguity when
+  discussing about package structure.
+
+- Support no-tarballs-and-no-binrepo.lst repositories:
+
+  + Support checkout and getsrpm without binrepo.lst
