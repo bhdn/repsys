@@ -9,12 +9,22 @@ TODO
 - Rename SOURCES/sources to SOURCES/binrepo.lst; less ambiguity when
   discussing about package structure.
 
-- Support no-tarballs-and-no-binrepo.lst repositories:
+- Support no-tarballs-and-no-binrepo.lst repositories: (MUST)
 
   + Support checkout and getsrpm without binrepo.lst;
 
+    * binrepo.enabled() returns true if binrepo is enabled in conf (DONE)
+
+    * download from binrepo those files that are referred in the spec but
+      are not found in the svn checkout/export (MUST)
+    
   + Enforce binrepo.lst on markrelease;
+
+  + Enforce binrepo.lst on submit.
 
 - Support updates/:
 
-  + Merge the work from branch V1_6_X.feature.support-update-urls
+  + Merge the work from branch V1_6_X.feature.support-update-urls  (TODO)
+
+- Fix update to download new files right after updating the svn checkout
+  (this way we don't have to run up again to bring new binaries)
