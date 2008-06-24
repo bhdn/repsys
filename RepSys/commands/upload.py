@@ -7,7 +7,7 @@ Usage: repsys upload [OPTIONS] [PATH]
 
 Upload a given file to the binary sources repository.
 
-It will also update the contents of the 'binrepo.lst' file and left it
+It will also update the contents of the 'binrepo.lst' file and leave it
 uncommited.
 
 If the path is a directory, all the contents of the directory will be
