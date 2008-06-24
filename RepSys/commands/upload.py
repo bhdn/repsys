@@ -29,10 +29,7 @@ def parse_options():
             action="store_false")
     parser.add_option("-a", dest="auto", default=False, action="store_true")
     opts, args = parser.parse_args()
-    if len(args):
-        opts.paths = args
-    else:
-        raise Error, "you need to provide a path"
+    opts.paths = args
     return opts
 
 def main():
