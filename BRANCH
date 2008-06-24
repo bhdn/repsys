@@ -17,6 +17,10 @@ TODO
 
     * download from binrepo those files that are referred in the spec but
       are not found in the svn checkout/export (DONE)
+
+    * adapt upload (MUST)
+
+    * adapt markrelease (MUST)
     
   + Enforce binrepo.lst on markrelease;
 
