@@ -259,8 +259,6 @@ def is_tracked(path):
     return name in entries
 
 def upload(paths, auto=False):
-    base = config.get("binrepo", "upload-command", 
-            "/usr/share/repsys/binrepo-upload")
     if auto:
         paths = find_binaries(paths)
     else:
