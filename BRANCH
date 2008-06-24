@@ -7,7 +7,7 @@ TODO
 =====
 
 - Rename SOURCES/sources to SOURCES/binrepo.lst; less ambiguity when
-  discussing about package structure.
+  discussing about package structure. (DONE)
 
 - Support no-tarballs-and-no-binrepo.lst repositories: (MUST)
 

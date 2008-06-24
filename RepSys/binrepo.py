@@ -18,6 +18,7 @@ from cStringIO import StringIO
 DEFAULT_TARBALLS_REPO = "/tarballs"
 BINLIST_PENDING = "repsys-upload"
 BINLIST_DELETE = "repsys-delete"
+BINREPO_LIST = "binrepo.lst"
 
 class ChecksumError(Error):
     pass
@@ -90,6 +91,9 @@ def copy(sources, dest, sourcehost=None, desthost=None, makedirs=False,
                 except OSError, e:
                     raise Error, "can't overwrite directory: %s" % e
             execcmd("cp %s %s %s" % (opts, source, dpath))
+
+def binlist_file():
+    return config.get("binrepo", "binaries-file", BINREPO_LIST)
 
 def svn_basedir(target):
     svn = SVN()
@@ -172,7 +176,7 @@ def parse_sources(path, force=False):
     if not os.path.exists(path) and not force:
         return {}
     basedir = os.path.dirname(path)
-    spath = os.path.join(basedir, "sources")
+    spath = os.path.join(basedir, binlist_file())
     f = open(spath)
     entries = parse_sources_stream(f)
     f.close()
@@ -188,11 +192,10 @@ def dump_sources(path, entries):
 
 def sources_path(path):
     # returns the 'sources' file path for a give file path or directory
-    sname = config.get("binrepo", "sources-file", "sources")
     sdir = path
     if not os.path.isdir(path):
         sdir = os.path.dirname(path)
-    spath = os.path.join(sdir, "sources")
+    spath = os.path.join(sdir, binlist_file())
     return spath
 
 def get_chksum(path):
@@ -358,8 +361,7 @@ def markrelease(srcurl, desturl, version, release, revision):
     spath = source[source.find(":")+1:]
     tpath = target[target.find(":")+1:]
     tmproot = target_root[target_root.find(":")+1:]
-    sname = config.get("binrepo", "sources-file", "sources")
-    sourcesurl = os.path.join(srcurl, sname)
+    sourcesurl = os.path.join(srcurl, binlist_file())
     try:
         stream = StringIO(svn.cat(sourcesurl, rev=revision))
     except Error:
