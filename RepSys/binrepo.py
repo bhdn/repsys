@@ -118,11 +118,10 @@ def svn_root(target):
     return info["Repository Root"]
 
 def enabled(url):
+    #TODO use information from url to find out whether we have a binrepo
+    # available for this url
     use = config.getbool("global", "use-binaries-repository", False)
-    default_parent = config.get("global", "default_parent", None)
-    if url and use and default_parent and same_base(url, default_parent):
-        return True
-    return False
+    return use
 
 def target_url(path=None):
     from RepSys.rpmutil import get_submit_info
@@ -391,35 +390,43 @@ def markrelease(srcurl, desturl, version, release, revision):
     finally:
         shutil.rmtree(tmpdir)
 
-def download(target, url=None, check=True):
+def download(target, url=None, files=None, check=True):
+    """Tries to download files from binrepo, based on a svn directory
+
+    @target: directory where downloaded files will be placed.
+    @url: the url of the destination directory (in case it is not available
+          from target, as in a svn export'ed directory).
+    @files: names of files to be downloaded (in case the 'sources' file is
+            not available)
+    @check: check the integrity of the files against the hashes in the
+            'sources' file
+    """
     targeturl = target_url(url or target)
     spath = sources_path(target)
-    if not os.path.exists(spath):
-        # we don't have external sources
+    if not os.path.exists(spath) and not files:
+        # we don't have anything to download
         return
     entries = parse_sources(spath)
+    for file in files:
+        # setdefault because the 'sources' file has precedence over the
+        # 'files' list, as we have hashes
+        entries.setdefault(file, None)
     try:
         host, path = targeturl.split(":", 1)
     except ValueError:
         host = None
         path = targeturl
-    if os.path.isdir(target):
-        paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
-        targetdir = target
-    else:
-        paths = [os.path.join(path, os.path.basename(target))]
-        name = os.path.basename(target)
-        targetdir = os.path.dirname(target)
-        if name not in entries:
-            raise Error, "file not uploaded yet (not found in "\
-                    "sources file): %s" % target
-    copy(sources=paths, sourcehost=host, dest=targetdir)
+    paths = [os.path.join(path, name) for name, sum in entries.iteritems()]
+    copy(sources=paths, sourcehost=host, dest=target)
     if check:
         yield "Checking files"
         for path in paths:
             name = os.path.basename(path)
-            bpath = os.path.join(targetdir, name)
+            bpath = os.path.join(target, name)
             sum = entries[name]
+            if sum is None:
+                # should we warn the user about it?
+                continue
             check_hash(bpath, sum)
     yield "Done"
 

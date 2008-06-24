@@ -11,12 +11,12 @@ TODO
 
 - Support no-tarballs-and-no-binrepo.lst repositories: (MUST)
 
-  + Support checkout and getsrpm without binrepo.lst;
+  + Support checkout and getsrpm without binrepo.lst (DONE)
 
     * binrepo.enabled() returns true if binrepo is enabled in conf (DONE)
 
     * download from binrepo those files that are referred in the spec but
-      are not found in the svn checkout/export (MUST)
+      are not found in the svn checkout/export (DONE)
     
   + Enforce binrepo.lst on markrelease;
 
@@ -26,5 +26,3 @@ TODO
 
   + Merge the work from branch V1_6_X.feature.support-update-urls  (TODO)
 
-- Fix update to download new files right after updating the svn checkout
-  (this way we don't have to run up again to bring new binaries)

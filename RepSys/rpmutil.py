@@ -596,51 +596,55 @@ def commit(target=".", message=None, logfile=None):
         print "use \"repsys switch\" in order to switch back to mirror "\
                 "later"
 
+def spec_sources(topdir):
+    specs = glob.glob(os.path.join(topdir, "SPECS/*.spec"))
+    spec_path = specs[0] # FIXME use svn info to ensure which one
+    ts = rpm.ts()
+    spec = ts.parseSpec(spec_path)
+    sources = [name for name, x, y in spec.sources()]
+    return sources
+    
 def download_binaries(target, pkgdirurl=None, check=True):
     refurl = pkgdirurl
     if refurl is None:
         refurl = binrepo.svn_root(target)
     if binrepo.enabled(refurl):
+        download = []
         sourcesdir = "SOURCES"
+        sources = spec_sources(target)
+        for source in sources:
+            path = os.path.join(target, sourcesdir, source)
+            if not os.path.exists(path):
+                # try to download those files that are referred in the spec
+                # but were not found in the svn working copy
+                download.append(source)
         url = None
         bintarget = os.path.join(target, sourcesdir)
         if pkgdirurl:
             url = os.path.join(pkgdirurl, sourcesdir)
-        for status in binrepo.download(bintarget, url, check):
+        for status in binrepo.download(bintarget, url, download, check):
             print status
 
 def update(target=None):
     svn = SVN()
+    info = None
     svn_target = None
     br_target = None
     if target:
-        info = svn.info2(target) 
-        spath = binrepo.sources_path(target)
-        if info is None:
-            # probably something kept in the binary repository
-            if os.path.exists(spath):
-                entries = binrepo.parse_sources(spath)
-                name = os.path.basename(target)
-                if name in entries:
-                    br_target = target
-                    svn_target = spath
-        else:
-            svn_target = target
-            if info["Node Kind"] == "directory":
-                if os.path.exists(spath):
-                    br_target = target
+        svn_target = target
     else:
         top = getpkgtopdir()
         svn_target = top
-        br_target = os.path.join(top, "SOURCES")
-    if not br_target and not svn_target:
-        raise Error, "target not in SVN nor in binaries "\
-                "repository: %s" % target
+        br_target = top
     if svn_target:
         svn.update(svn_target, show=True)
     if br_target:
-        for status in binrepo.download(br_target):
-            print status
+        info = svn.info2(svn_target) 
+        if not br_target and not svn_target:
+            raise Error, "target not in SVN nor in binaries "\
+                    "repository: %s" % target
+        url = info["URL"]
+        download_binaries(br_target, url)
 
 def _sources_log(added, deleted):
     lines = ["SILENT: changed sources list:\n"]
