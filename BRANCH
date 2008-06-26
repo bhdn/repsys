@@ -9,14 +9,13 @@ One sample structure:
          adc83b19e793491b1c6ea0fd8b46cd9f32e592fc <- real contents here
      plain/
        mutt/
-         filenome.tar.gz::HASHSVNPATH::EVR <-- in case of markrelease
+         filenome.tar.gz::EVR <-- in case of markrelease
        trafshow/
-         trafshow-1.6.6.tar.bz2::f3f08bfa::1.6.6-1mdv2009.0
-	 trafshow-1.6.0-do-something.blob::f3f08bfa::1.6.6-2mdv2009.0
-	 trafshow-1.6.0-do-something.blob::c5ab516a::latest
+         trafshow-1.6.6.tar.bz2::1.6.6-1mdv2009.0
+	 trafshow-1.6.0-do-something.blob::1.6.6-2mdv2009.0
 
 
-trafshow-1.6.0-do-something.blob::c5ab516a::latest is the same file
+trafshow-1.6.0-do-something.blob is the same file
 trafshow-1.6.0-do-something.blob but in cooker.
 
 
@@ -36,8 +35,8 @@ Drawbacks of this layout
 =========================
 
 - We can't have getsrpm on packages without binrepo.lst without having
-  access to the binaries by their filenames. (Actually it was solved by
-  the plain/ proposed by spuk, just to not forget)
+  access to the binaries by their filenames. (Actually it is already solved
+  with the plain/ structure proposed by spuk, just to not forget)
 
 - If the user uploads a binary in checkout from updates/ it may end up
   overwritting the cooker equivalent.
@@ -58,11 +57,11 @@ repsys co 2008.1/mutt without binrepo.lst
 - repsys looks for missing binaries, for example bla-1.6.6.tar.bz2 and
   foo-docs.tar.bz2
 
-- gets the hashes of the base directory of the source: f3f08bfa
-
 - downloads
-  http://svn.mandriva.com/binrepo/plain/mutt/bla-1.5.11.tar.bz2::f3f08bfa::1.5.11-5mdv2008.1 and
-  http://svn.mandriva.com/binrepo/plain/mutt/foo-docs.tar.bz2::f3f08bfa::1.5.11-5mdv2008.1
+  http://svn.mandriva.com/binrepo/plain/mutt/bla-1.5.11.tar.bz2::1.5.11-5mdv2008.1 and
+  http://svn.mandriva.com/binrepo/plain/mutt/foo-docs.tar.bz2::1.5.11-5mdv2008.1
+
+** XXX it requires that all packages that don't have binrepo.lst 
 
 
 repsys co 2008.1/mutt
@@ -102,7 +101,6 @@ upgrading to a newer version of the package
   
      RSYNC_PATH="/usr/bin/env 
     			PACKAGE=mutt
-			EVR=latest
 			SVNPATH=/
 		/usr/bin/binrepo_rsync"
      rsync --rsync-path="$RSYNC_PATH" \
@@ -113,11 +111,11 @@ upgrading to a newer version of the package
    
   + then it creates a hardlink of
     09ee95c8f45209ddb3245149f02f2f519356ab12 at
-    /binrepo/plain/mutt/bla-1.6.0.tar.bz2::f3f08bfa::latest
+    /binrepo/plain/mutt/bla-1.6.0.tar.bz2
 
 - upon successful upload, repsys updates binrepo.lst
 
-- the user updates the spec file, a
+- the user updates the spec file with the SourceX entry, and commits it.
 
 
 Description
