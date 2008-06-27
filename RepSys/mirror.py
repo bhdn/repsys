@@ -4,7 +4,7 @@ import urlparse
 from RepSys import Error, config
 from RepSys.svn import SVN
 
-def _normdirurl(url):
+def normalize_path(url):
     """normalize url for relocate_path needs"""
     parsed = urlparse.urlparse(url)
     path = os.path.normpath(parsed[2])
@@ -21,15 +21,15 @@ def _joinurl(url, relpath):
 
 def same_base(parent, url):
     """returns true if parent is parent of url"""
-    parent = _normdirurl(parent)
-    url = _normdirurl(url)
+    parent = normalize_path(parent)
+    url = normalize_path(url)
     #FIXME handle paths with/without username/password
     return url.startswith(parent)
 
 def relocate_path(oldparent, newparent, url):
-    oldparent = _normdirurl(oldparent)
-    newparent = _normdirurl(newparent)
-    url = _normdirurl(url)
+    oldparent = normalize_path(oldparent)
+    newparent = normalize_path(newparent)
+    url = normalize_path(url)
     subpath = url[len(oldparent)+1:]
     newurl = _joinurl(newparent,  subpath) # subpath usually gets / at begining
     return newurl
