@@ -57,3 +57,10 @@ Problems
 - Branches must have their own misc/ or 00-Changelogs directory (actually
   this is not needed at all, as misc/ changelogs are not meant to be
   changed, so they will always be 'valid' in whatever branch it is used)
+
+TODO
+====
+
+- Using RepSysTree, change pkgname to support bla/current URLs
+
+- Allow to easily locating a package, based on the URL of the directory
