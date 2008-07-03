@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from RepSys import Error, config
 from RepSys.command import *
+from RepSys.layout import package_url
 from RepSys.rpmutil import get_spec, get_submit_info, svn_url_rev
 from RepSys.util import get_auth, execcmd, get_helper
 import urllib
@@ -79,7 +80,7 @@ def parse_options():
         else:
             raise Error, "the format <name> <revision> is deprecated, "\
                     "use <name>@<revision> instead"
-    opts.urls = [default_parent(nameurl) for nameurl in args]
+    opts.urls = [package_url(nameurl) for nameurl in args]
     return opts
 
 def list_targets(option, opt, val, parser):

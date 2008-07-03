@@ -5,6 +5,7 @@
 #
 from RepSys import Error, config
 from RepSys.command import *
+from RepSys.layout import package_url
 from RepSys.rpmutil import get_srpm
 import tempfile
 import shutil
@@ -80,7 +81,7 @@ def parse_options():
     del opts.__ignore
     if len(args) != 1:
         raise Error, "invalid arguments"
-    opts.pkgdirurl = default_parent(args[0])
+    opts.pkgdirurl = package_url(args[0])
     opts.verbose = 1
     return opts
 
