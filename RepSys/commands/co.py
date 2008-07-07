@@ -13,6 +13,8 @@ Checkout the package source from the Mandriva repository.
 If the 'mirror' option is enabled, the package is obtained from the mirror
 repository.
 
+You can specify the distro branch to checkout from by using distro/pkgname.
+
 Options:
     -r REV  Revision to checkout
     -M      Do not use the mirror (use the main server)
@@ -20,6 +22,7 @@ Options:
 
 Examples:
     repsys co pkgname
+    repsys co 2009.0/pkgame
     repsys co http://repos/svn/cnc/snapshot/foo
     repsys co http://repos/svn/cnc/snapshot/foo foo-pkg
 """
