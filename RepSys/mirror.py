@@ -51,7 +51,10 @@ def enabled(wcurl=None):
 def using_on(url):
     """returnes True if the URL points to the mirror repository"""
     mirror = mirror_url()
-    using = same_base(mirror, url)
+    if mirror:
+        using = same_base(mirror, url)
+    else:
+        using = False
     return using
 
 def info(url, stream=sys.stderr):
