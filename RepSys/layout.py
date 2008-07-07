@@ -5,18 +5,23 @@ import urlparse
 
 from RepSys import Error, config
 
-__all__ = ["package_url", "package_branch_url", "repository_url"]
+__all__ = ["package_url", "checkout_url", "repository_url"]
 
 
-def package_branch_url(url, branch=None, version=None, release=None,
+def checkout_url(url, branch=None, version=None, release=None,
         pristine=False):
     """Get the URL of a branch of the package, defaults to current/"""
     parsed = list(urlparse.urlparse(url))
     path = os.path.normpath(parsed[2])
     if version:
+        assert release is not None
         path = os.path.normpath(path + "/" + version + "/" + release)
     elif pristine:
         path = os.path.join(path, "pristine")
+    elif branch:
+        path = os.path.join(path, "branches", branch)
+    else:
+        path = os.path.join(path, "current")
     parsed[2] = path
     newurl = urlparse.urlunparse(parsed)
     return newurl
@@ -57,7 +62,7 @@ def repository_url(mirrored=False):
     return url
 
 def package_url(name_or_url, version=None, release=None, distro=None,
-        package_branch=None, mirrored=True):
+        mirrored=True):
     """Returns a tuple with the absolute package URL and its name
 
     @name_or_url: name, relative path, or URL of the package. In case it is
