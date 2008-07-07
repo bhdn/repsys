@@ -2,6 +2,7 @@
 from RepSys import Error
 from RepSys.command import *
 from RepSys.rpmutil import checkout
+from RepSys.layout import package_url
 import getopt
 import sys
 
