@@ -7,6 +7,7 @@ from RepSys.svn import SVN
 
 def mirror_url():
     mirror = config.get("global", "mirror")
+    return mirror
 
 def normalize_path(url):
     """normalize url for relocate_path needs"""
