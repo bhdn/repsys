@@ -2,7 +2,6 @@
 from RepSys import Error
 from RepSys.command import *
 from RepSys.rpmutil import checkout
-from RepSys.layout import package_url
 import getopt
 import sys
 
@@ -34,7 +33,9 @@ def parse_options():
     opts, args = parser.parse_args()
     if len(args) not in (1, 2):
         raise Error, "invalid arguments"
-    opts.pkgdirurl = package_url(args[0])
+    # here we don't use package_url in order to notify the user we are
+    # using the mirror
+    opts.pkgdirurl = args[0]
     if len(args) == 2:
         opts.path = args[1]
     else:

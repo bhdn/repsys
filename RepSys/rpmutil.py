@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from RepSys import Error, config, RepSysTree
-from RepSys import mirror
+from RepSys import mirror, layout
 from RepSys.svn import SVN
 from RepSys.simplerpm import SRPM
 from RepSys.log import specfile_svn2rpm
@@ -438,7 +438,7 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
 
 def checkout(pkgdirurl, path=None, revision=None):
     o_pkgdirurl = pkgdirurl
-    pkgdirurl = package_url(o_pkgdirurl)
+    pkgdirurl = layout.package_url(o_pkgdirurl)
     current = os.path.join(pkgdirurl, "current")
     if path is None:
         _, path = os.path.split(pkgdirurl)
