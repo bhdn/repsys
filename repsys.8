@@ -127,6 +127,10 @@ Command used to download generic remote URLs, it accepts the variables \fB$url\f
 The base command used to execute svn(1). Runs through system(3).
 .IP "\fBverbose = yes/no\fP"
 Increase the verbosity of repsys output, printing commands being run and complete traceback when unhanlded errors happen.
+.IP "\fBtrunk-dir\fP"
+Points to the default branch of the distro used in commands that do not have their branch or URL specified.
+.IP "\fBbranches-dir\fP"
+The directory inside the repository which contains all the branches of the distro. It is used to build the URL of packages referred using the branch notation BRANCH/PACKAGE, as in \fBrepsys co 2009.0/mutt\fP.
 .SS "[submit] section"
 .IP "\fBhost = HOST\fP"
 Defines the default host in which \fBrepsys submit\fP will run the submit helper.
