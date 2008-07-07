@@ -9,7 +9,7 @@ __all__ = ["package_url", "checkout_url", "repository_url"]
 
 
 def checkout_url(url, branch=None, version=None, release=None,
-        pristine=False):
+        pristine=False, append_path=None):
     """Get the URL of a branch of the package, defaults to current/"""
     parsed = list(urlparse.urlparse(url))
     path = os.path.normpath(parsed[2])
@@ -22,6 +22,8 @@ def checkout_url(url, branch=None, version=None, release=None,
         path = os.path.join(path, "branches", branch)
     else:
         path = os.path.join(path, "current")
+    if append_path:
+        path = os.path.join(path, append_path)
     parsed[2] = path
     newurl = urlparse.urlunparse(parsed)
     return newurl
