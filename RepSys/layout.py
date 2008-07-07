@@ -5,11 +5,12 @@ import urlparse
 
 from RepSys import Error, config
 
-__all__ = ["package_url", "transform_url", "repository_url"]
+__all__ = ["package_url", "package_branch_url", "repository_url"]
 
 
-def transform_url(url, version=None, release=None, pristine=False):
-    """Get a new URL from another based version or branch specs"""
+def package_branch_url(url, branch=None, version=None, release=None,
+        pristine=False):
+    """Get the URL of a branch of the package, defaults to current/"""
     parsed = list(urlparse.urlparse(url))
     path = os.path.normpath(parsed[2])
     if version:
@@ -56,7 +57,7 @@ def repository_url(mirrored=False):
     return url
 
 def package_url(name_or_url, version=None, release=None, distro=None,
-        mirrored=True):
+        package_branch=None, mirrored=True):
     """Returns a tuple with the absolute package URL and its name
 
     @name_or_url: name, relative path, or URL of the package. In case it is

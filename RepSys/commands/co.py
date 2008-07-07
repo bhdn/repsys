@@ -31,8 +31,6 @@ Examples:
 def parse_options():
     parser = OptionParser(help=HELP)
     parser.add_option("-r", dest="revision")
-    parser.add_option("-o", dest="use_mirror", default=True,
-            action="store_false")
     opts, args = parser.parse_args()
     if len(args) not in (1, 2):
         raise Error, "invalid arguments"
