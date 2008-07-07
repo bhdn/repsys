@@ -25,6 +25,7 @@ Options:
     -o       Append old package changelog
     -p       Append changelog found in .spec file
     -s       Sort changelog entries, even from the old log
+    -M       Do not use the mirror (use the main server)
     -h       Show this message
 
 Examples:

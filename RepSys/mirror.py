@@ -1,8 +1,12 @@
+import sys
 import os
 import urlparse
 
-from RepSys import Error, config
+from RepSys import Error, config, layout
 from RepSys.svn import SVN
+
+def mirror_url():
+    mirror = config.get("global", "mirror")
 
 def normalize_path(url):
     """normalize url for relocate_path needs"""
@@ -35,14 +39,24 @@ def relocate_path(oldparent, newparent, url):
     return newurl
 
 def enabled(wcurl=None):
-    mirror = config.get("global", "mirror")
-    default_parent = config.get("global", "default_parent")
+    mirror = mirror_url()
+    repository = layout.repository_url()
     enabled = False
-    if mirror and default_parent:
+    if mirror and repository:
         enabled = True
-        if wcurl and (not same_base(mirror, wcurl)):
+        if wcurl and not same_base(mirror, wcurl):
             enabled = False
     return enabled
+
+def using_on(url):
+    """returnes True if the URL points to the mirror repository"""
+    mirror = mirror_url()
+    using = same_base(mirror, url)
+    return using
+
+def info(url, stream=sys.stderr):
+    if using_on(url):
+        stream.write("using mirror\n")
 
 def mirror_relocate(oldparent, newparent, url, wcpath):
     svn = SVN()
@@ -52,19 +66,15 @@ def mirror_relocate(oldparent, newparent, url, wcpath):
 
 def switchto_parent(svn, url, path):
     """Relocates the working copy to default_parent"""
-    mirror = config.get("global", "mirror")
-    default_parent = config.get("global", "default_parent")
-    newurl = mirror_relocate(mirror, default_parent, url, path)
+    newurl = mirror_relocate(mirror_url(), layout.repository_url(), url, path)
     return newurl
 
 def switchto_mirror(svn, url, path):
-    mirror = config.get("global", "mirror")
-    default_parent = config.get("global", "default_parent")
-    newurl = mirror_relocate(default_parent, mirror, url, path)
+    newurl = mirror_relocate(layout.repository_url(), mirror_url(), url, path)
     return newurl
 
 def checkout_url(url):
-    mirror = config.get("global", "mirror")
+    mirror = mirror_url()
     default_parent = config.get("global", "default_parent")
     if mirror is not None and default_parent is not None:
         return relocate_path(default_parent, mirror, url)
@@ -73,7 +83,7 @@ def checkout_url(url):
 def autoswitch(svn, wcpath, wcurl, newbaseurl=None):
     """Switches between mirror, default_parent, or newbaseurl"""
     nobase = False
-    mirror = config.get("global", "mirror")
+    mirror = mirror_url()
     default_parent = config.get("global", "default_parent")
     current = default_parent
     if default_parent is None:

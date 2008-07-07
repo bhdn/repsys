@@ -15,7 +15,7 @@ repository.
 
 Options:
     -r REV  Revision to checkout
-    -o      Do not use the mirror (use official server)
+    -M      Do not use the mirror (use the main server)
     -h      Show this message
 
 Examples:
@@ -32,7 +32,7 @@ def parse_options():
     opts, args = parser.parse_args()
     if len(args) not in (1, 2):
         raise Error, "invalid arguments"
-    opts.pkgdirurl = args[0]
+    opts.pkgdirurl = package_url(args[0])
     if len(args) == 2:
         opts.path = args[1]
     else:

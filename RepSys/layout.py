@@ -40,18 +40,23 @@ def remove_current(url):
     newurl = urlparse.urlunparse(parsed)
     return newurl
 
-def repository_url():
-    repository = config.get("global", "repository")
-    if not repository:
-        # compatibility with the default_parent configuration option
-        default_parent = config.get("global", "default_parent")
-        if default_parent is None:
-            raise Error, "you need to set the 'repository' " \
-                    "configuration option on repsys.conf"
-        repository = convert_default_parent(default_parent)
-    return repository
+def repository_url(mirrored=False):
+    url = None
+    if mirrored and config.get("global", "use-mirror"):
+        url = config.get("global", "mirror")
+    if url is None:
+        url = config.get("global", "repository")
+        if not url:
+            # compatibility with the default_parent configuration option
+            default_parent = config.get("global", "default_parent")
+            if default_parent is None:
+                raise Error, "you need to set the 'repository' " \
+                        "configuration option on repsys.conf"
+            url = convert_default_parent(default_parent)
+    return url
 
-def package_url(name_or_url, version=None, release=None, distro=None):
+def package_url(name_or_url, version=None, release=None, distro=None,
+        mirrored=True):
     """Returns a tuple with the absolute package URL and its name
 
     @name_or_url: name, relative path, or URL of the package. In case it is
@@ -59,6 +64,7 @@ def package_url(name_or_url, version=None, release=None, distro=None):
     @version: the version to be fetched from releases/ (requires release)
     @release: the release number to be fetched from releases/$version/
     @distro: the name of the repository branch inside updates/
+    @mirrored: return an URL based on the mirror repository, if enabled
     """
     from RepSys.mirror import normalize_path
     if "://" in name_or_url:
@@ -73,7 +79,7 @@ def package_url(name_or_url, version=None, release=None, distro=None):
         else:
             default_branch = devel_branch # cooker
         path = os.path.join(distro or default_branch, name)
-        parsed = list(urlparse.urlparse(repository_url()))
+        parsed = list(urlparse.urlparse(repository_url(mirrored=mirrored)))
         parsed[2] = os.path.normpath(parsed[2] + "/" + path)
         url = urlparse.urlunparse(parsed)
     return url

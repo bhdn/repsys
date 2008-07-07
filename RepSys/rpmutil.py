@@ -121,6 +121,7 @@ def get_srpm(pkgdirurl,
     specdir = "--define '_specdir %s/%s'" % (tmpdir, "SPECS")
     srcrpmdir = "--define '_srcrpmdir %s/%s'" % (tmpdir, "SRPMS")
     patchdir = "--define '_patchdir %s/%s'" % (tmpdir, "SOURCES")
+
     try:
         if mode == "version":
             geturl = os.path.join(pkgdirurl, "releases",
@@ -435,17 +436,13 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
             "nocurrent": nocurrent,
             "nopristine": nopristine}
 
-def checkout(pkgdirurl, path=None, revision=None, use_mirror=True):
+def checkout(pkgdirurl, path=None, revision=None):
     o_pkgdirurl = pkgdirurl
-    pkgdirurl = default_parent(o_pkgdirurl)
+    pkgdirurl = package_url(o_pkgdirurl)
     current = os.path.join(pkgdirurl, "current")
     if path is None:
         _, path = os.path.split(pkgdirurl)
-    # if default_parent changed the URL, we can use mirrors because the
-    # user did not provided complete package URL
-    if (o_pkgdirurl != pkgdirurl) and use_mirror and mirror.enabled():
-        current = mirror.checkout_url(current)
-        print "checking out from mirror", current
+    mirror.info(current)
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
 
@@ -537,7 +534,7 @@ def commit(target=".", message=None, logfile=None):
     url = info.get("URL")
     if url is None:
         raise Error, "working copy URL not provided by svn info"
-    mirrored = mirror.enabled(url)
+    mirrored = mirror.using_on(url)
     if mirrored:
         newurl = mirror.switchto_parent(svn, url, target)
         print "relocated to", newurl

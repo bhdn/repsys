@@ -35,7 +35,7 @@ def parse_options():
     opts, args = parser.parse_args()
     if len(args) != 2:
         raise Error, "invalid arguments"
-    opts.pkgdirurl = package_url(args[0])
+    opts.pkgdirurl = package_url(args[0], mirrored=False)
     opts.srpmfile = args[1]
     return opts
 

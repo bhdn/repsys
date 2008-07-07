@@ -14,6 +14,7 @@ Shows if there are pending changes since the last package release.
 Options:
     -a      Check all packages in given URL
     -s      Show differences
+    -M      Do not use the mirror (use the main server)
     -h      Show this message
 
 Examples:

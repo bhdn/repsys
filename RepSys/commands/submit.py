@@ -80,7 +80,7 @@ def parse_options():
         else:
             raise Error, "the format <name> <revision> is deprecated, "\
                     "use <name>@<revision> instead"
-    opts.urls = [package_url(nameurl) for nameurl in args]
+    opts.urls = [package_url(nameurl, mirrored=False) for nameurl in args]
     return opts
 
 def list_targets(option, opt, val, parser):

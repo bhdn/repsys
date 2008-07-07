@@ -61,7 +61,7 @@ def parse_options():
     if len(args) != 1:
         raise Error, "invalid arguments"
 
-    opts.pkgdirurl = package_url(args[0])
+    opts.pkgdirurl = package_url(args[0], mirrored=False)
 
     filename = opts.filename
     appendname = opts.appendname
