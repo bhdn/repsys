@@ -30,7 +30,7 @@ Options:
     -n         Rename the package to include the revision number
     -l         Use subversion log to build rpm %changelog
     -T FILE    Template to be used to generate the %changelog
-    -M         Do not use the mirror (use the main server)
+    -M         Do not use the mirror (use the main repository)
     -h         Show this message
     --strict   Check if the given revision contains changes in REPPKGURL
 

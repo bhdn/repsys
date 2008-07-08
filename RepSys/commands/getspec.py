@@ -13,7 +13,7 @@ Prints the .spec file of a given package.
 
 Options:
     -t DIR  Use DIR as target for spec file (default is ".")
-    -M      Do not use the mirror (use the main server)
+    -M      Do not use the mirror (use the main repository)
     -h      Show this message
 
 Examples:

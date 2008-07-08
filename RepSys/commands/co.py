@@ -17,7 +17,7 @@ You can specify the distro branch to checkout from by using distro/pkgname.
 
 Options:
     -r REV  Revision to checkout
-    -M      Do not use the mirror (use the main server)
+    -M      Do not use the mirror (use the main repository)
     -h      Show this message
 
 Examples:
