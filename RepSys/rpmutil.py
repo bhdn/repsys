@@ -139,6 +139,7 @@ def get_srpm(pkgdirurl,
             # revision is None
             raise Error, "the revision %s does not change anything "\
                     "inside %s" % (revision or "HEAD", geturl)
+        mirror.info(geturl)
         svn.export(geturl, tmpdir, rev=revision)
         srpmsdir = os.path.join(tmpdir, "SRPMS")
         os.mkdir(srpmsdir)
