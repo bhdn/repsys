@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from RepSys import Error
 from RepSys.command import *
-from RepSys.layput import package_url
+from RepSys.layout import package_url
 from RepSys.svn import SVN
 import re
 
