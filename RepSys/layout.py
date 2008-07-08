@@ -136,7 +136,7 @@ def package_url(name_or_url, version=None, release=None, distro=None,
     from RepSys.mirror import normalize_path
     if "://" in name_or_url:
         pkgdirurl = normalize_path(name_or_url)
-        pkgdirurl = remove_current(url)
+        pkgdirurl = remove_current(pkgdirurl)
     else:
         name = name_or_url
         devel_branch = config.get("global", "trunk-dir", "/cooker/")
