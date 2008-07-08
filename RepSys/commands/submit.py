@@ -2,7 +2,7 @@
 from RepSys import Error, config
 from RepSys.command import *
 from RepSys.layout import package_url
-from RepSys.rpmutil import get_spec, get_submit_info, svn_url_rev
+from RepSys.rpmutil import get_spec, get_submit_info
 from RepSys.util import get_auth, execcmd, get_helper
 import urllib
 import getopt
