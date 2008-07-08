@@ -69,9 +69,11 @@ def checkout_url(url, branch=None, version=None, release=None,
     """
     parsed = list(urlparse.urlparse(url))
     path, rev = split_url_revision(parsed[2])
-    if version:
+    if releases:
+        path = os.path.normpath(path + "/releases")
+    elif version:
         assert release is not None
-        path = os.path.normpath(path + "/" + version + "/" + release)
+        path = os.path.normpath(path + "/releases/" + version + "/" + release)
     elif pristine:
         path = os.path.join(path, "pristine")
     elif branch:
