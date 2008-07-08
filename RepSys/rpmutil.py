@@ -259,10 +259,10 @@ def put_srpm(pkgdirurl, srpmfile, appendname=0, log=""):
             shutil.rmtree(tmpdir)
 
     # Do revision and pristine tag copies
-    pristineurl = os.path.join(pkgdirurl, "pristine")
+    pristineurl = layout.checkout_url(pkgdirurl, pristine=True)
     svn.remove(pristineurl, noerror=1,
                log="Removing previous pristine/ directory.")
-    currenturl = os.path.join(pkgdirurl, "current")
+    currenturl = layout.checkout_url(pkgdirurl)
     svn.copy(currenturl, pristineurl,
              log="Copying release %s-%s to pristine/ directory." %
                  (version, srpm.release))
@@ -322,10 +322,10 @@ def mark_release(pkgdirurl, version, release, revision):
               log="Created releases directory.")
     svn.mkdir(versionurl, noerror=1,
               log="Created directory for version %s." % version)
-    pristineurl = os.path.join(pkgdirurl, "pristine")
+    pristineurl = layout.checkout_url(pkgdirurl, pristine=True)
     svn.remove(pristineurl, noerror=1,
                log="Removing previous pristine/ directory.")
-    currenturl = os.path.join(pkgdirurl, "current")
+    currenturl = layout.checkout_url(pkgdirurl)
     svn.copy(currenturl, pristineurl,
              log="Copying release %s-%s to pristine/ directory." %
                  (version, release))
@@ -355,8 +355,8 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
     nocurrent = []
     for package in packages:
         pkgdirurl = os.path.join(baseurl, package)
-        current = os.path.join(pkgdirurl, "current")
-        pristine = os.path.join(pkgdirurl, "pristine")
+        current = layout.checkout_url(pkgdirurl)
+        pristine = layout.checkout_url(pkgdirurl, pristine=True)
         if verbose:
             print "Checking package %s..." % package,
             sys.stdout.flush()
