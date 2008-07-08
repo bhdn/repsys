@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from RepSys import Error, config, RepSysTree, layout
+from RepSys import Error, config, layout
 from RepSys.svn import SVN
 from RepSys.util import execcmd
 
@@ -533,7 +533,7 @@ def get_old_log(pkgdirurl):
         svn = SVN()
         tmpdir = tempfile.mktemp()
         try:
-            pkgname = RepSysTree.pkgname(pkgdirurl)
+            pkgname = layout.package_name(pkgdirurl)
             pkgoldurl = os.path.join(oldurl, pkgname)
             try:
                 # we're using HEAD here because fixes in misc/ (oldurl) may

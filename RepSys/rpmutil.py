@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from RepSys import Error, config, RepSysTree
+from RepSys import Error, config
 from RepSys import mirror, layout
 from RepSys.svn import SVN
 from RepSys.simplerpm import SRPM
@@ -274,7 +274,7 @@ def create_package(pkgdirurl, log="", verbose=0):
     svn = SVN()
     tmpdir = tempfile.mktemp()
     try:
-        basename = RepSysTree.pkgname(pkgdirurl)
+        basename = layout.package_name(pkgdirurl)
         if verbose:
             print "Creating package directory...",
         sys.stdout.flush()
@@ -398,7 +398,7 @@ def checkout(pkgdirurl, path=None, revision=None):
     pkgdirurl = layout.package_url(o_pkgdirurl)
     current = layout.checkout_url(pkgdirurl) #TODO add branch support
     if path is None:
-        _, path = os.path.split(pkgdirurl)
+        path = layout.package_name(pkgdirurl)
     mirror.info(current)
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)

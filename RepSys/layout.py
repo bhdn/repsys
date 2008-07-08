@@ -151,3 +151,21 @@ def package_url(name_or_url, version=None, release=None, distro=None,
         url = urlparse.urlunparse(parsed)
     return url
 
+def package_name(url):
+    """Returns the package name from a package URL
+    
+    It takes care of revision numbers"""
+    parsed = urlparse.urlparse(url)
+    path, rev = split_url_revision(parsed[2])
+    rest, name = os.path.split(path)
+    return name
+
+def package_spec_url(url, *args, **kwargs):
+    """Returns the URL of the specfile of a given package URL
+
+    The parameters are the same used by checkout_url, except append_path.
+    """
+    kwargs["append_path"] = "SPECS/" + package_name(url) + ".spec"
+    specurl = checkout_url(url, *args, **kwargs)
+    return specurl
+
