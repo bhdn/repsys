@@ -23,6 +23,16 @@ def get_url_revision(url, retrieve=True):
         rev = svn.revision(url)
     return rev
 
+def unsplit_url_revision(url, rev):
+    if rev is None:
+        newurl = url
+    else:
+        parsed = list(urlparse.urlparse(url))
+        path = os.path.normpath(parsed[2])
+        parsed[2] = path + "@" + str(rev)
+        newurl = urlparse.urlunparse(parsed)
+    return newurl
+
 def split_url_revision(url):
     """Returns a tuple (url, rev) from an subversion URL with @REV
     
@@ -52,10 +62,13 @@ def split_url_revision(url):
     return newurl, rev
 
 def checkout_url(url, branch=None, version=None, release=None,
-        pristine=False, append_path=None):
-    """Get the URL of a branch of the package, defaults to current/"""
+        releases=False, pristine=False, append_path=None):
+    """Get the URL of a branch of the package, defaults to current/
+    
+    It tries to preserve revisions in the format @REV.
+    """
     parsed = list(urlparse.urlparse(url))
-    path = os.path.normpath(parsed[2])
+    path, rev = split_url_revision(parsed[2])
     if version:
         assert release is not None
         path = os.path.normpath(path + "/" + version + "/" + release)
@@ -67,6 +80,7 @@ def checkout_url(url, branch=None, version=None, release=None,
         path = os.path.join(path, "current")
     if append_path:
         path = os.path.join(path, append_path)
+    path = unsplit_url_revision(path, rev)
     parsed[2] = path
     newurl = urlparse.urlunparse(parsed)
     return newurl
