@@ -5,8 +5,51 @@ import urlparse
 
 from RepSys import Error, config
 
-__all__ = ["package_url", "checkout_url", "repository_url"]
+__all__ = ["package_url", "checkout_url", "repository_url", "get_url_revision"]
 
+def get_url_revision(url, retrieve=True):
+    """Get the revision from a given URL
+
+    If the URL contains an explicit revision number (URL@REV), just use it
+    without even checking if the revision really exists.
+
+    The parameter retrieve defines whether it must ask the SVN server for
+    the revision number or not when it is not found in the URL.
+    """
+    url, rev = split_url_revision(url)
+    if rev is None and retrieve:
+        # if no revspec was found, ask the server
+        svn = SVN()
+        rev = svn.revision(url)
+    return rev
+
+def split_url_revision(url):
+    """Returns a tuple (url, rev) from an subversion URL with @REV
+    
+    If the revision is not present in the URL, rev is None.
+    """
+    parsed = list(urlparse.urlparse(url))
+    path = os.path.normpath(parsed[2])
+    dirs = path.rsplit("/", 1)
+    lastname = dirs[-1]
+    newname = lastname
+    index = lastname.rfind("@")
+    rev = None
+    if index != -1:
+        newname = lastname[:index]
+        rawrev = lastname[index+1:]
+        if rawrev:
+            try:
+                rev = int(rawrev)
+                if rev < 0:
+                    raise ValueError
+            except ValueError:
+                raise Error, "invalid revision specification on URL: %s" % url
+    dirs[-1] = newname
+    newpath = "/".join(dirs)
+    parsed[2] = newpath
+    newurl = urlparse.urlunparse(parsed)
+    return newurl, rev
 
 def checkout_url(url, branch=None, version=None, release=None,
         pristine=False, append_path=None):

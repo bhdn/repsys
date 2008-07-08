@@ -52,51 +52,6 @@ def rev_touched_url(url, rev):
             touched = True
     return touched
 
-def svn_url_rev(url, retrieve=True):
-    """Get the revision from a given URL
-
-    If the URL contains an explicit revision number (URL@REV), just use it
-    without even checking if the revision really exists.
-
-    The parameter retrieve defines whether it must ask the SVN server for
-    the revision number or not when it is not found in the URL.
-    """
-    parsed = urlparse.urlparse(url)
-    path = os.path.normpath(parsed[2])
-    dirs = path.rsplit("/", 1)
-    lastname = dirs[-1]
-    index = lastname.rfind("@")
-    rev = None
-    if index != -1:
-        rawrev = lastname[index+1:]
-        if rawrev:
-            try:
-                rev = int(rawrev)
-                if rev < 0:
-                    raise ValueError
-            except ValueError:
-                raise Error, "invalid revision specification on URL: %s" % url
-    if rev is None and retrieve:
-        # if no revspec was found, ask the server
-        svn = SVN()
-        rev = svn.revision(url)
-    return rev
-
-def strip_url_rev(url):
-    """Removes the @REV from a string in the URL@REV scheme"""
-    parsed = list(urlparse.urlparse(url))
-    path = os.path.normpath(parsed[2])
-    dirs = path.rsplit("/", 1)
-    name = lastname = dirs[-1]
-    try:
-        index = lastname.rindex("@")
-    except ValueError:
-        pass
-    else:
-        name = lastname[:index]
-    parsed[2] = os.path.join(dirs[0], name)
-    return urlparse.urlunparse(parsed)
-
 def get_srpm(pkgdirurl,
              mode = "current",
              targetdirs = None,
@@ -170,7 +125,7 @@ def get_srpm(pkgdirurl,
         targetsrpms = []
         urlrev = None
         if revname:
-            urlrev = revision or svn_url_rev(geturl)
+            urlrev = revision or layout.get_url_revision(geturl)
         if not targetdirs:
             targetdirs = (".",)
         srpms = glob.glob(os.path.join(srpmsdir, "*.src.rpm"))

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-from RepSys import Error, config, plugins
-from RepSys.rpmutil import get_srpm, svn_url_rev, strip_url_rev
+from RepSys import Error, config, plugins, layout
+from RepSys.rpmutil import get_srpm
 from RepSys.cgiutil import get_targets
 from RepSys.util import mapurl, execcmd, get_helper
 import sys
@@ -43,8 +43,8 @@ class CmdIface:
                 urls = [mapurl(url) for url in urls]
             uploadsrpms = []
             for url in urls:
-                revision = revision or svn_url_rev(url)
-                url = strip_url_rev(url)
+                revision = revision or layout.get_url_revision(url)
+                url, _ = layout.split_url_revision(url)
                 targetsrpms = get_srpm(url,
                          revision=revision,
                          targetdirs=target.target,
