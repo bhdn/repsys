@@ -77,13 +77,6 @@ def switchto_mirror(svn, url, path):
     newurl = mirror_relocate(layout.repository_url(), mirror_url(), url, path)
     return newurl
 
-def checkout_url(url):
-    mirror = mirror_url()
-    default_parent = config.get("global", "default_parent")
-    if mirror is not None and default_parent is not None:
-        return relocate_path(default_parent, mirror, url)
-    return url
-
 def autoswitch(svn, wcpath, wcurl, newbaseurl=None):
     """Switches between mirror, default_parent, or newbaseurl"""
     nobase = False
