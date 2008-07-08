@@ -19,7 +19,7 @@ def get_spec(pkgdirurl, targetdir=".", submit=False):
     svn = SVN()
     tmpdir = tempfile.mktemp()
     try:
-        geturl = "/".join([pkgdirurl, "current", "SPECS"])
+        geturl = layout.checkout_url(pkgdirurl, append_path="SPECS")
         svn.export("'%s'" % geturl, tmpdir)
         speclist = glob.glob(os.path.join(tmpdir, "*.spec"))
         if not speclist:
@@ -124,13 +124,13 @@ def get_srpm(pkgdirurl,
 
     try:
         if mode == "version":
-            geturl = os.path.join(pkgdirurl, "releases",
-                                  version, release)
+            geturl = layout.checkout_url(pkgdirurl, version=version,
+                    release=release)
         elif mode == "pristine":
-            geturl = os.path.join(pkgdirurl, "pristine")
+            geturl = layout.checkout_url(pkgdirurl, pristine=True)
         elif mode == "current" or mode == "revision":
             #FIXME we should handle revisions specified using @REV
-            geturl = os.path.join(pkgdirurl, "current")
+            geturl = layout.checkout_url(pkgdirurl)
         else:
             raise Error, "unsupported get_srpm mode: %s" % mode
         strict = strict or config.getbool("submit", "strict-revision", False)
@@ -195,10 +195,11 @@ def get_srpm(pkgdirurl,
             shutil.rmtree(tmpdir)
 
 def patch_spec(pkgdirurl, patchfile, log=""):
+    #FIXME use get_spec
     svn = SVN()
     tmpdir = tempfile.mktemp()
     try:
-        geturl = "/".join([pkgdirurl, "current", "SPECS"])
+        geturl = layout.checkout_url(pkgdirurl, append_path="SPECS")
         svn.checkout(geturl, tmpdir)
         speclist = glob.glob(os.path.join(tmpdir, "*.spec"))
         if not speclist:
@@ -439,7 +440,7 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
 def checkout(pkgdirurl, path=None, revision=None):
     o_pkgdirurl = pkgdirurl
     pkgdirurl = layout.package_url(o_pkgdirurl)
-    current = os.path.join(pkgdirurl, "current")
+    current = layout.checkout_url(pkgdirurl) #TODO add branch support
     if path is None:
         _, path = os.path.split(pkgdirurl)
     mirror.info(current)
