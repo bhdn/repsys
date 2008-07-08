@@ -61,13 +61,13 @@ def split_url_revision(url):
     newurl = urlparse.urlunparse(parsed)
     return newurl, rev
 
-def checkout_url(url, branch=None, version=None, release=None,
+def checkout_url(pkgdirurl, branch=None, version=None, release=None,
         releases=False, pristine=False, append_path=None):
     """Get the URL of a branch of the package, defaults to current/
     
     It tries to preserve revisions in the format @REV.
     """
-    parsed = list(urlparse.urlparse(url))
+    parsed = list(urlparse.urlparse(pkgdirurl))
     path, rev = split_url_revision(parsed[2])
     if releases:
         path = os.path.normpath(path + "/releases")
@@ -96,8 +96,8 @@ def convert_default_parent(url):
     newurl = urlparse.urlunparse(parsed)
     return newurl
 
-def remove_current(url):
-    parsed = list(urlparse.urlparse(url))
+def remove_current(pkgdirurl):
+    parsed = list(urlparse.urlparse(pkgdirurl))
     path = os.path.normpath(parsed[2])
     rest, last = os.path.split(path)
     if last == "current":
@@ -135,8 +135,8 @@ def package_url(name_or_url, version=None, release=None, distro=None,
     """
     from RepSys.mirror import normalize_path
     if "://" in name_or_url:
-        url = normalize_path(name_or_url)
-        url = remove_current(url)
+        pkgdirurl = normalize_path(name_or_url)
+        pkgdirurl = remove_current(url)
     else:
         name = name_or_url
         devel_branch = config.get("global", "trunk-dir", "/cooker/")
@@ -148,24 +148,24 @@ def package_url(name_or_url, version=None, release=None, distro=None,
         path = os.path.join(distro or default_branch, name)
         parsed = list(urlparse.urlparse(repository_url(mirrored=mirrored)))
         parsed[2] = os.path.normpath(parsed[2] + "/" + path)
-        url = urlparse.urlunparse(parsed)
-    return url
+        pkgdirurl = urlparse.urlunparse(parsed)
+    return pkgdirurl
 
-def package_name(url):
+def package_name(pkgdirurl):
     """Returns the package name from a package URL
     
     It takes care of revision numbers"""
-    parsed = urlparse.urlparse(url)
+    parsed = urlparse.urlparse(pkgdirurl)
     path, rev = split_url_revision(parsed[2])
     rest, name = os.path.split(path)
     return name
 
-def package_spec_url(url, *args, **kwargs):
+def package_spec_url(pkgdirurl, *args, **kwargs):
     """Returns the URL of the specfile of a given package URL
 
     The parameters are the same used by checkout_url, except append_path.
     """
-    kwargs["append_path"] = "SPECS/" + package_name(url) + ".spec"
-    specurl = checkout_url(url, *args, **kwargs)
+    kwargs["append_path"] = "SPECS/" + package_name(pkgdirurl) + ".spec"
+    specurl = checkout_url(pkgdirurl, *args, **kwargs)
     return specurl
 
