@@ -88,12 +88,12 @@ def autoswitch(svn, wcpath, wcurl, newbaseurl=None):
     """Switches between mirror, default_parent, or newbaseurl"""
     nobase = False
     mirror = mirror_url()
-    default_parent = config.get("global", "default_parent")
-    current = default_parent
-    if default_parent is None:
-        raise Error, "the option default_parent from repsys.conf is "\
+    repository = layout.repository_url()
+    current = repository
+    if repository is None:
+        raise Error, "the option repository from repsys.conf is "\
                 "required"
-    indefault = same_base(default_parent, wcurl)
+    indefault = same_base(repository, wcurl)
     if not newbaseurl:
         if not mirror:
             raise Error, "an URL is needed when the option mirror "\
@@ -102,7 +102,7 @@ def autoswitch(svn, wcpath, wcurl, newbaseurl=None):
             chosen = mirror
         elif same_base(mirror, wcurl):
             current = mirror
-            chosen = default_parent
+            chosen = repository
         else:
             nobase = True
     else:
@@ -115,7 +115,7 @@ def autoswitch(svn, wcpath, wcurl, newbaseurl=None):
         chosen = newbaseurl
     if nobase:
         raise Error, "the URL of this working copy is not based in "\
-                "default_parent nor mirror URLs"
+                "repository nor mirror URLs"
     assert current != chosen
     newurl = mirror_relocate(current, chosen, wcurl, wcpath)
     return newurl
