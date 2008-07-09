@@ -304,11 +304,11 @@ def make_release(author=None, revision=None, date=None, lines=None,
     rel.visible = False
     for entry in entries:
         lines = filter_log_lines(entry.lines)
-        if lines:
-            rel.visible = True
         revision = _Revision()
         revision.revision = entry.revision
         revision.lines = format_lines(lines)
+        if revision.lines:
+            rel.visible = True
         revision.date = parse_raw_date(entry.date)
         revision.raw_date = entry.date
         revision.author = entry.author
