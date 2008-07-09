@@ -8,6 +8,7 @@ from RepSys import Error, config
 __all__ = ["package_url", "checkout_url", "repository_url", "get_url_revision"]
 
 def layout_dirs():
+    #FIXME normalize paths
     devel_branch = config.get("global", "trunk-dir", "/cooker/")
     branches_dir = config.get("global", "branches-dir", "/updates/")
     return devel_branch, branches_dir
@@ -172,4 +173,28 @@ def package_spec_url(pkgdirurl, *args, **kwargs):
     kwargs["append_path"] = "SPECS/" + package_name(pkgdirurl) + ".spec"
     specurl = checkout_url(pkgdirurl, *args, **kwargs)
     return specurl
+
+def distro_branch(pkgdirurl):
+    """Tries to guess the distro branch name from a package URL"""
+    from RepSys.mirror import same_base
+    found = None
+    repo = repository_url()
+    if same_base(repo, pkgdirurl):
+        devel_branch, branches_dir = layout_dirs()
+        repo_path = urlparse.urlparse(repo)[2]
+        devel_path = os.path.normpath(repo_path + "/" + devel_branch)
+        branches_path = os.path.normpath(repo_path + "/" + branches_dir)
+        parsed = urlparse.urlparse(pkgdirurl)
+        path = os.path.normpath(parsed[2])
+        if path.startswith(devel_path):
+            # devel_branch must be before branches_dir in order to allow
+            # devel_branch to be inside branches_dir, as in /branches/cooker
+            found = devel_branch.replace("/", "") # XXX WRONG
+        elif path.startswith(branches_path):
+            comps = path.split("/")
+            if branches_path == "/":
+                found = comps[1]
+            elif len(comps) >= 2: # must be at least branch/pkgname
+                found = comps[branches_path.count("/")+1]
+    return found
 
