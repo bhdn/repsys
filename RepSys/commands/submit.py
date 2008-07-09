@@ -42,6 +42,7 @@ Options:
 Examples:
     repsys submit
     repsys submit foo
+    repsys submit 2009.1/foo
     repsys submit foo@14800 bar baz@11001
     repsys submit https://repos/svn/mdv/cooker/foo
     repsys submit -l https://repos
