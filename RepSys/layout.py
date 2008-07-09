@@ -4,6 +4,7 @@ import os
 import urlparse
 
 from RepSys import Error, config
+from RepSys.svn import SVN
 
 __all__ = ["package_url", "checkout_url", "repository_url", "get_url_revision"]
 
