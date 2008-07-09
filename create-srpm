@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from RepSys import Error, config, plugins, layout
+from RepSys.mirror import strip_username
 from RepSys.rpmutil import get_srpm
 from RepSys.cgiutil import get_targets
 from RepSys.util import mapurl, execcmd, get_helper
@@ -13,13 +14,6 @@ import urlparse
 import urllib
 
 class CmdError(Error): pass
-
-def strip_username(url):
-    parsed = list(urlparse.urlparse(url))
-    userpwd, hostport = urllib.splituser(parsed[1])
-    parsed[1] = hostport
-    newurl = urlparse.urlunparse(parsed)
-    return newurl
 
 class CmdIface:
     def author_email(self, author):
