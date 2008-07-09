@@ -47,10 +47,10 @@ class CmdIface:
                 urls = [mapurl(url) for url in urls]
             uploadsrpms = []
             for url in urls:
-                revision = revision or layout.get_url_revision(url)
+                urlrev = revision or layout.get_url_revision(url)
                 url, _ = layout.split_url_revision(url)
                 targetsrpms = get_srpm(url,
-                         revision=revision,
+                         revision=urlrev,
                          targetdirs=target.target,
                          packager=packager,
                          svnlog=1,
