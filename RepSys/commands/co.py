@@ -16,12 +16,14 @@ repository.
 You can specify the distro branch to checkout from by using distro/pkgname.
 
 Options:
+    -d      The distribution branch to checkout from
     -r REV  Revision to checkout
     -M      Do not use the mirror (use the main repository)
     -h      Show this message
 
 Examples:
     repsys co pkgname
+    repsys co -d 2009.0 pkgname
     repsys co 2009.0/pkgame
     repsys co http://repos/svn/cnc/snapshot/foo
     repsys co http://repos/svn/cnc/snapshot/foo foo-pkg
@@ -30,6 +32,7 @@ Examples:
 def parse_options():
     parser = OptionParser(help=HELP)
     parser.add_option("-r", dest="revision")
+    parser.add_option("--distribution", "-d", dest="distro", default=None)
     opts, args = parser.parse_args()
     if len(args) not in (1, 2):
         raise Error, "invalid arguments"

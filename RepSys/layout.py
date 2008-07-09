@@ -150,9 +150,11 @@ def package_url(name_or_url, version=None, release=None, distro=None,
         devel_branch, branches_dir = layout_dirs()
         if distro or "/" in name:
             default_branch = branches_dir
+            if distro:
+                default_branch = os.path.join(default_branch, distro)
         else:
             default_branch = devel_branch # cooker
-        path = os.path.join(distro or default_branch, name)
+        path = os.path.join(default_branch, name)
         parsed = list(urlparse.urlparse(repository_url(mirrored=mirrored)))
         parsed[2] = os.path.join(parsed[2], path)
         pkgdirurl = urlparse.urlunparse(parsed)

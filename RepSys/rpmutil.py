@@ -393,9 +393,9 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
             "nocurrent": nocurrent,
             "nopristine": nopristine}
 
-def checkout(pkgdirurl, path=None, revision=None):
+def checkout(pkgdirurl, path=None, revision=None, distro=None):
     o_pkgdirurl = pkgdirurl
-    pkgdirurl = layout.package_url(o_pkgdirurl)
+    pkgdirurl = layout.package_url(o_pkgdirurl, distro=distro)
     current = layout.checkout_url(pkgdirurl) #TODO add branch support
     if path is None:
         path = layout.package_name(pkgdirurl)
