@@ -14,8 +14,9 @@
   log section
 - added rpmlog options: -o to append the old changelog, -p to append the
   changelog found in the spec, and -s to resort all changelog entries
-- allow submitting many packages at once
 - rpmlog, getsrpm, getspec and changed will use the mirror if enabled
+- don't hide authors with only the first revision SILENTed (#41117)
+- allow submitting many packages at once (#28352)
 - package revisions in submit are now specified with name@nnn
 - fixed bad url used when using -v in getsrpm
 - make 'repsys submit' without package name or revision number work again
@@ -38,6 +39,7 @@
 - moved all configuration options that will hardly be changed to
   repsys-example.conf; we now have a shorter repsys.conf
 - fixed the use of file:/// URLs when using just the package name
+- allow using submit with package URLs having usernames
 - don't give the wrong message "invalid command 'CMD'" when this is not
   the case
 - added more help messages in subcommands

@@ -65,7 +65,7 @@ def info(url, stream=sys.stderr):
 def mirror_relocate(oldparent, newparent, url, wcpath):
     svn = SVN()
     newurl = relocate_path(oldparent, newparent, url)
-    svn.switch(newurl, url, path=wcpath, relocate="True")
+    svn.switch(newurl, url, path=wcpath, relocate=True)
     return newurl
 
 def switchto_parent(svn, url, path):
