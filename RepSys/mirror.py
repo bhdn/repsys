@@ -1,6 +1,7 @@
 import sys
 import os
 import urlparse
+import urllib
 
 from RepSys import Error, config, layout
 from RepSys.svn import SVN
@@ -24,11 +25,18 @@ def _joinurl(url, relpath):
         parsed[3], parsed[4], parsed[5]))
     return newurl
 
+
+def strip_username(url):
+    parsed = list(urlparse.urlparse(url))
+    _, parsed[1] = urllib.splituser(parsed[1])
+    newurl = urlparse.urlunparse(parsed)
+    return newurl
+
 def same_base(parent, url):
     """returns true if parent is parent of url"""
     parent = normalize_path(parent)
     url = normalize_path(url)
-    #FIXME handle paths with/without username/password
+    url = strip_username(url)
     return url.startswith(parent)
 
 def relocate_path(oldparent, newparent, url):
