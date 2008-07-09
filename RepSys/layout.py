@@ -7,6 +7,11 @@ from RepSys import Error, config
 
 __all__ = ["package_url", "checkout_url", "repository_url", "get_url_revision"]
 
+def layout_dirs():
+    devel_branch = config.get("global", "trunk-dir", "/cooker/")
+    branches_dir = config.get("global", "branches-dir", "/updates/")
+    return devel_branch, branches_dir
+
 def get_url_revision(url, retrieve=True):
     """Get the revision from a given URL
 
@@ -139,8 +144,7 @@ def package_url(name_or_url, version=None, release=None, distro=None,
         pkgdirurl = remove_current(pkgdirurl)
     else:
         name = name_or_url
-        devel_branch = config.get("global", "trunk-dir", "/cooker/")
-        branches_dir = config.get("global", "branches-dir", "/updates/")
+        devel_branch, branches_dir = layout_dirs()
         if distro or "/" in name:
             default_branch = branches_dir
         else:
