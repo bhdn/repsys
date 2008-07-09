@@ -191,7 +191,7 @@ def distro_branch(pkgdirurl):
         if path.startswith(devel_path):
             # devel_branch must be before branches_dir in order to allow
             # devel_branch to be inside branches_dir, as in /branches/cooker
-            found = devel_branch.replace("/", "") # XXX WRONG
+            _, found = os.path.split(devel_branch)
         elif path.startswith(branches_path):
             comps = path.split("/")
             if branches_path == "/":
