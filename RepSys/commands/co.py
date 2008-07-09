@@ -17,6 +17,7 @@ You can specify the distro branch to checkout from by using distro/pkgname.
 
 Options:
     -d      The distribution branch to checkout from
+    -b      The package branch
     -r REV  Revision to checkout
     -M      Do not use the mirror (use the main repository)
     -h      Show this message
@@ -33,6 +34,7 @@ def parse_options():
     parser = OptionParser(help=HELP)
     parser.add_option("-r", dest="revision")
     parser.add_option("--distribution", "-d", dest="distro", default=None)
+    parser.add_option("--branch", "-b", dest="branch", default=None)
     opts, args = parser.parse_args()
     if len(args) not in (1, 2):
         raise Error, "invalid arguments"

@@ -393,10 +393,11 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
             "nocurrent": nocurrent,
             "nopristine": nopristine}
 
-def checkout(pkgdirurl, path=None, revision=None, distro=None):
+def checkout(pkgdirurl, path=None, revision=None, branch=None,
+        distro=None):
     o_pkgdirurl = pkgdirurl
     pkgdirurl = layout.package_url(o_pkgdirurl, distro=distro)
-    current = layout.checkout_url(pkgdirurl) #TODO add branch support
+    current = layout.checkout_url(pkgdirurl, branch=branch)
     if path is None:
         path = layout.package_name(pkgdirurl)
     mirror.info(current)
