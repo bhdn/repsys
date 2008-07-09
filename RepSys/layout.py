@@ -8,9 +8,10 @@ from RepSys import Error, config
 __all__ = ["package_url", "checkout_url", "repository_url", "get_url_revision"]
 
 def layout_dirs():
-    #FIXME normalize paths
-    devel_branch = config.get("global", "trunk-dir", "/cooker/")
-    branches_dir = config.get("global", "branches-dir", "/updates/")
+    devel_branch = config.get("global", "trunk-dir", "cooker/")
+    devel_branch = os.path.normpath(devel_branch)
+    branches_dir = config.get("global", "branches-dir", "updates/")
+    branches_dir = os.path.normpath(branches_dir)
     return devel_branch, branches_dir
 
 def get_url_revision(url, retrieve=True):
@@ -152,7 +153,7 @@ def package_url(name_or_url, version=None, release=None, distro=None,
             default_branch = devel_branch # cooker
         path = os.path.join(distro or default_branch, name)
         parsed = list(urlparse.urlparse(repository_url(mirrored=mirrored)))
-        parsed[2] = os.path.normpath(parsed[2] + "/" + path)
+        parsed[2] = os.path.join(parsed[2], path)
         pkgdirurl = urlparse.urlunparse(parsed)
     return pkgdirurl
 
@@ -182,8 +183,8 @@ def distro_branch(pkgdirurl):
     if same_base(repo, pkgdirurl):
         devel_branch, branches_dir = layout_dirs()
         repo_path = urlparse.urlparse(repo)[2]
-        devel_path = os.path.normpath(repo_path + "/" + devel_branch)
-        branches_path = os.path.normpath(repo_path + "/" + branches_dir)
+        devel_path = os.path.join(repo_path, devel_branch)
+        branches_path = os.path.join(repo_path, branches_dir)
         parsed = urlparse.urlparse(pkgdirurl)
         path = os.path.normpath(parsed[2])
         if path.startswith(devel_path):
