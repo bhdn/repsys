@@ -8,6 +8,8 @@
   interactivity at all with ssh
 - fixed incompatibility with Python-2.4 on urlparse
 - fixed emptylog message, which was not being shown when needed
+- distributions can be specified by using <distro>/<package> in all
+  commands
 - template: hide the first release when it has only invisible lines
 - added initial man page
 - allow resorting changelog entries through the config option sort in the
