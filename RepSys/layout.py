@@ -141,10 +141,13 @@ def package_url(name_or_url, version=None, release=None, distro=None,
     @distro: the name of the repository branch inside updates/
     @mirrored: return an URL based on the mirror repository, if enabled
     """
-    from RepSys.mirror import normalize_path
+    from RepSys import mirror
     if "://" in name_or_url:
-        pkgdirurl = normalize_path(name_or_url)
+        pkgdirurl = mirror.normalize_path(name_or_url)
         pkgdirurl = remove_current(pkgdirurl)
+        if mirror.using_on(pkgdirurl) and not mirrored:
+            pkgdirurl = mirror.relocate_path(mirror.mirror_url(),
+                    repository_url(), pkgdirurl)
     else:
         name = name_or_url
         devel_branch, branches_dir = layout_dirs()
