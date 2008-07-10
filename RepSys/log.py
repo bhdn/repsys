@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from RepSys import Error, config, RepSysTree
+from RepSys import Error, config, layout
 from RepSys.svn import SVN
 from RepSys.util import execcmd
 
@@ -45,7 +45,7 @@ $line
  #end for
 
  #for $author in $rel.authors
-  #if $author.revisions and not $author.revisions[0].lines
+  #if not $author.visible
     #continue
   #end if
   ##alternatively, one could use:
@@ -176,6 +176,7 @@ class _Author:
     name = None
     email = None
     revisions = None
+    visible = False
 
 
 def group_releases_by_author(releases):
@@ -196,13 +197,14 @@ def group_releases_by_author(releases):
             author.name = revs[0].author_name
             author.email = revs[0].author_email
             author.revisions = revs
+            # #41117: mark those authors without visible messages
+            author.visible = bool(sum(len(rev.lines) for rev in revs))
             revlatest = author.revisions[0]
             # keep the latest revision even for completely invisible
             # authors (below)
             if latest is None or revlatest.revision > latest.revision:
                 latest = revlatest
-            count = sum(len(rev.lines) for rev in author.revisions)
-            if count == 0:
+            if not author.visible:
                 # only sort those visible authors, invisible ones are used
                 # only in "latest"
                 continue
@@ -302,11 +304,11 @@ def make_release(author=None, revision=None, date=None, lines=None,
     rel.visible = False
     for entry in entries:
         lines = filter_log_lines(entry.lines)
-        if lines:
-            rel.visible = True
         revision = _Revision()
         revision.revision = entry.revision
         revision.lines = format_lines(lines)
+        if revision.lines:
+            rel.visible = True
         revision.date = parse_raw_date(entry.date)
         revision.raw_date = entry.date
         revision.author = entry.author
@@ -398,8 +400,8 @@ def svn2rpm(pkgdirurl, rev=None, size=None, submit=False,
     concat = config.get("log", "concat", "").split()
     revoffset = get_revision_offset()
     svn = SVN()
-    pkgreleasesurl = os.path.join(pkgdirurl, "releases")
-    pkgcurrenturl = os.path.join(pkgdirurl, "current")
+    pkgreleasesurl = layout.checkout_url(pkgdirurl, releases=True)
+    pkgcurrenturl = layout.checkout_url(pkgdirurl)
     releaseslog = svn.log(pkgreleasesurl, noerror=1)
     currentlog = svn.log(pkgcurrenturl, limit=size, start=rev,
             end=revoffset)
@@ -533,7 +535,7 @@ def get_old_log(pkgdirurl):
         svn = SVN()
         tmpdir = tempfile.mktemp()
         try:
-            pkgname = RepSysTree.pkgname(pkgdirurl)
+            pkgname = layout.package_name(pkgdirurl)
             pkgoldurl = os.path.join(oldurl, pkgname)
             try:
                 # we're using HEAD here because fixes in misc/ (oldurl) may

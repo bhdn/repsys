@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-from RepSys import Error, config, plugins
-from RepSys.rpmutil import get_srpm, svn_url_rev, strip_url_rev
+from RepSys import Error, config, plugins, layout
+from RepSys.mirror import strip_username
+from RepSys.rpmutil import get_srpm
 from RepSys.cgiutil import get_targets
 from RepSys.util import mapurl, execcmd, get_helper
 import sys
@@ -9,6 +10,8 @@ import os
 import pwd
 import optparse
 import subprocess
+import urlparse
+import urllib
 
 class CmdError(Error): pass
 
@@ -33,6 +36,7 @@ class CmdIface:
             else:
                 raise CmdError, "target not found"
             for url in urls:
+                url = strip_username(url)
                 for allowed in target.allowed:
                     if url.startswith(allowed):
                         break
@@ -43,10 +47,10 @@ class CmdIface:
                 urls = [mapurl(url) for url in urls]
             uploadsrpms = []
             for url in urls:
-                revision = revision or svn_url_rev(url)
-                url = strip_url_rev(url)
+                urlrev = revision or layout.get_url_revision(url)
+                url, _ = layout.split_url_revision(url)
                 targetsrpms = get_srpm(url,
-                         revision=revision,
+                         revision=urlrev,
                          targetdirs=target.target,
                          packager=packager,
                          svnlog=1,

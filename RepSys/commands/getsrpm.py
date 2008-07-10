@@ -5,6 +5,7 @@
 #
 from RepSys import Error, config
 from RepSys.command import *
+from RepSys.layout import package_url
 from RepSys.rpmutil import get_srpm
 import tempfile
 import shutil
@@ -29,6 +30,7 @@ Options:
     -n         Rename the package to include the revision number
     -l         Use subversion log to build rpm %changelog
     -T FILE    Template to be used to generate the %changelog
+    -M         Do not use the mirror (use the main repository)
     -h         Show this message
     -S         Do not download sources from the binary repository
     -C         Do not check integrity of files fetched from the binary
@@ -87,7 +89,7 @@ def parse_options():
     del opts.__ignore
     if len(args) != 1:
         raise Error, "invalid arguments"
-    opts.pkgdirurl = default_parent(args[0])
+    opts.pkgdirurl = package_url(args[0])
     opts.verbose = 1
     return opts
 
