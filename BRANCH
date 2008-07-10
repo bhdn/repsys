@@ -58,10 +58,12 @@ repsys co 2008.1/mutt without binrepo.lst
   foo-docs.tar.bz2
 
 - downloads
-  http://svn.mandriva.com/binrepo/plain/mutt/bla-1.5.11.tar.bz2::1.5.11-5mdv2008.1 and
-  http://svn.mandriva.com/binrepo/plain/mutt/foo-docs.tar.bz2::1.5.11-5mdv2008.1
+  svn.mandriva.com:/binrepo/plain/mutt/bla-1.5.11.tar.bz2::1.5.11-5mdv2008.1 and
+  svn.mandriva.com:/binrepo/plain/mutt/foo-docs.tar.bz2::1.5.11-5mdv2008.1
 
-** XXX it requires that all packages that don't have binrepo.lst 
+** XXX it requires that all packages that don't have binrepo.lst to have
+   their binaries named in the form filename::EVR, so that repsys won't
+   have to try both of them.
 
 
 repsys co 2008.1/mutt
@@ -99,23 +101,36 @@ upgrading to a newer version of the package
 
   + the command
   
-     RSYNC_PATH="/usr/bin/env 
-    			PACKAGE=mutt
-			SVNPATH=/
-		/usr/bin/binrepo_rsync"
+     RSYNC_PATH="/usr/bin/binrepo_rsync --pkg mutt"
      rsync --rsync-path="$RSYNC_PATH" \
     	bla-1.6.0.tar.bz2 \
-	svn.mandriva.com:/binrepo/hashes/09/09ee95c8f45209ddb3245149f02f2f519356ab12
+	09ee95c8f45209ddb3245149f02f2f519356ab12
 
   + binrepo_rsync calls rsync and the file is uploaded
    
   + then it creates a hardlink of
     09ee95c8f45209ddb3245149f02f2f519356ab12 at
     /binrepo/plain/mutt/bla-1.6.0.tar.bz2
+    (that's just for debugging, not needed at all)
 
 - upon successful upload, repsys updates binrepo.lst
 
 - the user updates the spec file with the SourceX entry, and commits it.
+
+
+updating an old working copy without binrepo.lst
+------------------------------------------------
+
+  $ repsys up
+
+- it will update the working copy
+
+- it will notice binrepo.lst is not in the working copy
+
+- looks for those files referred int the spec but also not present in the
+  working copy
+
+TODO finish
 
 
 Description
@@ -139,6 +154,9 @@ TODO
       are not found in the svn checkout/export (DONE)
 
     * adapt upload (MUST)
+
+    * change "up" to look only for the missing files when binrepo.lst is
+      not available (MUST)
 
     * adapt markrelease (MUST)
     
