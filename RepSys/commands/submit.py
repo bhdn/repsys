@@ -1,7 +1,6 @@
 #!/usr/bin/python
-from RepSys import Error, config
+from RepSys import Error, config, layout
 from RepSys.command import *
-from RepSys.layout import package_url, distro_branch
 from RepSys.rpmutil import get_spec, get_submit_info
 from RepSys.util import get_auth, execcmd, get_helper
 import urllib
@@ -21,6 +20,9 @@ The submit host will try to build the package, and upon successful
 completion will 'tag' the package and upload it to the official
 repositories.
 
+The package name can refer to an alias to a group of packages defined in
+the section submit-groups of the configuration file.
+
 The status of the submit can visualized at:
 
 http://kenobi.mandriva.com/bs/output.php
@@ -36,6 +38,7 @@ Options:
     -s         The host in which the package URL will be submitted
                (defaults to the host in the URL)
     -h         Show this message
+    --distro   The distribution branch where the packages come from
     --define   Defines one variable to be used by the submit scripts 
                in the submit host
 
@@ -46,6 +49,7 @@ Examples:
     repsys submit foo@14800 bar baz@11001
     repsys submit https://repos/svn/mdv/cooker/foo
     repsys submit -l https://repos
+    repsys submit 2008.1/my-packages@11011
     repsys submit --define section=main/testing -t 2008.1
 """
 
@@ -58,6 +62,8 @@ def parse_options():
     parser.add_option("-l", action="callback", callback=list_targets)
     parser.add_option("-r", dest="revision", type="string", nargs=1)
     parser.add_option("-s", dest="submithost", type="string", nargs=1,
+            default=None)
+    parser.add_option("--distro", dest="distro", type="string",
             default=None)
     parser.add_option("--define", action="append", default=[])
     opts, args = parser.parse_args()
@@ -83,12 +89,38 @@ def parse_options():
         else:
             raise Error, "the format <name> <revision> is deprecated, "\
                     "use <name>@<revision> instead"
-    opts.urls = [package_url(nameurl, mirrored=False) for nameurl in args]
-    if opts.target is None:
-        target = distro_branch(opts.urls[0]) or DEFAULT_TARGET
+    # expand group aliases
+    expanded = []
+    for nameurl in args:
+        expanded.extend(expand_group(nameurl))
+    if expanded != args:
+        print "Submitting: %s" % " ".join(expanded)
+        args = expanded
+    opts.urls = [layout.package_url(nameurl, distro=opts.distro, mirrored=False)
+            for nameurl in args]
+    if opts.target is None and opts.distro is None:
+        target = layout.distro_branch(opts.urls[0]) or DEFAULT_TARGET
         print "Implicit target: %s" % target
         opts.target = target
+    del opts.distro
     return opts
+
+def expand_group(group):
+    name, rev = layout.split_url_revision(group)
+    distro = None
+    if "/" in name:
+        distro, name = name.rsplit("/", 1)
+    found = config.get("submit-groups", name)
+    packages = [group]
+    if found:
+        packages = found.split()
+        if rev:
+            packages = [("%s@%s" % (package, rev))
+                    for package in packages]
+        if distro:
+            packages = ["%s/%s" % (distro, package)
+                    for package in packages]
+    return packages
 
 def list_targets(option, opt, val, parser):
     host = config.get("submit", "host")
