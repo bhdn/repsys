@@ -15,15 +15,20 @@ import getopt
 import sys, os
 
 HELP = """\
-Usage: repsys putsrpm [OPTIONS] REPPKGURL
+Usage: repsys putsrpm [OPTIONS] SOURCERPMS
+
+Will import source RPMs into the SVN repository.
+
+If the package was already imported, it will add the new files and remove
+those not present in the source RPM.
 
 Options:
-    -m LOG  Use log when commiting changes
+    -m LOG  Log message used when commiting changes
     -t      Create version-release tag on releases/
     -h      Show this message
 
 Examples:
-    repsys putsrpm file://svn/cnc/snapshot/foo /cnc/d/SRPMS/foo-1.0.src.rpm
+    repsys putsrpm pkg/SRPMS/pkg-2.0-1.src.rpm
 """
 
 def parse_options():
