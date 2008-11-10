@@ -178,7 +178,8 @@ def put_srpm(srpmfile, markrelease=False, branch=None, baseurl=None,
     if baseurl:
         pkgurl = mirror._joinurl(baseurl, srpm.name)
     else:
-        pkgurl = layout.package_url(srpm.name, distro=branch)
+        pkgurl = layout.package_url(srpm.name, distro=branch,
+                mirrored=False)
     print "Importing package to %s" % pkgurl
     try:
         if srpm.epoch:
