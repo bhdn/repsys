@@ -15,8 +15,6 @@ import getopt
 import sys, os
 
 HELP = """\
-*** WARNING --- You probably SHOULD NOT use this program! --- WARNING ***
-
 Usage: repsys putsrpm [OPTIONS] REPPKGURL
 
 Options:
