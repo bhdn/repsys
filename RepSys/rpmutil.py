@@ -284,7 +284,8 @@ def put_srpm(srpmfile, markrelease=False, striplog=True, branch=None,
             finally:
                 if os.path.isdir(logtmp):
                     shutil.rmtree(logtmp)
-        svn.commit(tmpdir, log=logmsg)
+        svn.commit(tmpdir,
+                log=logmsg or ("imported package %s" % srpm.name))
     finally:
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
