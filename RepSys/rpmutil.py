@@ -170,7 +170,7 @@ def patch_spec(pkgdirurl, patchfile, log=""):
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
 
-def put_srpm(srpmfile, logmsg=None):
+def put_srpm(srpmfile, markrelease=False, logmsg=None):
     # TODO add option to set the baseurl
     # TODO add option to allow updating already uploaded packages
     svn = SVN()
@@ -278,7 +278,6 @@ def put_srpm(srpmfile, logmsg=None):
         finally:
             if os.path.isdir(logtmp):
                 shutil.rmtree(logtmp)
-
         svn.commit(tmpdir, log=logmsg)
     finally:
         if os.path.isdir(tmpdir):
@@ -292,13 +291,10 @@ def put_srpm(srpmfile, logmsg=None):
     svn.copy(currenturl, pristineurl,
              log="Copying release %s-%s to pristine/ directory." %
                  (version, srpm.release))
-    # We don't create the entry on releases/ anymore because most of the
-    # packages have not been released yet when they are imported to svn,
-    # and also because mark_release will complain about the release that
-    # already exists.
-    #svn.copy(currenturl, releaseurl,
-    #         log="Copying release %s-%s to releases/ directory." %
-    #             (version, srpm.release))
+    if markrelease:
+        svn.copy(currenturl, releaseurl,
+                 log="Copying release %s-%s to releases/ directory." %
+                     (version, srpm.release))
 
 def create_package(pkgdirurl, log="", verbose=0):
     svn = SVN()
