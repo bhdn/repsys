@@ -170,8 +170,8 @@ def patch_spec(pkgdirurl, patchfile, log=""):
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
 
-def put_srpm(srpmfile, markrelease=False, branch=None, baseurl=None,
-        baseold=None, logmsg=None):
+def put_srpm(srpmfile, markrelease=False, striplog=True, branch=None,
+        baseurl=None, baseold=None, logmsg=None):
     svn = SVN()
     srpm = SRPM(srpmfile)
     tmpdir = tempfile.mktemp()
@@ -258,30 +258,32 @@ def put_srpm(srpmfile, markrelease=False, branch=None, baseurl=None,
             if os.path.isdir(unpackdir):
                 shutil.rmtree(unpackdir)
 
-        specs = glob.glob(os.path.join(specsdir, "*.spec"))
-        if not specs:
-            raise Error, "no spec file fount on %s" % specsdir
-        specpath = specs[0]
-        fspec = open(specpath)
-        spec, chlog = log.split_spec_changelog(fspec)
-        chlog.seek(0)
-        fspec.close()
-        oldurl = baseold or config.get("log", "oldurl")
-        pkgoldurl = mirror._joinurl(oldurl, srpm.name)
-        svn.mkdir(pkgoldurl, noerror=1,
-                log="created old log directory for %s" % srpm.name)
-        logtmp = tempfile.mktemp()
-        try:
-            svn.checkout(pkgoldurl, logtmp)
-            miscpath = os.path.join(logtmp, "log")
-            fmisc = open(miscpath, "w+")
-            fmisc.writelines(chlog)
-            fmisc.close()
-            svn.add(miscpath)
-            svn.commit(logtmp, log="imported old log for %s" % srpm.name)
-        finally:
-            if os.path.isdir(logtmp):
-                shutil.rmtree(logtmp)
+        if striplog:
+            specs = glob.glob(os.path.join(specsdir, "*.spec"))
+            if not specs:
+                raise Error, "no spec file fount on %s" % specsdir
+            specpath = specs[0]
+            fspec = open(specpath)
+            spec, chlog = log.split_spec_changelog(fspec)
+            chlog.seek(0)
+            fspec.close()
+            oldurl = baseold or config.get("log", "oldurl")
+            pkgoldurl = mirror._joinurl(oldurl, srpm.name)
+            svn.mkdir(pkgoldurl, noerror=1,
+                    log="created old log directory for %s" % srpm.name)
+            logtmp = tempfile.mktemp()
+            try:
+                svn.checkout(pkgoldurl, logtmp)
+                miscpath = os.path.join(logtmp, "log")
+                fmisc = open(miscpath, "w+")
+                fmisc.writelines(chlog)
+                fmisc.close()
+                svn.add(miscpath)
+                svn.commit(logtmp,
+                        log="imported old log for %s" % srpm.name)
+            finally:
+                if os.path.isdir(logtmp):
+                    shutil.rmtree(logtmp)
         svn.commit(tmpdir, log=logmsg)
     finally:
         if os.path.isdir(tmpdir):

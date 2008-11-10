@@ -17,10 +17,11 @@ those not present in the source RPM.
 Options:
     -m LOG  Log message used when commiting changes
     -t      Create version-release tag on releases/
-    -b      The distribution branch to place it
+    -b NAME The distribution branch to place it
     -d URL  The URL of base directory where packages will be placed
     -c URL  The URL of the base directory where the changelog will be
             placed
+    -s      Don't strip the changelog from the spec
     -h      Show this message
 
 Examples:
@@ -33,6 +34,8 @@ def parse_options():
     parser.add_option("-l", dest="logmsg", default="")
     parser.add_option("-t", dest="markrelease", action="store_true",
             default=False)
+    parser.add_option("-s", dest="striplog", action="store_false",
+            default=True)
     parser.add_option("-b", dest="branch", type="string", default=None)
     parser.add_option("-d", dest="baseurl", type="string", default=None)
     parser.add_option("-c", dest="baseold", type="string", default=None)
@@ -40,10 +43,11 @@ def parse_options():
     opts.srpmfiles = args
     return opts
 
-def put_srpm_cmd(srpmfiles, markrelease, branch, baseurl=None,
-        baseold=None, logmsg=None):
+def put_srpm_cmd(srpmfiles, markrelease=False, striplog=True, branch=None,
+        baseurl=None, baseold=None, logmsg=None):
     for path in srpmfiles:
-        put_srpm(path, markrelease, branch, baseurl, baseold, logmsg)
+        put_srpm(path, markrelease, striplog, branch, baseurl, baseold,
+                logmsg)
 
 def main():
     do_command(parse_options, put_srpm_cmd)
