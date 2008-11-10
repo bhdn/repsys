@@ -195,7 +195,6 @@ def put_srpm(srpmfile, markrelease=False, striplog=True, branch=None,
         if ret or not svn.ls(currenturl, noerror=1):
             svn.checkout(pkgurl, tmpdir)
             svn.mkdir(os.path.join(tmpdir, "releases"))
-            svn.mkdir(os.path.join(tmpdir, "releases", version))
             svn.mkdir(currenturl)
             svn.mkdir(os.path.join(currenturl, "SPECS"))
             svn.mkdir(os.path.join(currenturl, "SOURCES"))
