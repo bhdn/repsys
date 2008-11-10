@@ -1,9 +1,8 @@
 #!/usr/bin/python
 from RepSys import Error, config
-from RepSys import mirror, layout
+from RepSys import mirror, layout, log
 from RepSys.svn import SVN
 from RepSys.simplerpm import SRPM
-from RepSys.log import specfile_svn2rpm
 from RepSys.util import execcmd
 from RepSys.command import default_parent
 import rpm
@@ -105,7 +104,7 @@ def get_srpm(pkgdirurl,
         spec = speclist[0]
         if svnlog:
             submit = not not revision
-            specfile_svn2rpm(pkgdirurl, spec, revision, submit=submit,
+            log.specfile_svn2rpm(pkgdirurl, spec, revision, submit=submit,
                     template=template, macros=macros, exported=tmpdir)
         for script in scripts:
             #FIXME revision can be "None"
@@ -171,24 +170,26 @@ def patch_spec(pkgdirurl, patchfile, log=""):
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
 
-def put_srpm(pkgdirurl, srpmfile, appendname=0, log=""):
-    srpm = SRPM(srpmfile)
-    if appendname:
-        pkgdirurl = "/".join([pkgdirurl, srpm.name])
+def put_srpm(srpmfile, logmsg=None):
+    # TODO add option to set the baseurl
+    # TODO add option to allow updating already uploaded packages
     svn = SVN()
+    srpm = SRPM(srpmfile)
     tmpdir = tempfile.mktemp()
+    pkgurl = layout.package_url(srpm.name)
+    print "Importing package to %s" % pkgurl
     try:
         if srpm.epoch:
             version = "%s:%s" % (srpm.epoch, srpm.version)
         else:
             version = srpm.version
-        versionurl = "/".join([pkgdirurl, "releases", version])
+        versionurl = "/".join([pkgurl, "releases", version])
         releaseurl = "/".join([versionurl, srpm.release])
         #FIXME when pre-commit hook fails, there's no clear way to know
         # what happened
-        ret = svn.mkdir(pkgdirurl, noerror=1, log="Created package directory")
+        ret = svn.mkdir(pkgurl, noerror=1, log="Created package directory")
         if ret:
-            svn.checkout(pkgdirurl, tmpdir)
+            svn.checkout(pkgurl, tmpdir)
             svn.mkdir(os.path.join(tmpdir, "releases"))
             svn.mkdir(os.path.join(tmpdir, "releases", version))
             svn.mkdir(os.path.join(tmpdir, "current"))
@@ -200,7 +201,7 @@ def put_srpm(pkgdirurl, srpmfile, appendname=0, log=""):
         else:
             if svn.ls(releaseurl, noerror=1):
                 raise Error, "release already exists"
-            svn.checkout("/".join([pkgdirurl, "current"]), tmpdir)
+            svn.checkout("/".join([pkgurl, "current"]), tmpdir)
             svn.mkdir(versionurl, noerror=1,
                       log="Created directory for version %s." % version)
             currentdir = tmpdir
@@ -254,22 +255,50 @@ def put_srpm(pkgdirurl, srpmfile, appendname=0, log=""):
             if os.path.isdir(unpackdir):
                 shutil.rmtree(unpackdir)
 
-        svn.commit(tmpdir, log=log)
+        specs = glob.glob(os.path.join(specsdir, "*.spec"))
+        if not specs:
+            raise Error, "no spec file fount on %s" % specsdir
+        specpath = specs[0]
+        fspec = open(specpath)
+        spec, chlog = log.split_spec_changelog(fspec)
+        chlog.seek(0)
+        fspec.close()
+        pkgoldurl = mirror._joinurl(config.get("log", "oldurl"), srpm.name)
+        svn.mkdir(pkgoldurl, noerror=1,
+                log="created old log directory for %s" % srpm.name)
+        logtmp = tempfile.mktemp()
+        try:
+            svn.checkout(pkgoldurl, logtmp)
+            miscpath = os.path.join(logtmp, "log")
+            fmisc = open(miscpath, "w+")
+            fmisc.writelines(chlog)
+            fmisc.close()
+            svn.add(miscpath)
+            svn.commit(logtmp, log="imported old log for %s" % srpm.name)
+        finally:
+            if os.path.isdir(logtmp):
+                shutil.rmtree(logtmp)
+
+        svn.commit(tmpdir, log=logmsg)
     finally:
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
 
     # Do revision and pristine tag copies
-    pristineurl = layout.checkout_url(pkgdirurl, pristine=True)
+    pristineurl = layout.checkout_url(pkgurl, pristine=True)
     svn.remove(pristineurl, noerror=1,
                log="Removing previous pristine/ directory.")
-    currenturl = layout.checkout_url(pkgdirurl)
+    currenturl = layout.checkout_url(pkgurl)
     svn.copy(currenturl, pristineurl,
              log="Copying release %s-%s to pristine/ directory." %
                  (version, srpm.release))
-    svn.copy(currenturl, releaseurl,
-             log="Copying release %s-%s to releases/ directory." %
-                 (version, srpm.release))
+    # We don't create the entry on releases/ anymore because most of the
+    # packages have not been released yet when they are imported to svn,
+    # and also because mark_release will complain about the release that
+    # already exists.
+    #svn.copy(currenturl, releaseurl,
+    #         log="Copying release %s-%s to releases/ directory." %
+    #             (version, srpm.release))
 
 def create_package(pkgdirurl, log="", verbose=0):
     svn = SVN()

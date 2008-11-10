@@ -20,8 +20,7 @@ HELP = """\
 Usage: repsys putsrpm [OPTIONS] REPPKGURL
 
 Options:
-    -n      Append package name to provided URL
-    -l LOG  Use log when commiting changes
+    -m LOG  Use log when commiting changes
     -h      Show this message
 
 Examples:
@@ -30,32 +29,15 @@ Examples:
 
 def parse_options():
     parser = OptionParser(help=HELP)
-    parser.add_option("-l", dest="log", default="")
-    parser.add_option("-n", dest="appendname", action="store_true")
+    parser.add_option("-l", dest="logmsg", default="")
     opts, args = parser.parse_args()
-    if len(args) != 2:
-        raise Error, "invalid arguments"
-    opts.pkgdirurl = package_url(args[0], mirrored=False)
-    opts.srpmfile = args[1]
+    opts.srpmfiles = args
     return opts
 
-def put_srpm_cmd(pkgdirurl, srpmfile, appendname=0, log=""):
-    if os.path.isdir(srpmfile):
-        dir = srpmfile
-        for entry in os.listdir(dir):
-            if entry[-8:] == ".src.rpm":
-                sys.stderr.write("Putting %s... " % entry)
-                sys.stderr.flush()
-                entrypath = os.path.join(dir, entry)
-                try:
-                    put_srpm(pkgdirurl, entrypath, appendname, log)
-                    sys.stderr.write("done\n")
-                except Error, e:
-                    sys.stderr.write("error: %s\n" % str(e))
-    else:
-        put_srpm(pkgdirurl, srpmfile, appendname, log)
-        
-                 
+def put_srpm_cmd(srpmfiles, logmsg=None):
+    for path in srpmfiles:
+        put_srpm(path, logmsg)
+
 def main():
     do_command(parse_options, put_srpm_cmd)
 
