@@ -170,15 +170,15 @@ def patch_spec(pkgdirurl, patchfile, log=""):
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
 
-def put_srpm(srpmfile, markrelease=False, baseurl=None, baseold=None,
-        logmsg=None):
+def put_srpm(srpmfile, markrelease=False, branch=None, baseurl=None,
+        baseold=None, logmsg=None):
     svn = SVN()
     srpm = SRPM(srpmfile)
     tmpdir = tempfile.mktemp()
     if baseurl:
         pkgurl = mirror._joinurl(baseurl, srpm.name)
     else:
-        pkgurl = layout.package_url(srpm.name)
+        pkgurl = layout.package_url(srpm.name, distro=branch)
     print "Importing package to %s" % pkgurl
     try:
         if srpm.epoch:
