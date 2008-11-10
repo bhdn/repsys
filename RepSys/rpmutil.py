@@ -170,13 +170,17 @@ def patch_spec(pkgdirurl, patchfile, log=""):
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
 
-def put_srpm(srpmfile, markrelease=False, logmsg=None):
+def put_srpm(srpmfile, markrelease=False, baseurl=None, baseold=None,
+        logmsg=None):
     # TODO add option to set the baseurl
     # TODO add option to allow updating already uploaded packages
     svn = SVN()
     srpm = SRPM(srpmfile)
     tmpdir = tempfile.mktemp()
-    pkgurl = layout.package_url(srpm.name)
+    if baseurl:
+        pkgurl = mirror._joinurl(baseurl, srpm.name)
+    else:
+        pkgurl = layout.package_url(srpm.name)
     print "Importing package to %s" % pkgurl
     try:
         if srpm.epoch:
@@ -263,7 +267,8 @@ def put_srpm(srpmfile, markrelease=False, logmsg=None):
         spec, chlog = log.split_spec_changelog(fspec)
         chlog.seek(0)
         fspec.close()
-        pkgoldurl = mirror._joinurl(config.get("log", "oldurl"), srpm.name)
+        oldurl = baseold or config.get("log", "oldurl")
+        pkgoldurl = mirror._joinurl(oldurl, srpm.name)
         svn.mkdir(pkgoldurl, noerror=1,
                 log="created old log directory for %s" % srpm.name)
         logtmp = tempfile.mktemp()
