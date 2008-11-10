@@ -172,8 +172,6 @@ def patch_spec(pkgdirurl, patchfile, log=""):
 
 def put_srpm(srpmfile, markrelease=False, baseurl=None, baseold=None,
         logmsg=None):
-    # TODO add option to set the baseurl
-    # TODO add option to allow updating already uploaded packages
     svn = SVN()
     srpm = SRPM(srpmfile)
     tmpdir = tempfile.mktemp()
