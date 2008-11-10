@@ -188,16 +188,17 @@ def put_srpm(srpmfile, markrelease=False, striplog=True, branch=None,
             version = srpm.version
         versionurl = "/".join([pkgurl, "releases", version])
         releaseurl = "/".join([versionurl, srpm.release])
+        currenturl = os.path.join(tmpdir, "current")
         #FIXME when pre-commit hook fails, there's no clear way to know
         # what happened
         ret = svn.mkdir(pkgurl, noerror=1, log="Created package directory")
-        if ret:
+        if ret or not svn.ls(currenturl, noerror=1):
             svn.checkout(pkgurl, tmpdir)
             svn.mkdir(os.path.join(tmpdir, "releases"))
             svn.mkdir(os.path.join(tmpdir, "releases", version))
-            svn.mkdir(os.path.join(tmpdir, "current"))
-            svn.mkdir(os.path.join(tmpdir, "current", "SPECS"))
-            svn.mkdir(os.path.join(tmpdir, "current", "SOURCES"))
+            svn.mkdir(currenturl)
+            svn.mkdir(os.path.join(currenturl, "SPECS"))
+            svn.mkdir(os.path.join(currenturl, "SOURCES"))
             #svn.commit(tmpdir,log="Created package structure.")
             version_exists = 1
             currentdir = os.path.join(tmpdir, "current")
