@@ -1,12 +1,4 @@
 #!/usr/bin/python
-#
-# This program will append a release to the Conectiva Linux package
-# repository system.  It's meant to be a startup system to include
-# pre-packaged SRPMS in the repository, thus, you should not commit
-# packages over an ongoing package structure (with changes in current/
-# directory and etc). Also, notice that packages must be included in
-# cronological order.
-#
 from RepSys import Error
 from RepSys.command import *
 from RepSys.layout import package_url
