@@ -4,7 +4,7 @@ from RepSys.command import *
 import getopt
 import sys
 
-VERSION="1.6.90-binrepo"
+VERSION="1.7-binrepo"
 
 HELP = """\
 Usage: repsys COMMAND [COMMAND ARGUMENTS]
@@ -18,6 +18,7 @@ Useful commands:
     ci            commit changes
     sync          add-remove all file changes from the .spec
     submit        submit a package for build
+    putsrpm       import a source package to the repository
     getspec       prints the spec
     rpmlog        prints the RPM changelog
     getsrpm       creates the source RPM
@@ -26,7 +27,7 @@ Useful commands:
     authoremail   prints the e-mail of a given author
     switch        relocate to mirror or upstream repository
 
-Run "repsys COMMAND --help" for more information.
+Run "repsys COMMAND --help" and "man 8 repsys" for more information.
 
 Written by Gustavo Niemeyer <gustavo@niemeyer.net>
 """

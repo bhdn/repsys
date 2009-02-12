@@ -2,6 +2,8 @@
 - added support to "binary repository"
 - added new commands upload, up and del to help handling tarballs in the
   binaries repository
+
+* 1.7
 - dropped all authenticated access support: subversion authentication has
   been broken for a long time and the workarounds weren't decent. It will
   be back in 1.7.x.
