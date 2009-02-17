@@ -79,27 +79,30 @@ One example layout:
 \fB
 /packages/cooker
      |
-     +\- 2007.0/
-     +\- 2007.1/
-     +\- 2008.0/
      +\- cooker/
-        ...
-        +\- rsync/
-        +\- coreutils/
-        +\- make/
-        +\- foo/
-           +\- current/
-           |  +\- SOURCES/
-           |  +\- SPECS/
-           +\- releases/
-              ...
-              +\- 1.0
-                 +\- 1mdk/
-                    +\- SOURCES/
-                    +\- SPECS/
-                 +\- 2mdk/
-                 ...
+     |  ...
+     |  +\- rsync/
+     |  +\- coreutils/
+     |  +\- make/
+     |  +\- foo/
+     |     +\- current/
+     |     |  +\- SOURCES/
+     |     |  +\- SPECS/
+     |     +\- releases/
+     |        ...
+     |        +\- 1.0
+     |           +\- 1mdk/
+     |              +\- SOURCES/
+     |              +\- SPECS/
+     |           +\- 2mdk/
+     |           ...
+     +\- updates/
+        +\- 2007.0/
+        +\- 2007.1/
+        +\- 2008.0/
 \fP
+.SS "Setting up a repository"
+The minimal setup is accomplished with a Subversion repository having three directories: \fBcooker/\fP, \fBmisc/\fP and \fBupdates/\fP. The name of this directories can be changed using the configuration options \fBtrunk\-dir\fP and \fBbranches-dir\fP. Having this you can start importing packages with \fBrepsys import\fP.
 \#.SH "THE SUBMIT PROCESS"
 \#.SS "Connecting"
 \#.SS "Changelog generation"
