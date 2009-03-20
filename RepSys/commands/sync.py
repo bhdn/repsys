@@ -5,10 +5,10 @@ from RepSys.rpmutil import sync
 HELP = """\
 Usage: repsys sync
 
-Will add or removed from the working copy new files added or removed
-from the spec file.
+Will add or remove from the working copy those files added or removed
+in the spec file.
 
-"No changes are commited."
+It will not commit the changes.
 
 Options:
     --dry-run    Print results without changing the working copy
