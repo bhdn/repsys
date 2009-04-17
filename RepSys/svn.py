@@ -29,15 +29,16 @@ class SVN:
         try:
             return execcmd(cmdstr, **kwargs)
         except Error, e:
-            if "Permission denied" in e.message:
-                raise Error, ("%s\n"
-                        "Seems ssh-agent or ForwardAgent are not setup, see "
-                        "http://wiki.mandriva.com/en/Development/Docs/Contributor_Tricks#SSH_configuration"
-                        " for more information." % e)
-            elif "authorization failed" in e.message:
-                raise Error, ("%s\n"
-                        "Note that repsys does not support any HTTP "
-                        "authenticated access." % e)
+            if e.args:
+                if "Permission denied" in e.args[0]:
+                    raise Error, ("%s\n"
+                            "Seems ssh-agent or ForwardAgent are not setup, see "
+                            "http://wiki.mandriva.com/en/Development/Docs/Contributor_Tricks#SSH_configuration"
+                            " for more information." % e)
+                elif "authorization failed" in e.args[0]:
+                    raise Error, ("%s\n"
+                            "Note that repsys does not support any HTTP "
+                            "authenticated access." % e)
             raise
 
     def _execsvn_success(self, *args, **kwargs):
