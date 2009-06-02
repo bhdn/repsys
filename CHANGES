@@ -1,4 +1,5 @@
-* Development version:
+* Development
+- make the -M option work again
 - added support to "binary repository"
 - added new commands upload, up and del to help handling tarballs in the
   binaries repository
