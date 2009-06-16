@@ -289,24 +289,27 @@ def put_srpm(srpmfile, markrelease=False, striplog=True, branch=None,
             fspec = open(specpath, "w")
             fspec.writelines(spec)
             fspec.close()
-            #FIXME move it to layout.py
-            oldurl = baseold or config.get("log", "oldurl")
-            pkgoldurl = mirror._joinurl(oldurl, srpm.name)
-            svn.mkdir(pkgoldurl, noerror=1,
-                    log="created old log directory for %s" % srpm.name)
-            logtmp = tempfile.mktemp()
-            try:
-                svn.checkout(pkgoldurl, logtmp)
-                miscpath = os.path.join(logtmp, "log")
-                fmisc = open(miscpath, "w+")
-                fmisc.writelines(chlog)
-                fmisc.close()
-                svn.add(miscpath)
-                svn.commit(logtmp,
-                        log="imported old log for %s" % srpm.name)
-            finally:
-                if os.path.isdir(logtmp):
-                    shutil.rmtree(logtmp)
+            chlog.seek(0, os.SEEK_END)
+            if chlog.tell() != 0:
+                chlog.seek(0)
+                #FIXME move it to layout.py
+                oldurl = baseold or config.get("log", "oldurl")
+                pkgoldurl = mirror._joinurl(oldurl, srpm.name)
+                svn.mkdir(pkgoldurl, noerror=1,
+                        log="created old log directory for %s" % srpm.name)
+                logtmp = tempfile.mktemp()
+                try:
+                    svn.checkout(pkgoldurl, logtmp)
+                    miscpath = os.path.join(logtmp, "log")
+                    fmisc = open(miscpath, "w+")
+                    fmisc.writelines(chlog)
+                    fmisc.close()
+                    svn.add(miscpath)
+                    svn.commit(logtmp,
+                            log="imported old log for %s" % srpm.name)
+                finally:
+                    if os.path.isdir(logtmp):
+                        shutil.rmtree(logtmp)
         svn.commit(tmpdir,
                 log=logmsg or ("imported package %s" % srpm.name))
     finally:
