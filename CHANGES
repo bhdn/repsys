@@ -1,5 +1,6 @@
 * Development
 - make the -M option work again
+- fixed putsrpm to not create old log files for packages without changelog
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has
