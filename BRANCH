@@ -50,16 +50,18 @@ upgrading to a newer version of the package
   $ wget http://prdownloads.sourceforge.net/bla/bla-1.6.tar.bz2
   $ repsys add bla-1.6.0.tar.bz2
 
-- repsys notices this is a tarball (checking filename or file size)
+- repsys notices this is a tarball (checking filename and/or file size)
 
 - repsys will move the file to SOURCES-bin/, create the symlink, and svn-add
   it to the working copy
 
-- uploads to
+- the spec file is updated with new version and release numbers
 
-- upon successful upload, repsys updates binrepo.lst
+  $ cd ../ # package top dir
+  $ repsys ci
 
-- the user updates the spec file with the SourceX entry, and commits it.
+- repsys will commit the new tarball on SOURCES-bin/ and then on the rest
+  of the working copy
 
 
 updating an old working copy without binrepo.lst
