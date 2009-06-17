@@ -499,6 +499,13 @@ def sync(dryrun=False, download=False):
     sourcesst = dict((os.path.basename(path), (path, st))
             for st, path in svn.status(sourcesdir, noignore=True))
     toadd = []
+    # add the spec file itself, in case of a new package
+    specstl = svn.status(specpath, noignore=True)
+    if specstl:
+        specst, _ = specstl[0]
+        if specst == "?":
+            toadd.append(specpath)
+    # add source files:
     for source, url in sources.iteritems():
         sourcepath = os.path.join(sourcesdir, source)
         pst = sourcesst.get(source)
