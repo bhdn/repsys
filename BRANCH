@@ -3,11 +3,12 @@ The detached binaries repository
 
 A brief description:
 
-All the binaries from packages sources (ie. all the binary files inside
+All binaries from packages sources (ie. all the binary files inside
 SOURCES/) will be placed in another subversion repository. This repository
 is called "binaries repository" or "tarballs repository". It will contain
 mostly the same directory structure of the main repository, but instead of
-having SOURCES and SPECS, it will only have a SOURCES-bin directory.
+having SOURCES and SPECS, it will only have a SOURCES-bin directory. Every
+copy/move operation should happen in both repositories.
 
 Why a new repository without the tarballs
 ==========================================
@@ -15,17 +16,19 @@ Why a new repository without the tarballs
 - the current svn repository is too large, hard to manage
 - there is no easy way to strip undesired tarballs without recreating the
   whole repository
+- ...
 
 
 Drawbacks of this layout
 =========================
 
-- everything that changes the single-repository usage increases the chance
+- (always) everything that changes the single-repository usage increases the chance
   of failure and make things more complicated.
+- ...
 
 
-Description of the operations on repsys
-========================================
+Interesting use cases (first phase)
+==================================
 
 repsys co 2008.1/mutt
 ---------------------
@@ -43,6 +46,29 @@ repsys co 2008.1/mutt
   (rpm doesn't handle symlinks, this allows us to have explicit links and
    proper src.rpm generates by rpmbuild)
 
+In case the path doesn't exist in the binrepo it will not fail, as we may
+have not imported all packages or the repository is not prepared to work on
+this model, etc.
+
+markrelease of a package
+------------------------
+
+   $ repsys markrelease 
+
+- will copy current/ to releases/VERSION/RELEASE, as usual
+
+- will copy current/ to releases/, on the binrepo 
+
+- and will perform this copy on the binrepo too
+
+Optionally, markrelease could create revprops indicating which is the
+revision of current/ on the binrepo that represents the tarballs that are
+being tagged.
+
+
+Use cases to be implemented after the first phase
+=================================================
+
 upgrading to a newer version of the package
 -------------------------------------------
 
@@ -55,7 +81,12 @@ upgrading to a newer version of the package
 - repsys will move the file to SOURCES-bin/, create the symlink, and svn-add
   it to the working copy
 
-- the spec file is updated with new version and release numbers
+  $ # the user updates the spec
+
+  $ repsys rm SOURCES/bla-1.5.1.tar.bz2
+
+- it will remove the symlink and run svn rm on
+  SOURCES-bin/bla-1.6.0.tar.bz2
 
   $ cd ../ # package top dir
   $ repsys ci
@@ -63,21 +94,22 @@ upgrading to a newer version of the package
 - repsys will commit the new tarball on SOURCES-bin/ and then on the rest
   of the working copy
 
+repsys sync would perform these steps too.
 
-updating an old working copy without binrepo.lst
-------------------------------------------------
+importing a package
+-------------------
 
-  $ repsys up
+  $ repsys putsrpm mypkg.src.rpm
 
-- it will update the working copy
+- repsys will open the src.rpm
 
-- it will notice binrepo.lst is not in the working copy
+- will look for tarballs inside SOURCES/ and import them to
+  http://svn.mandriva.com/svn/binrepo/cooker/mypkg/current/SOURCES/
 
-- looks for those files referred int the spec but also not present in the
-  working copy
+- will move the tarballs out of SOURCES and import the remaining files to
+  http://svn.mandriva.com/svn/packages/cooker/mypkg/current/
 
-TODO finish
-
+- will do whatever else putsrpm already does
 
 Description
 ===========
