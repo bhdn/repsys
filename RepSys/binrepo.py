@@ -1,7 +1,6 @@
-from RepSys import Error, config
-from RepSys.util import execcmd
+from RepSys import Error, config, mirror
+from RepSys.util import execcmd, rellink
 from RepSys.svn import SVN
-from RepSys.mirror import same_base
 
 import os
 import string
@@ -14,6 +13,7 @@ import urlparse
 from cStringIO import StringIO
 
 DEFAULT_TARBALLS_REPO = "/tarballs"
+BINARIES_DIR_NAME = "SOURCES-bin"
 
 def svn_basedir(target):
     svn = SVN()
@@ -58,7 +58,7 @@ def binrepo_url(path=None):
         comps = urlparse.urlparse(default_parent)
         base = comps[1] + ":" + DEFAULT_TARBALLS_REPO
     if path:
-        target = os.path.normpath(base + "/" + svn_basedir(path))
+        target = mirror.normalize_path(base + "/" + svn_basedir(path))
     else:
         target = base
     return target
@@ -89,6 +89,21 @@ def find_binaries(paths):
                 new.append(path)
     return new
 
-def download(target, url=None):
-    sourceurl = binrepo_url(url or target)    
-    #copyurl = #XXX finish
+def make_symlinks(source, dest):
+    for name in os.listdir(source):
+        path = os.path.join(source, name)
+        if not os.path.isdir(path):
+            destpath = os.path.join(dest, name)
+            linkpath = rellink(path, destpath)
+            os.symlink(linkpath, destpath)
+            yield destpath, linkpath
+
+def download(target, pkgdirurl):
+    sourcespath = os.path.join(target, "SOURCES")
+    binpath = os.path.join(target, BINARIES_DIR_NAME)
+    topurl = binrepo_url(target)
+    binurl = mirror._joinurl(topurl, BINARIES_DIR_NAME)
+    svn = SVN()
+    svn.checkout(binurl, binpath, show=1)
+    for binname, sourcename in make_symlinks(binpath, sourcespath):
+        yield binname, sourcename

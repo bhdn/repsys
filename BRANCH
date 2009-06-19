@@ -27,6 +27,12 @@ Drawbacks of this layout
 - ...
 
 
+Open issues
+============
+
+- how to handle repsys co -r REV pkg?
+
+
 Interesting use cases (first phase)
 ==================================
 

@@ -469,7 +469,7 @@ def checkout(pkgdirurl, path=None, revision=None, branch=None, distro=None,
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
     if use_binrepo:
-        download_binaries(path, check=binrepo_check)
+        download_binaries(path)
     
 def getpkgtopdir(basedir=None):
     #FIXME this implementation doesn't work well with relative path names,
@@ -616,26 +616,17 @@ def spec_sources(topdir):
     sources = [name for name, x, y in spec.sources()]
     return sources
     
-def download_binaries(target, pkgdirurl=None, check=True):
+def download_binaries(target, pkgdirurl=None):
     refurl = pkgdirurl
     if refurl is None:
         refurl = binrepo.svn_root(target)
     if binrepo.enabled(refurl):
-        download = []
         sourcesdir = "SOURCES"
-        sources = spec_sources(target)
-        for source in sources:
-            path = os.path.join(target, sourcesdir, source)
-            if not os.path.exists(path):
-                # try to download those files that are referred in the spec
-                # but were not found in the svn working copy
-                download.append(source)
         url = None
-        bintarget = os.path.join(target, sourcesdir)
         if pkgdirurl:
             url = os.path.join(pkgdirurl, sourcesdir)
-        for status in binrepo.download(bintarget, url, download, check):
-            print status
+        for src, dst in binrepo.download(target, url):
+            print src, "=>", dst
 
 def update(target=None):
     svn = SVN()
