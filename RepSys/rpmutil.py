@@ -625,8 +625,8 @@ def download_binaries(target, pkgdirurl=None):
         url = None
         if pkgdirurl:
             url = os.path.join(pkgdirurl, sourcesdir)
-        for src, dst in binrepo.download(target, url):
-            print src, "=>", dst
+        for op, src, dst in binrepo.download(target, url):
+            print op, src, "=>", dst
 
 def update(target=None):
     svn = SVN()

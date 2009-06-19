@@ -90,13 +90,29 @@ def find_binaries(paths):
     return new
 
 def make_symlinks(source, dest):
+    todo = []
+    tomove = []
     for name in os.listdir(source):
         path = os.path.join(source, name)
-        if not os.path.isdir(path):
+        if not os.path.isdir(path) and not path.startswith("."):
             destpath = os.path.join(dest, name)
             linkpath = rellink(path, destpath)
-            os.symlink(linkpath, destpath)
-            yield destpath, linkpath
+            if os.path.exists(destpath):
+                if os.path.islink(destpath):
+                    if os.readlink(destpath) == linkpath:
+                        continue
+                movepath = destpath + ".repsys-moved"
+                if os.path.exists(movepath):
+                    raise Error, "cannot create symlink, %s already "\
+                            "exists (%s too)" % (destpath, movepath)
+                tomove.append((destpath, movepath))
+            todo.append((destpath, linkpath))
+    for destpath, movepath in tomove:
+        os.rename(destpath, movepath)
+        yield "moved", destpath, movepath
+    for destpath, linkpath in todo:
+        os.symlink(linkpath, destpath)
+        yield "symlink", destpath, linkpath
 
 def download(target, pkgdirurl):
     sourcespath = os.path.join(target, "SOURCES")
@@ -105,5 +121,5 @@ def download(target, pkgdirurl):
     binurl = mirror._joinurl(topurl, BINARIES_DIR_NAME)
     svn = SVN()
     svn.checkout(binurl, binpath, show=1)
-    for binname, sourcename in make_symlinks(binpath, sourcespath):
-        yield binname, sourcename
+    for status in make_symlinks(binpath, sourcespath):
+        yield status
