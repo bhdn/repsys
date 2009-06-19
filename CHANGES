@@ -94,8 +94,7 @@
 - added workaround in the template to ignore empty releases
 - added initial support to mirrors, as requested by mrl; it required the
   new subcommand "ci"
-- changelogs from misc/ will now should come from HEAD and should be
-  escaped (%%)
+- changelogs from misc/ will come from HEAD and should be escaped (%%)
 
 * 1.6.15
 - empty changelog entries are now shown, with a EMPTYLOG tag to allow
