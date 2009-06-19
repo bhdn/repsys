@@ -92,6 +92,27 @@ def get_helper(name):
     if not os.path.isfile(hpath):
         log.warn("providing unexistent helper: %s", hpath)
     return hpath
+
+def rellink(src, dst):
+    """Creates relative symlinks
+
+    It will find the common ancestor and append to the src path.
+    """
+    asrc = os.path.abspath(src)
+    adst = os.path.abspath(dst)
+    csrc = asrc.split(os.path.sep)
+    cdst = adst.split(os.path.sep)
+    dstname = cdst.pop()
+    i = 0
+    l = min(len(csrc), len(cdst))
+    while i < l:
+        if csrc[i] != cdst[i]:
+            break
+        i += 1
+    dstextra = len(cdst[i:])
+    steps = [os.path.pardir] * dstextra
+    steps.extend(csrc[i:])
+    return os.path.sep.join(steps)
     
 
 # vim:et:ts=4:sw=4
