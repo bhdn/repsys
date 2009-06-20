@@ -98,7 +98,7 @@ def get_srpm(pkgdirurl,
         mirror.info(geturl)
         svn.export(geturl, tmpdir, rev=revision)
         if use_binrepo:
-            download_binaries(tmpdir, geturl, check=binrepo_check)
+            download_binaries(tmpdir, geturl, export=True)
         srpmsdir = os.path.join(tmpdir, "SRPMS")
         os.mkdir(srpmsdir)
         specsdir = os.path.join(tmpdir, "SPECS")
@@ -616,16 +616,12 @@ def spec_sources(topdir):
     sources = [name for name, x, y in spec.sources()]
     return sources
     
-def download_binaries(target, pkgdirurl=None):
+def download_binaries(target, pkgdirurl=None, export=False):
     refurl = pkgdirurl
     if refurl is None:
         refurl = binrepo.svn_root(target)
     if binrepo.enabled(refurl):
-        sourcesdir = "SOURCES"
-        url = None
-        if pkgdirurl:
-            url = os.path.join(pkgdirurl, sourcesdir)
-        for op, src, dst in binrepo.download(target, url):
+        for op, src, dst in binrepo.download(target, pkgdirurl, export=export):
             print op, src, "=>", dst
 
 def update(target=None):

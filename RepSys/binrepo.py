@@ -114,12 +114,15 @@ def make_symlinks(source, dest):
         os.symlink(linkpath, destpath)
         yield "symlink", destpath, linkpath
 
-def download(target, pkgdirurl):
+def download(target, pkgdirurl, export=False):
     sourcespath = os.path.join(target, "SOURCES")
     binpath = os.path.join(target, BINARIES_DIR_NAME)
-    topurl = binrepo_url(target)
+    topurl = binrepo_url(pkgdirurl or target)
     binurl = mirror._joinurl(topurl, BINARIES_DIR_NAME)
     svn = SVN()
-    svn.checkout(binurl, binpath, show=1)
+    if export:
+        svn.export(binurl, binpath, show=1)
+    else:
+        svn.checkout(binurl, binpath, show=1)
     for status in make_symlinks(binpath, sourcespath):
         yield status
