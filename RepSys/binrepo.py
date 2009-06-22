@@ -115,6 +115,7 @@ def make_symlinks(source, dest):
         yield "symlink", destpath, linkpath
 
 def download(target, pkgdirurl, export=False):
+    assert not export or (export and pkgdirurl)
     sourcespath = os.path.join(target, "SOURCES")
     binpath = os.path.join(target, BINARIES_DIR_NAME)
     topurl = binrepo_url(pkgdirurl or target)
