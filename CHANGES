@@ -1,5 +1,7 @@
 * Development
 - make the -M option work again
+- sync now adds the spec file (pointed by blino)
+- fixed putsrpm to not create old log files for packages without changelog
 - added support to "binary repository"
 - added new commands upload, up and del to help handling tarballs in the
   binaries repository
@@ -95,8 +97,7 @@
 - added workaround in the template to ignore empty releases
 - added initial support to mirrors, as requested by mrl; it required the
   new subcommand "ci"
-- changelogs from misc/ will now should come from HEAD and should be
-  escaped (%%)
+- changelogs from misc/ will come from HEAD and should be escaped (%%)
 
 * 1.6.15
 - empty changelog entries are now shown, with a EMPTYLOG tag to allow

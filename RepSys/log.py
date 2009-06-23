@@ -514,18 +514,23 @@ def split_spec_changelog(stream):
     chlog = StringIO()
     spec = StringIO()
     found = 0
+    visible = 0
     for line in stream:
         if line.startswith("%changelog"):
             found = 1
         elif not found:
             spec.write(line)
         elif found:
+            if line.strip():
+                visible = 1
             chlog.write(line)
         elif line.startswith("%"):
             found = 0
             spec.write(line)
     spec.seek(0)
-    chlog.seek(0)
+    if not visible:
+        # when there are only blanks in the changelog, make it empty
+        chlog = StringIO()
     return spec, chlog
 
 def get_old_log(pkgdirurl):

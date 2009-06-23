@@ -289,29 +289,31 @@ def put_srpm(srpmfile, markrelease=False, striplog=True, branch=None,
             specpath = specpath
             fspec = open(specpath)
             spec, chlog = log.split_spec_changelog(fspec)
-            chlog.seek(0)
-            spec.seek(0)
             fspec.close()
             fspec = open(specpath, "w")
             fspec.writelines(spec)
             fspec.close()
-            oldurl = baseold or config.get("log", "oldurl")
-            pkgoldurl = mirror._joinurl(oldurl, srpm.name)
-            svn.mkdir(pkgoldurl, noerror=1,
-                    log="created old log directory for %s" % srpm.name)
-            logtmp = tempfile.mktemp()
-            try:
-                svn.checkout(pkgoldurl, logtmp)
-                miscpath = os.path.join(logtmp, "log")
-                fmisc = open(miscpath, "w+")
-                fmisc.writelines(chlog)
-                fmisc.close()
-                svn.add(miscpath)
-                svn.commit(logtmp,
-                        log="imported old log for %s" % srpm.name)
-            finally:
-                if os.path.isdir(logtmp):
-                    shutil.rmtree(logtmp)
+            chlog.seek(0, os.SEEK_END)
+            if chlog.tell() != 0:
+                chlog.seek(0)
+                #FIXME move it to layout.py
+                oldurl = baseold or config.get("log", "oldurl")
+                pkgoldurl = mirror._joinurl(oldurl, srpm.name)
+                svn.mkdir(pkgoldurl, noerror=1,
+                        log="created old log directory for %s" % srpm.name)
+                logtmp = tempfile.mktemp()
+                try:
+                    svn.checkout(pkgoldurl, logtmp)
+                    miscpath = os.path.join(logtmp, "log")
+                    fmisc = open(miscpath, "w+")
+                    fmisc.writelines(chlog)
+                    fmisc.close()
+                    svn.add(miscpath)
+                    svn.commit(logtmp,
+                            log="imported old log for %s" % srpm.name)
+                finally:
+                    if os.path.isdir(logtmp):
+                        shutil.rmtree(logtmp)
         binrepo.import_binaries(currentdir, srpm.name)
         svn.commit(tmpdir,
                 log=logmsg or ("imported package %s" % srpm.name))
@@ -519,6 +521,13 @@ def sync(dryrun=False, ci=False, download=False):
     toadd_svn = []
     toremove_svn = []
     toremove_br = []
+    # add the spec file itself, in case of a new package
+    specstl = svn.status(specpath, noignore=True)
+    if specstl:
+        specst, _ = specstl[0]
+        if specst == "?":
+            toadd_svn.append(specpath)
+    # add source files:
     for source, url in sources.iteritems():
         sourcepath = os.path.join(sourcesdir, source)
         if sourcesst.get(source):
