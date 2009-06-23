@@ -312,6 +312,7 @@ def put_srpm(srpmfile, markrelease=False, striplog=True, branch=None,
             finally:
                 if os.path.isdir(logtmp):
                     shutil.rmtree(logtmp)
+        binrepo.import_binaries(currentdir, srpm.name)
         svn.commit(tmpdir,
                 log=logmsg or ("imported package %s" % srpm.name))
     finally:

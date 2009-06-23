@@ -5,7 +5,6 @@ from RepSys.svn import SVN
 import os
 import string
 import stat
-import sha
 import shutil
 import re
 import tempfile
@@ -14,6 +13,9 @@ from cStringIO import StringIO
 
 DEFAULT_TARBALLS_REPO = "/tarballs"
 BINARIES_DIR_NAME = "SOURCES-bin"
+
+PROP_USES_BINREPO = "mdv:uses-binrepo"
+PROP_BINREPO_REV = "mdv:binrepo-rev"
 
 def svn_basedir(target):
     svn = SVN()
@@ -65,7 +67,7 @@ def binrepo_url(path=None):
 
 def is_binary(path):
     raw = config.get("binrepo", "upload-match",
-            "\.(gz|bz2|zip|Z|tar|xar|rpm|7z|lzma)$")
+            "\.(gz|bz2|zip|Z|tar|xar|rpm|7z|lzma|tgz|tbz|tbz2)$")
     maxsize = config.getint("binrepo", "upload-match-size", "1048576") # 1MiB
     expr = re.compile(raw)
     name = os.path.basename(path)
@@ -127,3 +129,48 @@ def download(target, pkgdirurl, export=False):
         svn.checkout(binurl, binpath, show=1)
     for status in make_symlinks(binpath, sourcespath):
         yield status
+
+def import_binaries(topdir, pkgname):
+    """Import all binaries from a given package checkout
+
+    (with pending svn adds)
+
+    @topdir: the path to the svn checkout
+    """
+    svn = SVN()
+    topurl = binrepo_url(topdir)
+    sourcesdir = os.path.join(topdir, "SOURCES")
+    bintopdir = tempfile.mktemp("repsys")
+    if svn.propget(PROP_USES_BINREPO, topdir, noerror=1):
+        svn.checkout(topurl, bintopdir)
+        checkout = True
+    else:
+        bintopdir = tempfile.mkdtemp("repsys")
+        checkout = False
+    try:
+        bindir = os.path.join(bintopdir, BINARIES_DIR_NAME)
+        if not os.path.exists(bindir):
+            if checkout:
+                svn.mkdir(bindir)
+            else:
+                os.mkdir(bindir)
+        for path in find_binaries([sourcesdir]):
+            name = os.path.basename(path)
+            binpath = os.path.join(bindir, name)
+            os.rename(path, binpath)
+            try:
+                svn.remove(path)
+            except Error:
+                # file not tracked
+                svn.revert(path)
+            if checkout:
+                svn.add(binpath)
+        log = "imported binaries for %s" % pkgname
+        if checkout:
+            rev = svn.commit(bindir, log=log)
+        else:
+            rev = svn.import_(bintopdir, topurl, log=log)
+        svn.propset(PROP_USES_BINREPO, "yes", topdir)
+        svn.propset(PROP_BINREPO_REV, str(rev), topdir)
+    finally:
+        shutil.rmtree(bintopdir)
