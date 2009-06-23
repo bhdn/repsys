@@ -89,10 +89,22 @@ class SVN:
         self._add_log(cmd, kwargs)
         return self._execsvn_success(*cmd, **kwargs)
 
+    def _execsvn_commit(self, *cmd, **kwargs):
+        status, output = self._execsvn(*cmd, **kwargs)
+        match = re.search("Committed revision (?P<rev>\\d+)\\.$", output)
+        if match:
+            rawrev = match.group("rev")
+            return int(rawrev)
+
     def commit(self, path, **kwargs):
         cmd = ["commit", path]
         self._add_log(cmd, kwargs)
-        return self._execsvn_success(*cmd, **kwargs)
+        return self._execsvn_commit(*cmd, **kwargs)
+
+    def import_(self, path, url, **kwargs):
+        cmd = ["import", "'%s'" % path, "'%s'" % url]
+        self._add_log(cmd, kwargs)
+        return self._execsvn_commit(*cmd, **kwargs)
 
     def export(self, url, targetpath, **kwargs):
         cmd = ["export", "'%s'" % url, targetpath]
@@ -103,6 +115,11 @@ class SVN:
         cmd = ["checkout", "'%s'" % url, targetpath]
         self._add_revision(cmd, kwargs, optional=1)
         return self._execsvn_success(*cmd, **kwargs)
+
+    def propget(self, propname, targets, **kwargs):
+        cmd = ["propget", propname, targets]
+        status, output = self._execsvn(local=True, *cmd, **kwargs)
+        return output
  
     def propset(self, propname, value, targets, **kwargs):
         cmd = ["propset", propname, "'%s'" % value, targets]
