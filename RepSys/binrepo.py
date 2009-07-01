@@ -201,7 +201,7 @@ def upload(path, message=None):
     silent = config.get("log", "ignore-string")
     if not os.path.exists(bindir):
         try:
-            sum(download(topdir, show=False))
+            list(download(topdir, show=False))
         except Error:
             # possibly the package does not exist
             # (TODO check whether it is really a 'path not found' error)
@@ -209,7 +209,7 @@ def upload(path, message=None):
             svn.propset(PROP_USES_BINREPO, "yes", topdir)
             svn.commit(topdir, log="%s: created structure on binrepo for "\
                     "this package at %s" % (silent, bintopdir))
-            sum(download(topdir, show=False))
+            list(download(topdir, show=False))
     for path in paths:
         if svn.info2(path):
             raise Error, "'%s' is already tracked in svn" % path
