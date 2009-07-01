@@ -116,7 +116,7 @@ def make_symlinks(source, dest):
         os.symlink(linkpath, destpath)
         yield "symlink", destpath, linkpath
 
-def download(target, pkgdirurl=None, export=False):
+def download(target, pkgdirurl=None, export=False, show=True):
     assert not export or (export and pkgdirurl)
     sourcespath = os.path.join(target, "SOURCES")
     binpath = os.path.join(target, BINARIES_DIR_NAME)
@@ -124,9 +124,9 @@ def download(target, pkgdirurl=None, export=False):
     binurl = mirror._joinurl(topurl, BINARIES_DIR_NAME)
     svn = SVN()
     if export:
-        svn.export(binurl, binpath, show=1)
+        svn.export(binurl, binpath, show=show)
     else:
-        svn.checkout(binurl, binpath, show=1)
+        svn.checkout(binurl, binpath, show=show)
     for status in make_symlinks(binpath, sourcespath):
         yield status
 
@@ -199,7 +199,7 @@ def upload(path, message=None):
     silent = config.get("log", "ignore-string")
     if not os.path.exists(bindir):
         try:
-            sum(download(topdir))
+            sum(download(topdir, show=False))
         except Error:
             # possibly the package does not exist
             # (TODO check whether it is really a 'path not found' error)
@@ -207,8 +207,10 @@ def upload(path, message=None):
             svn.propset(PROP_USES_BINREPO, "yes", topdir)
             svn.commit(topdir, log="%s: created structure on binrepo for "\
                     "this package at %s" % (silent, bintopdir))
-            sum(download(topdir))
+            sum(download(topdir, show=False))
     for path in paths:
+        if svn.info2(path):
+            raise Error, "'%s' is already tracked in svn" % path
         name = os.path.basename(path)
         binpath = os.path.join(bindir, name)
         os.rename(path, binpath)
