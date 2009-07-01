@@ -143,8 +143,8 @@ class SVN:
           
     def info(self, path, **kwargs):
         cmd = ["info", path]
-        status, output = self._execsvn(local=True, *cmd, **kwargs)
-        if status == 0 and "Not a versioned resource" not in output:
+        status, output = self._execsvn(local=True, noerror=True, *cmd, **kwargs)
+        if "Not a versioned resource" not in output:
             return output.splitlines()
         return None
 
