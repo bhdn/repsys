@@ -118,11 +118,13 @@ def make_symlinks(source, dest):
 
 def download(target, pkgdirurl=None, export=False, show=True):
     assert not export or (export and pkgdirurl)
+    svn = SVN()
+    if not export and not svn.propget(PROP_USES_BINREPO, target):
+        return
     sourcespath = os.path.join(target, "SOURCES")
     binpath = os.path.join(target, BINARIES_DIR_NAME)
     topurl = binrepo_url(pkgdirurl or target)
     binurl = mirror._joinurl(topurl, BINARIES_DIR_NAME)
-    svn = SVN()
     if export:
         svn.export(binurl, binpath, show=show)
     else:
