@@ -655,15 +655,6 @@ def update(target=None):
         url = info["URL"]
         download_binaries(br_target, url)
 
-def _sources_log(added, deleted):
-    lines = ["SILENT: changed sources list:\n"]
-    for name in added:
-        lines.append("A\t" + name)
-    for name in deleted:
-        lines.append("D\t" + name)
-    log = "\n".join(lines)
-    return log
-
 def upload(paths, auto=False, commit=False, addsources=False):
     if auto and not paths:
         topdir = getpkgtopdir()
