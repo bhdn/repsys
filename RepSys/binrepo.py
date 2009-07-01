@@ -215,5 +215,7 @@ def upload(path, message=None):
         svn.add(binpath)
     if not message:
         message = "%s: new binary files %s" % (silent, " ".join(paths))
-    svn.commit(binpath, log=message)
+    rev = svn.commit(binpath, log=message)
+    svn.propset(PROP_BINREPO_REV, str(rev), topdir)
+    svn.commit(topdir, log=message)
     sum(make_symlinks(bindir, sourcesdir))
