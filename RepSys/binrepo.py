@@ -222,4 +222,4 @@ def upload(path, message=None):
     rev = svn.commit(binpath, log=message)
     svn.propset(PROP_BINREPO_REV, str(rev), topdir)
     svn.commit(topdir, log=message)
-    sum(make_symlinks(bindir, sourcesdir))
+    list(make_symlinks(bindir, sourcesdir))
