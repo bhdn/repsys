@@ -655,19 +655,9 @@ def update(target=None):
         url = info["URL"]
         download_binaries(br_target, url)
 
-def upload(paths, auto=False, commit=False, addsources=False):
-    if auto and not paths:
-        topdir = getpkgtopdir()
-        paths = [os.path.join(topdir, "SOURCES")]
-    added, deleted = binrepo.upload(paths, auto)
-    if addsources or commit:
-        svn = SVN()
-        spath = binrepo.sources_path(paths[0])
-        if addsources:
-            svn.add(spath)
-        if commit:
-            log = _sources_log(added, deleted)
-            svn.commit(spath, log=log)
+def upload(paths):
+    for path in paths:
+        binrepo.upload(path)
 
 def binrepo_delete(paths, commit=False):
     #TODO handle files tracked by svn

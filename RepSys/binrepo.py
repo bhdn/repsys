@@ -96,7 +96,7 @@ def make_symlinks(source, dest):
     tomove = []
     for name in os.listdir(source):
         path = os.path.join(source, name)
-        if not os.path.isdir(path) and not path.startswith("."):
+        if not os.path.isdir(path) and not name.startswith("."):
             destpath = os.path.join(dest, name)
             linkpath = rellink(path, destpath)
             if os.path.exists(destpath):
@@ -116,7 +116,7 @@ def make_symlinks(source, dest):
         os.symlink(linkpath, destpath)
         yield "symlink", destpath, linkpath
 
-def download(target, pkgdirurl, export=False):
+def download(target, pkgdirurl=None, export=False):
     assert not export or (export and pkgdirurl)
     sourcespath = os.path.join(target, "SOURCES")
     binpath = os.path.join(target, BINARIES_DIR_NAME)
@@ -174,3 +174,46 @@ def import_binaries(topdir, pkgname):
         svn.propset(PROP_BINREPO_REV, str(rev), topdir)
     finally:
         shutil.rmtree(bintopdir)
+
+def create_package_dirs(bintopdir):
+    svn = SVN()
+    binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
+    silent = config.get("log", "ignore-string")
+    message = "%s: created binrepo package structure" % silent
+    svn.mkdir(binurl, log=message, parents=True)
+
+def upload(path, message=None):
+    from RepSys.rpmutil import getpkgtopdir
+    svn = SVN()
+    if not os.path.exists(path):
+        raise Error, "not found: %s" % path
+    # XXX check if the path is under SOURCES/
+    paths = find_binaries([path])
+    if not paths:
+        raise Error, "'%s' does not seem to have any tarballs" % path
+    topdir = getpkgtopdir()
+    bintopdir = binrepo_url(topdir)
+    binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
+    sourcesdir = os.path.join(topdir, "SOURCES")
+    bindir = os.path.join(topdir, BINARIES_DIR_NAME)
+    silent = config.get("log", "ignore-string")
+    if not os.path.exists(bindir):
+        try:
+            sum(download(topdir))
+        except Error:
+            # possibly the package does not exist
+            # (TODO check whether it is really a 'path not found' error)
+            create_package_dirs(bintopdir)
+            svn.propset(PROP_USES_BINREPO, "yes", topdir)
+            svn.commit(topdir, log="%s: created structure on binrepo for "\
+                    "this package at %s" % (silent, bintopdir))
+            sum(download(topdir))
+    for path in paths:
+        name = os.path.basename(path)
+        binpath = os.path.join(bindir, name)
+        os.rename(path, binpath)
+        svn.add(binpath)
+    if not message:
+        message = "%s: new binary files %s" % (silent, " ".join(paths))
+    svn.commit(binpath, log=message)
+    sum(make_symlinks(bindir, sourcesdir))
