@@ -86,6 +86,8 @@ class SVN:
 
     def mkdir(self, path, **kwargs):
         cmd = ["mkdir", path]
+        if kwargs.get("parents"):
+            cmd.append("--parents")
         self._add_log(cmd, kwargs)
         return self._execsvn_success(*cmd, **kwargs)
 
