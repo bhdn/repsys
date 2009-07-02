@@ -528,7 +528,7 @@ def sync(dryrun=False, ci=False, download=False):
     for source, url in sources.iteritems():
         sourcepath = os.path.join(sourcesdir, source)
         if sourcesst.get(source):
-            if os.path.isfile(sourcepath):
+            if not os.path.islink(sourcepath):
                 if not binrepo.is_tracked(sourcepath):
                     if binrepo.is_binary(sourcepath):
                         toadd_br.append(sourcepath)

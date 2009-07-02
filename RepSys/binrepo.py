@@ -17,6 +17,8 @@ BINARIES_DIR_NAME = "SOURCES-bin"
 PROP_USES_BINREPO = "mdv:uses-binrepo"
 PROP_BINREPO_REV = "mdv:binrepo-rev"
 
+BINREPOS_SECTION = "binrepos"
+
 def svn_basedir(target):
     svn = SVN()
     info = svn.info2(target)
@@ -49,17 +51,7 @@ def enabled(url):
     use = config.getbool("global", "use-binaries-repository", False)
     return use
 
-def translate_url(url):
-    binurl = mirror.relocate_path(layout.repository_url(), binrepo_url(), url)
-    return binurl
-
-def binrepo_url(path=None):
-    """Returns the URL of the binaries repository
-
-    @path: if specified, returns a URL in the binrepo whose path is the
-           same as the path inside the main repository.
-    """
-    from RepSys.rpmutil import get_submit_info
+def default_repo():
     base = config.get("global", "binaries-repository", None)
     if base is None:
         default_parent = config.get("global", "default_parent", None)
@@ -68,10 +60,35 @@ def binrepo_url(path=None):
                     "configured"
         comps = urlparse.urlparse(default_parent)
         base = comps[1] + ":" + DEFAULT_TARBALLS_REPO
-    if path:
-        target = mirror.normalize_path(base + "/" + svn_basedir(path))
-    else:
-        target = base
+    return base
+
+def translate_url(url):
+    url = mirror.normalize_path(url)
+    main = mirror.normalize_path(layout.repository_url())
+    subpath = url[len(main)+1:]
+    # [binrepos]
+    # updates/2009.0 = svn+ssh://svn.mandriva.com/svn/binrepo/20090/
+    ## svn+ssh://svn.mandriva.com/svn/packages/2009.0/trafshow/current
+    # would translate to 
+    # svn+ssh://svn.mandriva.com/svn/binrepo/20090/updates/trafshow/current/
+    binbase = None
+    if BINREPOS_SECTION in config.sections():
+        for option, value in config.walk(BINREPOS_SECTION):
+            if subpath.startswith(option):
+                binbase = value
+                break
+    binurl = mirror._joinurl(binbase or default_repo(), subpath)
+    return binurl
+
+def translate_svndir(path):
+    """Returns the URL in the binrepo from a given path inside a SVN
+       checkout directory.
+
+    @path: if specified, returns a URL in the binrepo whose path is the
+           same as the path inside the main repository.
+    """
+    base = default_repo()
+    target = mirror.normalize_path(base + "/" + svn_basedir(path))
     return target
 
 def is_binary(path):
@@ -125,14 +142,17 @@ def make_symlinks(source, dest):
         os.symlink(linkpath, destpath)
         yield "symlink", destpath, linkpath
 
-def download(target, pkgdirurl=None, export=False, show=True):
+def download(targetdir, pkgdirurl=None, export=False, show=True):
     assert not export or (export and pkgdirurl)
     svn = SVN()
-    if not export and not svn.propget(PROP_USES_BINREPO, target):
+    if not export and not svn.propget(PROP_USES_BINREPO, targetdir):
         return
-    sourcespath = os.path.join(target, "SOURCES")
-    binpath = os.path.join(target, BINARIES_DIR_NAME)
-    topurl = binrepo_url(pkgdirurl or target)
+    sourcespath = os.path.join(targetdir, "SOURCES")
+    binpath = os.path.join(targetdir, BINARIES_DIR_NAME)
+    if pkgdirurl:
+        topurl = translate_url(pkgdirurl)
+    else:
+        topurl = translate_svndir(targetdir)
     binurl = mirror._joinurl(topurl, BINARIES_DIR_NAME)
     if export:
         svn.export(binurl, binpath, show=show)
@@ -149,7 +169,7 @@ def import_binaries(topdir, pkgname):
     @topdir: the path to the svn checkout
     """
     svn = SVN()
-    topurl = binrepo_url(topdir)
+    topurl = translate_svndir(topdir)
     sourcesdir = os.path.join(topdir, "SOURCES")
     bintopdir = tempfile.mktemp("repsys")
     if svn.propget(PROP_USES_BINREPO, topdir, noerror=1):
@@ -203,7 +223,7 @@ def upload(path, message=None):
     if not paths:
         raise Error, "'%s' does not seem to have any tarballs" % path
     topdir = getpkgtopdir()
-    bintopdir = binrepo_url(topdir)
+    bintopdir = translate_svndir(topdir)
     binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
     sourcesdir = os.path.join(topdir, "SOURCES")
     bindir = os.path.join(topdir, BINARIES_DIR_NAME)
