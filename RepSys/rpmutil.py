@@ -628,8 +628,7 @@ def download_binaries(target, pkgdirurl=None, export=False):
     if refurl is None:
         refurl = binrepo.svn_root(target)
     if binrepo.enabled(refurl):
-        for op, src, dst in binrepo.download(target, pkgdirurl, export=export):
-            print op, src, "=>", dst
+        binrepo.download(target, pkgdirurl, export=export)
 
 def update(target=None):
     svn = SVN()

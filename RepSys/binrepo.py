@@ -137,10 +137,8 @@ def make_symlinks(source, dest):
             todo.append((destpath, linkpath))
     for destpath, movepath in tomove:
         os.rename(destpath, movepath)
-        yield "moved", destpath, movepath
     for destpath, linkpath in todo:
         os.symlink(linkpath, destpath)
-        yield "symlink", destpath, linkpath
 
 def download(targetdir, pkgdirurl=None, export=False, show=True):
     assert not export or (export and pkgdirurl)
@@ -158,8 +156,7 @@ def download(targetdir, pkgdirurl=None, export=False, show=True):
         svn.export(binurl, binpath, show=show)
     else:
         svn.checkout(binurl, binpath, show=show)
-    for status in make_symlinks(binpath, sourcespath):
-        yield status
+    make_symlinks(binpath, sourcespath)
 
 def import_binaries(topdir, pkgname):
     """Import all binaries from a given package checkout
@@ -230,7 +227,7 @@ def upload(path, message=None):
     silent = config.get("log", "ignore-string", "SILENT")
     if not os.path.exists(bindir):
         try:
-            list(download(topdir, show=False))
+            download(topdir, show=False)
         except Error:
             pass
         if not os.path.exists(bindir):
@@ -239,7 +236,7 @@ def upload(path, message=None):
             create_package_dirs(bintopdir)
             svn.propset(PROP_USES_BINREPO, "yes", topdir)
             svn.commit(topdir, log="%s: created binrepo structure" % silent)
-            list(download(topdir, show=False))
+            download(topdir, show=False)
     for path in paths:
         if svn.info2(path):
             raise Error, "'%s' is already tracked in svn" % path
@@ -252,7 +249,7 @@ def upload(path, message=None):
     rev = svn.commit(binpath, log=message)
     svn.propset(PROP_BINREPO_REV, str(rev), topdir)
     svn.commit(topdir, log=message)
-    list(make_symlinks(bindir, sourcesdir))
+    make_symlinks(bindir, sourcesdir)
 
 def mapped_revision(url, revision):
     svn = SVN()
