@@ -491,6 +491,8 @@ def ispkgtopdir(path=None):
     return (".svn" in names and "SPECS" in names and "SOURCES" in names)
 
 def sync(dryrun=False, ci=False, download=False):
+    # TODO FIXME XXX fix it!
+    raise Error, "sync is not expected to work these days"
     svn = SVN()
     topdir = getpkgtopdir()
     # run svn info because svn st does not complain when topdir is not an
