@@ -49,7 +49,16 @@ def enabled(url):
     use = config.getbool("global", "use-binaries-repository", False)
     return use
 
+def translate_url(url):
+    binurl = mirror.relocate_path(layout.repository_url(), binrepo_url(), url)
+    return binurl
+
 def binrepo_url(path=None):
+    """Returns the URL of the binaries repository
+
+    @path: if specified, returns a URL in the binrepo whose path is the
+           same as the path inside the main repository.
+    """
     from RepSys.rpmutil import get_submit_info
     base = config.get("global", "binaries-repository", None)
     if base is None:
@@ -230,10 +239,6 @@ def mapped_revision(url, revision):
     svn = SVN()
     binrev = svn.propget(PROP_BINREPO_REV, url)
     return binrev
-
-def translate_url(url):
-    binurl = mirror.relocate_path(layout.repository_url(), binrepo_url(), url)
-    return binurl
 
 def markrelease(sourceurl, releasesurl, version, release, revision):
     svn = SVN()
