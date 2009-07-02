@@ -254,6 +254,9 @@ def upload(path, message=None):
 def mapped_revision(url, revision):
     svn = SVN()
     binrev = svn.propget(PROP_BINREPO_REV, url)
+    if not binrev:
+        raise Error, "the property '%s' was not found on %s" % \
+            (PROP_USES_BINREPO, url)
     return binrev
 
 def markrelease(sourceurl, releasesurl, version, release, revision):
