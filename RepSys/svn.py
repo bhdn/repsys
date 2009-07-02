@@ -120,6 +120,7 @@ class SVN:
 
     def propget(self, propname, targets, **kwargs):
         cmd = ["propget", propname, targets]
+        self._add_revision(cmd, kwargs)
         status, output = self._execsvn(local=True, *cmd, **kwargs)
         return output
  
