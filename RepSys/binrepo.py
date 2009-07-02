@@ -1,4 +1,4 @@
-from RepSys import Error, config, mirror
+from RepSys import Error, config, mirror, layout
 from RepSys.util import execcmd, rellink
 from RepSys.svn import SVN
 
@@ -225,3 +225,27 @@ def upload(path, message=None):
     svn.propset(PROP_BINREPO_REV, str(rev), topdir)
     svn.commit(topdir, log=message)
     list(make_symlinks(bindir, sourcesdir))
+
+def mapped_revision(url, revision):
+    svn = SVN()
+    binrev = svn.propget(PROP_BINREPO_REV, url)
+    return binrev
+
+def translate_url(url):
+    binurl = mirror.relocate_path(layout.repository_url(), binrepo_url(), url)
+    return binurl
+
+def markrelease(sourceurl, releasesurl, version, release, revision):
+    svn = SVN()
+    if not svn.propget(PROP_USES_BINREPO, sourceurl):
+        return
+    binrev = mapped_revision(sourceurl, revision)
+    binsource = translate_url(sourceurl)
+    binreleases = translate_url(releasesurl)
+    binversion = mirror._joinurl(binreleases, version)
+    binrelease = mirror._joinurl(binversion, release)
+    svn.mkdir(binreleases, noerror=1, log="created directory for releases")
+    svn.mkdir(binversion, noerror=0, log="created directory for version %s" % version)
+    svn.copy(binsource, binrelease, rev=binrev,
+            log="%markrelease ver=%s rel=%s rev=%s binrev=%s" % (version, release,
+                revision, binrev))
