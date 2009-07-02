@@ -189,7 +189,7 @@ def import_binaries(topdir, pkgname):
 def create_package_dirs(bintopdir):
     svn = SVN()
     binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
-    silent = config.get("log", "ignore-string")
+    silent = config.get("log", "ignore-string", "SILENT")
     message = "%s: created binrepo package structure" % silent
     svn.mkdir(binurl, log=message, parents=True)
 
@@ -207,7 +207,7 @@ def upload(path, message=None):
     binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
     sourcesdir = os.path.join(topdir, "SOURCES")
     bindir = os.path.join(topdir, BINARIES_DIR_NAME)
-    silent = config.get("log", "ignore-string")
+    silent = config.get("log", "ignore-string", "SILENT")
     if not os.path.exists(bindir):
         try:
             list(download(topdir, show=False))
@@ -218,8 +218,7 @@ def upload(path, message=None):
             # (TODO check whether it is really a 'path not found' error)
             create_package_dirs(bintopdir)
             svn.propset(PROP_USES_BINREPO, "yes", topdir)
-            svn.commit(topdir, log="%s: created structure on binrepo for "\
-                    "this package at %s" % (silent, bintopdir))
+            svn.commit(topdir, log="%s: created binrepo structure" % silent)
             list(download(topdir, show=False))
     for path in paths:
         if svn.info2(path):
