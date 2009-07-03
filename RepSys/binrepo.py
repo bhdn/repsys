@@ -229,10 +229,10 @@ def upload(path, message=None):
         try:
             download(topdir, show=False)
         except Error:
-            pass
-        if not os.path.exists(bindir):
             # possibly the package does not exist
             # (TODO check whether it is really a 'path not found' error)
+            pass
+        if not os.path.exists(bindir):
             create_package_dirs(bintopdir)
             svn.propset(PROP_USES_BINREPO, "yes", topdir)
             svn.commit(topdir, log="%s: created binrepo structure" % silent)
