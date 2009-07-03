@@ -69,8 +69,8 @@ def translate_url(url):
     # [binrepos]
     # updates/2009.0 = svn+ssh://svn.mandriva.com/svn/binrepo/20090/
     ## svn+ssh://svn.mandriva.com/svn/packages/2009.0/trafshow/current
-    # would translate to 
-    # svn+ssh://svn.mandriva.com/svn/binrepo/20090/updates/trafshow/current/
+    ## would translate to 
+    ## svn+ssh://svn.mandriva.com/svn/binrepo/20090/updates/trafshow/current/
     binbase = None
     if BINREPOS_SECTION in config.sections():
         for option, value in config.walk(BINREPOS_SECTION):
