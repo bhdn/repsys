@@ -126,9 +126,9 @@ def make_symlinks(source, dest):
             destpath = os.path.join(dest, name)
             linkpath = rellink(path, destpath)
             if os.path.exists(destpath):
-                if os.path.islink(destpath):
-                    if os.readlink(destpath) == linkpath:
-                        continue
+                if (os.path.islink(destpath) and
+                        os.readlink(destpath) == linkpath):
+                    continue
                 movepath = destpath + ".repsys-moved"
                 if os.path.exists(movepath):
                     raise Error, "cannot create symlink, %s already "\
