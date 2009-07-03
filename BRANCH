@@ -59,12 +59,7 @@ text repo?
 R: Markrelease must be done first in the txtrepo. If it fails there "we're
 in trouble" (though currently, we just miss it[0]).  When the markrelease is
 done in the txtrepo, we can do markrelease in the binrepo using '-r {DATE}',
-using the markrelease date in the txtrepo as '{DATE}'.  (Note: to avoid a
-SVN repository access to get the '{DATE}' while markreleasing, it can be
-calculated as:
-
-ceil( (date_immediately_before_commit + date_immediately_after_commit) / 2) )
-
+using the markrelease date in the txtrepo as '{DATE}'.
 
 [0] We should add transaction support for markrelease. The transaction could
 be stored out of the packages SVN (another SVN, a DB, a txt file, etc.), and
