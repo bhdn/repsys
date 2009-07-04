@@ -140,7 +140,8 @@ def make_symlinks(source, dest):
     for destpath, linkpath in todo:
         os.symlink(linkpath, destpath)
 
-def download(targetdir, pkgdirurl=None, export=False, show=True):
+def download(targetdir, pkgdirurl=None, export=False, show=True,
+        symlinks=True):
     assert not export or (export and pkgdirurl)
     svn = SVN()
     if not export and not svn.propget(PROP_USES_BINREPO, targetdir):
@@ -156,7 +157,8 @@ def download(targetdir, pkgdirurl=None, export=False, show=True):
         svn.export(binurl, binpath, show=show)
     else:
         svn.checkout(binurl, binpath, show=show)
-    make_symlinks(binpath, sourcespath)
+    if symlinks:
+        make_symlinks(binpath, sourcespath)
 
 def import_binaries(topdir, pkgname):
     """Import all binaries from a given package checkout

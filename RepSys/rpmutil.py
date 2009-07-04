@@ -459,7 +459,7 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
             "nopristine": nopristine}
 
 def checkout(pkgdirurl, path=None, revision=None, branch=None, distro=None,
-        use_binrepo=False, binrepo_check=True):
+        use_binrepo=False, binrepo_check=True, binrepo_link=True):
     o_pkgdirurl = pkgdirurl
     pkgdirurl = layout.package_url(o_pkgdirurl, distro=distro)
     current = layout.checkout_url(pkgdirurl, branch=branch)
@@ -469,7 +469,7 @@ def checkout(pkgdirurl, path=None, revision=None, branch=None, distro=None,
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
     if use_binrepo:
-        download_binaries(path)
+        download_binaries(path, symlinks=binrepo_link)
     
 def getpkgtopdir(basedir=None):
     #FIXME this implementation doesn't work well with relative path names,
@@ -625,12 +625,13 @@ def spec_sources(topdir):
     sources = [name for name, x, y in spec.sources()]
     return sources
     
-def download_binaries(target, pkgdirurl=None, export=False):
+def download_binaries(target, pkgdirurl=None, export=False, symlinks=True):
     refurl = pkgdirurl
     if refurl is None:
         refurl = binrepo.svn_root(target)
     if binrepo.enabled(refurl):
-        binrepo.download(target, pkgdirurl, export=export)
+        binrepo.download(target, pkgdirurl, export=export,
+                symlinks=symlinks)
 
 def update(target=None):
     svn = SVN()
