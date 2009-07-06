@@ -11,6 +11,7 @@ import re
 import tempfile
 import hashlib
 import urlparse
+import threading
 from cStringIO import StringIO
 
 DEFAULT_TARBALLS_REPO = "/tarballs"
@@ -206,7 +207,7 @@ def import_binaries(topdir, pkgname):
             else:
                 os.mkdir(bindir)
         binaries = find_binaries([sourcesdir])
-        update_sources(topdir, added=binaries)
+        update = update_sources_threaded(topdir, added=binaries)
         for path in binaries:
             name = os.path.basename(path)
             binpath = os.path.join(bindir, name)
@@ -225,7 +226,8 @@ def import_binaries(topdir, pkgname):
             rev = svn.import_(bintopdir, topurl, log=log)
         svn.propset(PROP_USES_BINREPO, "yes", topdir)
         svn.propset(PROP_BINREPO_REV, str(rev), topdir)
-        svn.add(sources_path(topdir)) # wait for update_sources
+        update.join()
+        svn.add(sources_path(topdir))
     finally:
         shutil.rmtree(bintopdir)
 
@@ -269,15 +271,20 @@ def update_sources(topdir, added=[], removed=[]):
     entries = {}
     if os.path.isfile(path):
         entries = parse_sources(path)
+    f = open(path, "w") # open before calculating hashes
     for name in removed:
         entries.pop(removed)
     for added_path in added:
         name = os.path.basename(added_path)
         entries[name] = file_hash(added_path)
-    f = open(path, "w")
     for name in sorted(entries):
         f.write("%s  %s\n" % (entries[name], name))
     f.close()
+
+def update_sources_threaded(*args, **kwargs):
+    t = threading.Thread(target=update_sources, args=args, kwargs=kwargs)
+    t.start()
+    return t
 
 def upload(path, message=None):
     from RepSys.rpmutil import getpkgtopdir
@@ -318,11 +325,12 @@ def upload(path, message=None):
     if not message:
         message = "%s: new binary files %s" % (silent, " ".join(paths))
     make_symlinks(bindir, sourcesdir)
-    update_sources(topdir, added=paths)
+    update = update_sources_threaded(topdir, added=paths)
     rev = svn.commit(binpath, log=message)
     svn.propset(PROP_BINREPO_REV, str(rev), topdir)
     sources = sources_path(topdir)
     svn.add(sources)
+    update.join()
     svn.commit(topdir + " " + sources, log=message, nonrecursive=True)
 
 def mapped_revision(url, revision):
