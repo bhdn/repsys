@@ -21,13 +21,31 @@ these binrepos by checking which URL defined in the "[binrepo]" section of
 the configuration file matches the path-part of the repository being
 accessed. (see open issues)
 
+Mapping revisions
+-----------------
+
+In order to allow the use of `repsys {getsrpm,co} -r REV`, repsys will have
+to use a reference in the text repo which will be used to know in what
+state was the binrepo when a binary was uploaded.
+
+We cannot use direct revision number mapping through properties/files/etc
+mainly because we can't ensure revisions will survive binrepo relocations.
+Thus another mechanism which relies on dates instead of revisions numbers
+is needed.
+
+When a binary is uploaded to the binrepo, the file `sha1.lst` is updated to
+have the files's hash and commited in the main text repo. This file will be
+used as the reference when the user uses -r REV on repsys. repsys will
+checkout the package in the main text repo with -r REV and then will use
+the "Last Changed Date" to checkout the binrepo part.
+
 Why a new repository without the tarballs
 ==========================================
 
 - the current svn repository is too large, hard to manage
 - there is no easy way to strip undesired tarballs without recreating the
   whole repository
-- fedora and ubuntu have separated repositories, so we must do it too!
+- fedora and ubuntu have separated repositories, so we must have it too!
 
 
 Drawbacks of this layout

@@ -8,6 +8,7 @@ import stat
 import shutil
 import re
 import tempfile
+import hashlib
 import urlparse
 from cStringIO import StringIO
 
@@ -18,6 +19,8 @@ PROP_USES_BINREPO = "mdv:uses-binrepo"
 PROP_BINREPO_REV = "mdv:binrepo-rev"
 
 BINREPOS_SECTION = "binrepos"
+
+SOURCES_FILE = "sha1.lst"
 
 def svn_basedir(target):
     svn = SVN()
@@ -184,7 +187,9 @@ def import_binaries(topdir, pkgname):
                 svn.mkdir(bindir)
             else:
                 os.mkdir(bindir)
-        for path in find_binaries([sourcesdir]):
+        binaries = find_binaries([sourcesdir])
+        update_sources(topdir, added=binaries)
+        for path in binaries:
             name = os.path.basename(path)
             binpath = os.path.join(bindir, name)
             os.rename(path, binpath)
@@ -202,6 +207,7 @@ def import_binaries(topdir, pkgname):
             rev = svn.import_(bintopdir, topurl, log=log)
         svn.propset(PROP_USES_BINREPO, "yes", topdir)
         svn.propset(PROP_BINREPO_REV, str(rev), topdir)
+        svn.add(sources_path(topdir)) # wait for update_sources
     finally:
         shutil.rmtree(bintopdir)
 
@@ -211,6 +217,49 @@ def create_package_dirs(bintopdir):
     silent = config.get("log", "ignore-string", "SILENT")
     message = "%s: created binrepo package structure" % silent
     svn.mkdir(binurl, log=message, parents=True)
+
+def parse_sources(path):
+    entries = {}
+    f = open(path)
+    for rawline in f:
+        line = rawline.strip()
+        try:
+            sum, name = line.split(None, 1)
+        except ValueError:
+            # failed to unpack, line format error
+            raise Error, "invalid line in sources file: %s" % rawline
+        entries[name] = sum
+    return entries
+
+def file_hash(path):
+    sum = hashlib.sha1()
+    f = open(path)
+    while True:
+        block = f.read(4096)
+        if not block:
+            break
+        sum.update(block)
+    f.close()
+    return sum.hexdigest()
+
+def sources_path(topdir):
+    path = os.path.join(topdir, "SOURCES", SOURCES_FILE)
+    return path
+
+def update_sources(topdir, added=[], removed=[]):
+    path = sources_path(topdir)
+    entries = {}
+    if os.path.isfile(path):
+        entries = parse_sources(path)
+    for name in removed:
+        entries.pop(removed)
+    for added_path in added:
+        name = os.path.basename(added_path)
+        entries[name] = file_hash(added_path)
+    f = open(path, "w")
+    for name in sorted(entries):
+        f.write("%s  %s\n" % (entries[name], name))
+    f.close()
 
 def upload(path, message=None):
     from RepSys.rpmutil import getpkgtopdir
@@ -248,10 +297,13 @@ def upload(path, message=None):
         svn.add(binpath)
     if not message:
         message = "%s: new binary files %s" % (silent, " ".join(paths))
+    make_symlinks(bindir, sourcesdir)
+    update_sources(topdir, added=paths)
     rev = svn.commit(binpath, log=message)
     svn.propset(PROP_BINREPO_REV, str(rev), topdir)
-    svn.commit(topdir, log=message)
-    make_symlinks(bindir, sourcesdir)
+    sources = sources_path(topdir)
+    svn.add(sources)
+    svn.commit(topdir + " " + sources, log=message, nonrecursive=True)
 
 def mapped_revision(url, revision):
     svn = SVN()
