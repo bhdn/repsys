@@ -29,9 +29,10 @@ to use a reference in the text repo which will be used to know in what
 state was the binrepo when a binary was uploaded.
 
 We cannot use direct revision number mapping through properties/files/etc
-mainly because we can't ensure revisions will survive binrepo relocations.
-Thus another mechanism which relies on dates instead of revisions numbers
-is needed.
+mainly because we may have multiple binaries repositories, and eventually
+they can be filtered for reducing space, thus can't ensure revisions will
+survive.  Thus another mechanism which relies on dates instead of revisions
+numbers is needed.
 
 When a binary is uploaded to the binrepo, the file `sha1.lst` is updated to
 have the files's hash and commited in the main text repo. This file will be
