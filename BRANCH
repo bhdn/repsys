@@ -10,11 +10,6 @@ It will contain mostly the same directory structure of the main repository,
 but instead of having SOURCES and SPECS, it will only have a SOURCES-bin
 directory. Every copy/move operation should happen in both repositories.
 
-In order to allow checking out a specific version of the package, repsys
-will have to keep a subverion property pointing to the current revision on
-the binrepo for that directory. For now, the property is mdv:binrepo-rev,
-and should always be set in current/.
-
 In order to allow deceasing binaries from older distributions, each stable
 distro will have its own subversion repository. repsys knows how to access
 these binrepos by checking which URL defined in the "[binrepo]" section of
