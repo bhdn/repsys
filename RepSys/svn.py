@@ -62,12 +62,13 @@ class SVN:
         if not optional or received_kwargs.has_key("rev"):
             ret = received_kwargs.get("rev")
             if isinstance(ret, basestring):
-                try:
-                    ret = int(ret)
-                except ValueError:
-                    raise Error, "invalid revision provided"
+                if not ret.startswith("{"): # if not a datespec
+                    try:
+                        ret = int(ret)
+                    except ValueError:
+                        raise Error, "invalid revision provided"
             if ret:
-                cmd_args.append("-r %d" % ret)
+                cmd_args.append("-r '%s'" % ret)
         
     def add(self, path, **kwargs):
         cmd = ["add", path]
