@@ -2,6 +2,7 @@ from RepSys import Error, config, mirror, layout
 from RepSys.util import execcmd, rellink
 from RepSys.svn import SVN
 
+import sys
 import os
 import string
 import stat
@@ -306,7 +307,9 @@ def upload(path, message=None):
             download(topdir, show=False)
     for path in paths:
         if svn.info2(path):
-            raise Error, "'%s' is already tracked in svn" % path
+            sys.stderr.write("'%s' is already tracked by svn, ignoring\n" %
+                    path)
+            continue
         name = os.path.basename(path)
         binpath = os.path.join(bindir, name)
         os.rename(path, binpath)
