@@ -189,18 +189,18 @@ Second phase
 - sync
 
 
-Rejected ideas
-==============
+Rejected or postponed ideas
+===========================
 
 Use of a plain filesystem storage for the tarballs
 --------------------------------------------------
-Becomes too complicated when thinking about markrelease, and mapping SVN
-revisions to binaries versions, basically requiring implementing VCS-like
-features on top of filesystem.  Would also require implementing another
-authentication and access scheme.  The main feature would be ease of
-removing old binaries, which isn't much of a point because we don't know
-precisely what and when we want to remove, so may end up not removing much
-files anyway.
+This was planned, then rejected. It becomes too complicated when thinking
+about markrelease, and mapping SVN revisions to binaries versions, basically
+requiring implementing VCS-like features on top of filesystem.  Would also
+require implementing another authentication and access scheme.  The main
+feature would be ease of removing old binaries, which isn't much of a point
+because we don't know precisely what and when we want to remove, so may end
+up not removing much files anyway.
 
 Open tarballs repository
 ------------------------
@@ -221,6 +221,16 @@ things moer complicated:
   new packages?)
 - just a convenience, we don't need and shouldn't rely on externals for
   running the build system, so why do it?
+
+Use of "external" xdelta to save space on binaries
+--------------------------------------------------
+But how? First idea is this could be done by defining a protocol and
+assuming repository manipulation with repsys (for ease).  Repsys could
+xdelta tarballs and add it to SVN with a special filename, then use it when
+checking out.  Would require a policy/algorithm on when to ditch old whole
+binaries, too (i.e.  hopefully wouldn't need to be handled manually by the
+maintainer).  Also, this is something complemental to splitting the
+repository, so we may do it later.
 
 
 The Future
