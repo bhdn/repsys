@@ -209,6 +209,19 @@ and binrepo, but rather complement this idea, where the
 open-tarballs-repository would take the place of the binrepo.  The txtrepo
 would still be used +- the same way.
 
+Use of externals for more seamless Subversion usage
+---------------------------------------------------
+This idea is not discarded, but it just provides easiness. OTOH, it makes
+things moer complicated:
+- markrelease ...
+- branching whole distro ...
+- keeping externals up-to-date
+- authentication and access control: only markrelease action done by the
+  build system should be allowed to change externals (so what about importing
+  new packages?)
+- just a convenience, we don't need and shouldn't rely on externals for
+  running the build system, so why do it?
+
 
 The Future
 ==========
