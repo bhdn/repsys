@@ -144,7 +144,7 @@ def make_symlinks(source, dest):
         os.symlink(linkpath, destpath)
 
 def download(targetdir, pkgdirurl=None, export=False, show=True,
-        symlinks=True):
+        revision=None, symlinks=True):
     assert not export or (export and pkgdirurl)
     svn = SVN()
     if not export and not svn.propget(PROP_USES_BINREPO, targetdir):
@@ -155,11 +155,26 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
         topurl = translate_url(pkgdirurl)
     else:
         topurl = translate_svndir(targetdir)
+    binrev = None
+    if revision:
+        if pkgdirurl:
+            url = mirror._joinurl(pkgdirurl, sources_path(""))
+            date = svn.propget("svn:date", url, rev=revision, revprop=True)
+        else:
+            spath = sources_path(targetdir)
+            if os.path.exists(spath):
+                infolines = svn.info(spath, xml=True)
+                if infolines:
+                    rawinfo = "".join(infolines) # arg!
+                    found = re.search("<date>(.*?)</date>", rawinfo).groups()
+                    date = found[0]
+        if date:
+            binrev = "{%s}" % date
     binurl = mirror._joinurl(topurl, BINARIES_DIR_NAME)
     if export:
-        svn.export(binurl, binpath, show=show)
+        svn.export(binurl, binpath, rev=binrev, show=show)
     else:
-        svn.checkout(binurl, binpath, show=show)
+        svn.checkout(binurl, binpath, rev=binrev, show=show)
     if symlinks:
         make_symlinks(binpath, sourcespath)
 
