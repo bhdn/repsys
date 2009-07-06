@@ -100,6 +100,8 @@ class SVN:
 
     def commit(self, path, **kwargs):
         cmd = ["commit", path]
+        if kwargs.get("nonrecursive"):
+            cmd.append("-N")
         self._add_log(cmd, kwargs)
         return self._execsvn_commit(*cmd, **kwargs)
 
