@@ -23,6 +23,8 @@ class SVN:
         if not kwargs.get("show") and args[0] not in localcmds:
             args = list(args)
             args.append("--non-interactive")
+        if kwargs.get("xml"):
+            args.append("--xml")
         svn_command = config.get("global", "svn-command",
                         "SVN_SSH='ssh -o \"BatchMode yes\"' svn")
         cmdstr = svn_command + " " + " ".join(args)
