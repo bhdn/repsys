@@ -96,7 +96,8 @@ def translate_svndir(path):
 
 def is_binary(path):
     raw = config.get("binrepo", "upload-match",
-            "\.(gz|bz2|zip|Z|tar|xar|rpm|7z|lzma|tgz|tbz|tbz2)$")
+            "\.(gz|bz2|zip|Z|tar|xar|rpm|7z|lzma|tgz|tbz|tbz2|"\
+               "ttf|bin|pdf|rpm|jar|war|db|cpio|jisp|egg|gem)$")
     maxsize = config.getint("binrepo", "upload-match-size", "1048576") # 1MiB
     expr = re.compile(raw)
     name = os.path.basename(path)
