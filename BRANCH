@@ -169,10 +169,6 @@ importing a package
 
 - will do whatever else putsrpm already does
 
-Description
-===========
-
-Support separate repositories for tarballs.
 
 TODO
 =====
