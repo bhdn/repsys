@@ -187,3 +187,33 @@ Second phase
 
 - up
 - sync
+
+
+Rejected ideas
+==============
+
+Use of a plain filesystem storage for the tarballs
+--------------------------------------------------
+Becomes too complicated when thinking about markrelease, and mapping SVN
+revisions to binaries versions, basically requiring implementing VCS-like
+features on top of filesystem.  Would also require implementing another
+authentication and access scheme.  The main feature would be ease of
+removing old binaries, which isn't much of a point because we don't know
+precisely what and when we want to remove, so may end up not removing much
+files anyway.
+
+Open tarballs repository
+------------------------
+This idea is not really rejected. It does not go against splitting txtrepo
+and binrepo, but rather complement this idea, where the
+open-tarballs-repository would take the place of the binrepo.  The txtrepo
+would still be used +- the same way.
+
+
+The Future
+==========
+- Open tarballs repositories
+  - suited for GIT, maybe multi-VCS
+  - incremental move
+  - not everything will be suited for this, must handle all cases or be
+    optional
