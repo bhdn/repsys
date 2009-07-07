@@ -215,12 +215,13 @@ Rejected or postponed ideas
 Use of a plain filesystem storage for the tarballs
 --------------------------------------------------
 This was planned, then rejected. It becomes too complicated when thinking
-about markrelease, and mapping SVN revisions in the main repository to binaries versions
-in the "tarballs storage", basically requiring implementing VCS-like features on top of filesystem.  Would also
-require implementing another authentication and access scheme.  The main
-feature would be ease of removing old binaries, which isn't much of a point
-because we don't know precisely what and when we want to remove, so may end
-up not removing much files anyway.
+about markrelease, and mapping SVN revisions in the main repository to
+binaries versions in the "tarballs storage", basically requiring
+implementing VCS-like features on top of filesystem.  Would also require
+implementing another authentication and access scheme.  The main feature
+would be ease of removing old binaries, which isn't much of a point because
+we don't know precisely what and when we want to remove, so may end up not
+removing much files anyway.
 
 Use of a plain unversioned filesystem storage for the tarballs
 --------------------------------------------------------------
