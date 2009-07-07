@@ -417,6 +417,6 @@ Configuration
 repsys clients will have new configuration options which are needed to it
 work properly:
 
-- a [binrepo] section, mapping stable distro paths from the main txtrepo
+- a [binrepos] section, mapping stable distro paths from the main txtrepo
   with 
 - dayzero-rev
