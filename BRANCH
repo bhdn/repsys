@@ -48,6 +48,12 @@ Computation of sha1.lst is unlikely to be an issue:
 - users don't need to verify the SHA1s "everytime", but the build system
   does, thus Repsys can default to not verify and avoid wasting users' time
 
+The use of sha1.lst has the valuable property of tying the state of the main
+repository and the binrepo.  With it, at getsrpm time of a package
+submission we can verify the SHA1 of the SOURCES-bin, and be sure that
+either the package will be built with the expected state, or early fail the
+build.
+
 [0]: In a single core AMD Athlon(tm) 3800+ (2400Mhz)
 
 Why a new repository without the tarballs
