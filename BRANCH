@@ -58,7 +58,7 @@ Why a new repository without the tarballs
   the distro development, we care much more about our specs, patches,
   configurations, etc.; nonetheless, those big files we don't care much for
   take the most resources and make backups and restoration in case of
-  failure very expensive, much more than the more valuable data
+  failure very expensive, much more so than the more valuable data
 - there is no easy way to strip undesired tarballs without recreating the
   whole repository
 - fedora and ubuntu have separated repositories, so we must have it too!
