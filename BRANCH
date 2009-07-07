@@ -239,7 +239,9 @@ Open tarballs repository
 This idea is not really rejected. It does not go against splitting txtrepo
 and binrepo, but rather complement this idea, where the
 open-tarballs-repository would take the place of the binrepo.  The txtrepo
-would still be used +- the same way.
+would still be used +- the same way.  This repository could be used
+selectively, for packages where it makes sense, while most packages could be
+kept "closed", still as tarballs.
 
 Use of externals for more seamless Subversion usage
 ---------------------------------------------------
