@@ -3,7 +3,7 @@ The detached binaries repository
 
 A brief description:
 
-All binaries from packages sources (ie. all the binary files inside
+Ideally, all binaries from packages sources (ie. all the binary files inside
 SOURCES/) will be placed in another subversion repository. This repository
 is called "tarballs repository", "binaries repository" or just "binrepo".
 It will contain mostly the same directory structure of the main repository,
