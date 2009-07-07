@@ -39,7 +39,7 @@ corresponding binary files have been commited to the binrepo. Hooks in the
 main repository may be used to try to enforce this, by checking if the files
 changed in `sha1.lst` are already commited in the corresponding binrepo.
 
-Computation of sha1.lst is unlikely to be an issue:
+Computation of `sha1.lst` is unlikely to be an issue:
 - it should not happen too often for any given package
 - it takes[0] less than 10s to sha1sum all SOURCES of openoffice.org-3.1-1mdv2010.0.src.rpm
 - it probably takes way less than the time to upload the file into the repository
@@ -48,7 +48,7 @@ Computation of sha1.lst is unlikely to be an issue:
 - users don't need to verify the SHA1s "everytime", but the build system
   does, thus Repsys can default to not verify and avoid wasting users' time
 
-The use of sha1.lst has the valuable property of tying the state of the main
+The use of `sha1.lst` has the valuable property of tying the state of the main
 repository and the binrepo.  With it, at getsrpm time of a package
 submission we can verify the SHA1 of the SOURCES-bin, and be sure that
 either the package will be built with the expected state, or early fail the
