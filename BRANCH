@@ -335,6 +335,9 @@ set.  This could give trouble when eventually relocating the binrepos.
 Rough steps
 -----------
 
+- check for agreement between subversion repository filters for binaries,
+  and repsys
+
 - upgrade repsys everywhere
   - kenobi
   - cluster nodes
