@@ -11,10 +11,10 @@ but instead of having SOURCES and SPECS, it will only have a SOURCES-bin
 directory. Every copy/move operation should happen in both repositories.
 
 In order to allow deceasing binaries from older distributions, each stable
-distro will have its own subversion repository for binary files. repsys knows how to access
-these binrepos by checking which URL defined in the "[binrepo]" section of
-the configuration file matches the path-part of the repository being
-accessed. (see open issues)
+distro will have its own subversion repository for binary files.  repsys
+knows how to access these binrepos by checking which URL defined in the
+"[binrepo]" section of the configuration file matches the path-part of the
+repository being accessed.  (see open issues)
 
 Mapping revisions
 -----------------
