@@ -411,3 +411,12 @@ package, only new binaries will be needed), or, the maintainer can run
 'repsys migrate-binrepo' to migrate all binaries to the new binrepo and
 make the package ready to be submitted.
 
+Configuration
+-------------
+
+repsys clients will have new configuration options which are needed to it
+work properly:
+
+- a [binrepo] section, mapping stable distro paths from the main txtrepo
+  with 
+- dayzero-rev
