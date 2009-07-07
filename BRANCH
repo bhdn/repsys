@@ -319,3 +319,43 @@ The Future
   - not everything will be suited for this, must handle all cases or be
     optional
 - Xdelta
+
+
+Deployment
+==========
+
+The current repository will be kept around for a while. It should be
+possible to even use it as a binrepo.  But instead we'll make it readonly,
+create empty binrepos, and let people populate the binrepo as they go.[0]
+
+- upgrade repsys everywhere
+  - kenobi
+  - cluster nodes
+  - raoh
+  - titan
+
+- check Secteam scripts, make needed changes to get them ready
+
+- create the first empty binrepos for the supported distros
+  - cooker
+  - updates/2009.1
+  - updates/2009.0
+  - updates/2008.1
+
+- set up the new repositories
+  - hook for filtering of disallowed (binary) files in main repository
+  - binrepos mappings
+
+- make the new main + binrepos repositories available, but readonly
+  - keep new main repository in sync with the old repository with hooks
+
+- make current repository readonly
+
+- make sure new main repository and old are in sync
+
+- make the new repositories writeable
+
+[0]: alternatively, we might pre-populate the binrepos, but this might take
+time.  Although we'd only need to pre-populate the /current branch of the
+packages, as old releases might be fetched by using the old repository as
+binrepo.
