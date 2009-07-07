@@ -246,7 +246,7 @@ kept "closed", still as tarballs.
 Use of externals for more seamless Subversion usage
 ---------------------------------------------------
 This idea is not discarded, but it just provides easiness. OTOH, it makes
-things moer complicated:
+things more complicated:
 - markrelease ...
 - branching whole distro ...
 - keeping externals up-to-date
