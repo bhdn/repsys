@@ -227,7 +227,6 @@ importing a package
 
 - will do whatever else putsrpm already does
 
-
 TODO
 =====
 
@@ -383,3 +382,32 @@ Rough steps
 time.  Although we'd only need to pre-populate the /current branch of the
 packages, as old releases might be fetched by using the old repository as
 binrepo.
+
+Usage after day zero
+====================
+
+All working copies will be 'invalid' after the migration.
+
+When the user checkouts the package for the first time after the migration,
+there will be no `sha1.lst` file, which will make repsys fetch the
+directory SOURCES from the old read-only repository.
+
+   $ repsys co pkgname
+   A   SOURCES
+   A   SPECS/pkgname.spec
+   * Checking out binaries from read-only repository, you must run 
+   'repsys migrate' in order to be able to submit this package.
+   A   SOURCES-bin/pkgname-0.1.tar.gz
+   A   SOURCES-bin/pkgname-docs.tar.gz
+
+This working copy is not usable, the user will not be able to submit this
+package as is because the buildsystem requires the presence of the file
+`sha1.lst`. So is `getsrpm`.
+
+The user has two options to migrate the package and make it acceptable for
+submit: he can replace all binaries/tarballs from the SOURCES directory
+with new ones directly into the binrepo (in case of a new release of the
+package, only new binaries will be needed), or, the maintainer can run
+'repsys migrate-binrepo' to migrate all binaries to the new binrepo and
+make the package ready to be submitted.
+
