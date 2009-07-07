@@ -7,7 +7,7 @@ Ideally, all binaries from packages sources (ie. all the binary files inside
 SOURCES/) will be placed in another subversion repository. This repository
 is called "tarballs repository", "binaries repository" or just "binrepo".
 It will contain mostly the same directory structure of the main repository,
-but instead of having SOURCES and SPECS, it will only have a SOURCES-bin
+but instead of having SOURCES and SPECS, it will only have a SOURCES
 directory. Every copy/move operation should happen in both repositories.
 
 In order to allow deceasing binaries from older distributions, each stable
@@ -145,7 +145,7 @@ repsys co 2008.1/mutt
   mutt directory
 
 - repsys checkouts
-  http://svn.mandriva.com/svn/binrepo/updates/2008.1/mutt/current/SOURCES-bin
+  http://svn.mandriva.com/svn/binrepo/updates/2008.1/mutt/current/SOURCES
   into mutt/SOURCES-bin
 
 - creates symlinks for all files found in SOURCES-bin/ into ../SOURCES/

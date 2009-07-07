@@ -15,7 +15,8 @@ import threading
 from cStringIO import StringIO
 
 DEFAULT_TARBALLS_REPO = "/tarballs"
-BINARIES_DIR_NAME = "SOURCES-bin"
+BINARIES_DIR_NAME = "SOURCES"
+BINARIES_CHECKOUT_NAME = "SOURCES-bin"
 
 PROP_USES_BINREPO = "mdv:uses-binrepo"
 PROP_BINREPO_REV = "mdv:binrepo-rev"
@@ -154,7 +155,7 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
     if not export and not svn.propget(PROP_USES_BINREPO, targetdir):
         return
     sourcespath = os.path.join(targetdir, "SOURCES")
-    binpath = os.path.join(targetdir, BINARIES_DIR_NAME)
+    binpath = os.path.join(targetdir, BINARIES_CHECKOUT_NAME)
     if pkgdirurl:
         topurl = translate_url(pkgdirurl)
     else:
