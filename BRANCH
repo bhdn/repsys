@@ -254,7 +254,8 @@ things more complicated:
   build system should be allowed to change externals (so what about importing
   new packages?)
 - just a convenience, we don't need and shouldn't rely on externals for
-  running the build system, so why do it?
+  running the build system, while most people will use the repositories via
+  Repsys, so why spend time to implement and keep it?
 
 Use of "external" xdelta to save space on binaries
 --------------------------------------------------
