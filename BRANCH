@@ -273,15 +273,29 @@ Use of externals for more seamless Subversion usage
 ---------------------------------------------------
 This idea is not discarded, but it just provides easiness. OTOH, it makes
 things more complicated:
-- markrelease ...
-- branching whole distro ...
-- keeping externals up-to-date
+- markrelease: externals would have to be updated in order to make it point
+  to the tagged version in the binrepo, otherwise changes in
+  current@binrepo would change older releases;
+- branching whole distro: even though subversion now supports "relative
+  externals", we would have to update the URLs for *every* package on the
+  distro, as the path to reach the binrepo spans the local distribution
+  directory;
+- keeping externals up-to-date (as stated above and below)
 - authentication and access control: only markrelease action done by the
   build system should be allowed to change externals (so what about importing
   new packages?)
 - just a convenience, we don't need and shouldn't rely on externals for
   running the build system, while most people will use the repositories via
   Repsys, so why spend time to implement and keep it?
+- "svn co" works transparently, cool, but "svn co -r N" does not, otherwise
+  every change in the binrepo would require svn:externals to be updated in
+  the respective package;
+- it does not solve the problem of creating and handling symlinks between
+  SOURCES and SOURCES-bin.
+
+Keeping svn:externals updated for every package has almost the same cost of
+keeping the `sha1.lst` updated, with the difference that in the latter we
+would not have to update every package when creating distro branches.
 
 Use of "external" xdelta to save space on binaries
 --------------------------------------------------
