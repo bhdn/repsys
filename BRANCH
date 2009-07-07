@@ -265,7 +265,7 @@ xdelta tarballs and add it to SVN with a special filename, then use it when
 checking out.  Would require a policy/algorithm on when to ditch old whole
 binaries, too (i.e.  hopefully wouldn't need to be handled manually by the
 maintainer).  Also, this is something complemental to splitting the
-repository, so we may do it later.
+repository, so we may do it later, for binrepos.
 
 
 The Future
@@ -275,3 +275,4 @@ The Future
   - incremental move
   - not everything will be suited for this, must handle all cases or be
     optional
+- Xdelta
