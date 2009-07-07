@@ -52,7 +52,10 @@ The use of `sha1.lst` has the valuable property of tying the state of the main
 repository and the binrepo.  With it, at getsrpm time of a package
 submission we can verify the SHA1 of the SOURCES-bin, and be sure that
 either the package will be built with the expected state, or early fail the
-build.
+build. It also allows for verifying binaries without trusting the binrepo,
+which may be useful if we consider using an unversioned plain filesystem
+storage in the future (for old distros or whatever), or at "client side",
+which maintainers may find useful.
 
 [0]: In a single core AMD Athlon(tm) 3800+ (2400Mhz)
 
