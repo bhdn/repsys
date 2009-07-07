@@ -33,7 +33,11 @@ When a binary is uploaded to the binrepo, the file `sha1.lst` is updated to
 have the files's hash and commited in the main text repo. This file will be
 used as the reference when the user uses -r REV on repsys. repsys will
 checkout the package in the main text repo with -r REV and then will use
-the "Last Changed Date" to checkout the binrepo part.
+the "Last Changed Date" of `sha1.lst` to checkout the binrepo part. Thus,
+`sha1.lst` should be always commited to the main text repository *after* the
+corresponding binary files have been commited to the binrepo. Hooks in the
+main repository may be used to try to enforce this, by checking if the files
+changed in `sha1.lst` are already commited in the corresponding binrepo.
 
 Why a new repository without the tarballs
 ==========================================
