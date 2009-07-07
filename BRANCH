@@ -328,6 +328,13 @@ The current repository will be kept around for a while. It should be
 possible to even use it as a binrepo.  But instead we'll make it readonly,
 create empty binrepos, and let people populate the binrepo as they go.[0]
 
+The binrepo mappings config might be kept in a regular (versioned)
+subversion property, plus a fallback config, for when the property is not
+set.  This could give trouble when eventually relocating the binrepos.
+
+Rough steps
+-----------
+
 - upgrade repsys everywhere
   - kenobi
   - cluster nodes
@@ -352,6 +359,11 @@ create empty binrepos, and let people populate the binrepo as they go.[0]
 - make current repository readonly
 
 - make sure new main repository and old are in sync
+
+- final tests
+  - change something
+  - submit
+  - etc.
 
 - make the new repositories writeable
 
