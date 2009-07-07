@@ -39,6 +39,15 @@ corresponding binary files have been commited to the binrepo. Hooks in the
 main repository may be used to try to enforce this, by checking if the files
 changed in `sha1.lst` are already commited in the corresponding binrepo.
 
+Computation of sha1.lst is unlikely to be an issue:
+- it should not happen too often for any given package
+- it takes[0] less than 10s to sha1sum all SOURCES of openoffice.org-3.1-1mdv2010.0.src.rpm
+- it probably takes way less than the time to upload the file into the repository
+- it can be computed in parallel to the binrepo commit, and probably finish
+  before that, thus ready by the time `sha1.lst` should be commited
+
+[0]: In a single core AMD Athlon(tm) 3800+ (2400Mhz)
+
 Why a new repository without the tarballs
 ==========================================
 
