@@ -45,6 +45,8 @@ Computation of sha1.lst is unlikely to be an issue:
 - it probably takes way less than the time to upload the file into the repository
 - it can be computed in parallel to the binrepo commit, and probably finish
   before that, thus ready by the time `sha1.lst` should be commited
+- users don't need to verify the SHA1s "everytime", but the build system
+  does, thus Repsys can default to not verify and avoid wasting users' time
 
 [0]: In a single core AMD Athlon(tm) 3800+ (2400Mhz)
 
