@@ -202,6 +202,17 @@ feature would be ease of removing old binaries, which isn't much of a point
 because we don't know precisely what and when we want to remove, so may end
 up not removing much files anyway.
 
+Use of a plain unversioned filesystem storage for the tarballs
+--------------------------------------------------------------
+Different than the previous one, this would mean not relying at all on
+history keeping.  Structure could be something simple like:
+  packages/${pkg:0:1}/$pkg/$tarball
+
+This alternative does not suffice for Cooker, nor for supported distros, for
+which we want history.  It could, however, at some point be used for "very
+old" distros, for which we may have lost interest in keeping *binaries*
+history (package history will kept "forever" in the main SVN repository).
+
 Open tarballs repository
 ------------------------
 This idea is not really rejected. It does not go against splitting txtrepo
