@@ -56,6 +56,26 @@ build.
 
 [0]: In a single core AMD Athlon(tm) 3800+ (2400Mhz)
 
+Mapping of revisions using SVN properties
+-----------------------------------------
+
+Alternatively to using the above "sha1.lst scheme", the revision mapping
+between the main repository and a binrepo could be done using subversion
+properties.  This could be done by making every commit to binrepos also
+cause a corresponding commit in the main text repository to happen, which
+would update a property recording the current date.  That is, a subversion
+property in the main text repository would be kept, such that for any given
+main repository revision, the corresponding state of the binrepos is
+obtainable (using the registered date).
+
+This would be "more transparent", as it can be maintened simply by using
+subversion hooks, without user intervention.  OTOH, as every time the user
+commits to a binrepo this would result in a commit in the main repository,
+it would require the user to "svn up" the directories from there before
+commiting, after every binrepo commit.  Also, this might result in a big
+number of "bogus" commits to the main repository, which could be seen as log
+pollution, and may potentially increase space usage etc..
+
 Why a new repository without the tarballs
 ==========================================
 
