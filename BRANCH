@@ -99,7 +99,7 @@ Current repository is +390000 revisions and ~340Gb big, while the bzip2ed
 dumps backup for it takes about a bit more than half that size (FIXME:
 estimative, can't check in the backup server right now).  Current txtrepo
 with the same number of revisions is ~180Gb big, while the gzipped full dump
-backup for it takes a bit more than 5Gb.
+backup for it currently takes around 1.2Gb.
 
 
 Drawbacks of this layout
