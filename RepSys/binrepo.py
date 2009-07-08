@@ -86,7 +86,7 @@ def translate_url(url):
     binurl = mirror._joinurl(binbase or default_repo(), subpath)
     return binurl
 
-def translate_svndir(path):
+def translate_topdir(path):
     """Returns the URL in the binrepo from a given path inside a SVN
        checkout directory.
 
@@ -159,7 +159,7 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
     if pkgdirurl:
         topurl = translate_url(pkgdirurl)
     else:
-        topurl = translate_svndir(targetdir)
+        topurl = translate_topdir(targetdir)
     binrev = None
     if revision:
         if pkgdirurl:
@@ -191,7 +191,7 @@ def import_binaries(topdir, pkgname):
     @topdir: the path to the svn checkout
     """
     svn = SVN()
-    topurl = translate_svndir(topdir)
+    topurl = translate_topdir(topdir)
     sourcesdir = os.path.join(topdir, "SOURCES")
     bintopdir = tempfile.mktemp("repsys")
     if svn.propget(PROP_USES_BINREPO, topdir, noerror=1):
@@ -297,7 +297,7 @@ def upload(path, message=None):
     if not paths:
         raise Error, "'%s' does not seem to have any tarballs" % path
     topdir = getpkgtopdir()
-    bintopdir = translate_svndir(topdir)
+    bintopdir = translate_topdir(topdir)
     binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
     sourcesdir = os.path.join(topdir, "SOURCES")
     bindir = os.path.join(topdir, BINARIES_DIR_NAME)
