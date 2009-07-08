@@ -402,7 +402,7 @@ directory SOURCES from the old read-only repository.
 
 This working copy is not usable, the user will not be able to submit this
 package as is because the buildsystem requires the presence of the file
-`sha1.lst`. So is `getsrpm`.
+`sha1.lst`. The same rule is valid for `getsrpm`.
 
 The user has two options to migrate the package and make it acceptable for
 submit: he can replace all binaries/tarballs from the SOURCES directory
@@ -419,4 +419,6 @@ work properly:
 
 - a [binrepos] section, mapping stable distro paths from the main txtrepo
   with 
-- dayzero-rev
+- dayzero-rev: repsys {co,getsrpm} -r REV for older revisions  than
+  dayzero-rev can be fetched directly from the (read-only oldrepo.
+- oldrepo: the URL of the old, read-only, repository.
