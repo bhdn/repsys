@@ -112,8 +112,8 @@ estimative, can't check in the backup server right now).  Current txtrepo
 with the same number of revisions is ~180Gb big, takes about 2-3 days to be
 imported, while the gzipped full dump backup for it currently takes ~1.2Gb. 
 Initial binrepo for Cooker (only `current/` packages' branches) took ~28Gb
-in disk, about 5h30m to be populated from the current in use repository
-("oldrepo").
+in disk, gzipped full dump for it takes ~25Gb, took about 5h30m to be
+populated from the current in use repository ("oldrepo").
 
 
 Drawbacks of this layout
