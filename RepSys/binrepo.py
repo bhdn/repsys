@@ -83,7 +83,7 @@ def uses_binrepo(topdir, url=None):
         return True
     if url:
         svn = SVN()
-        sourcesurl = mirror._joinurl(url, sources_path(""))
+        sourcesurl = mirror._joinurl(url, sources_path())
         if svn.ls(sourcesurl, noerror=1):
             return True
     return False
@@ -205,7 +205,7 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
     binrev = None
     if revision:
         if pkgdirurl:
-            url = mirror._joinurl(pkgdirurl, sources_path(""))
+            url = mirror._joinurl(pkgdirurl, sources_path())
             date = svn.propget("svn:date", url, rev=revision, revprop=True)
         else:
             spath = sources_path(targetdir)
@@ -305,7 +305,7 @@ def file_hash(path):
     f.close()
     return sum.hexdigest()
 
-def sources_path(topdir):
+def sources_path(topdir=""):
     path = os.path.join(topdir, "SOURCES", SOURCES_FILE)
     return path
 
