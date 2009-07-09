@@ -22,8 +22,8 @@ preserved, as even empty revisions are preserved in the binaries-filtering
 conversion.
 
 
-Mapping revisions
------------------
+Mapping repositories states
+---------------------------
 
 In order to allow the use of `repsys {getsrpm,co} -r REV`, repsys will have
 to use a reference in the text repo which will be used to know in what
