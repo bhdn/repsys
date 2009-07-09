@@ -5,7 +5,7 @@ The detached binaries repository
 .. contents::
 
 A brief description
--------------------
+===================
 
 Ideally, all binaries from packages sources (ie. all the binary files inside
 SOURCES/) will be placed in another subversion repository. This repository
@@ -260,7 +260,6 @@ Second phase
 
 - up
 - sync
-
 
 Rejected or postponed ideas
 ===========================
