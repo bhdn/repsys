@@ -424,8 +424,8 @@ Configuration
 repsys clients will have new configuration options which are needed to it
 work properly:
 
-- a [binrepos] section, mapping stable distro paths from the main txtrepo
-  with 
+- a [binrepos] section, mapping paths' prefixes from the main txtrepo to
+  binrepos
 - dayzero-rev: repsys {co,getsrpm} -r REV for older revisions  than
   dayzero-rev can be fetched directly from the (read-only oldrepo.
 - oldrepo: the URL of the old, read-only, repository.
