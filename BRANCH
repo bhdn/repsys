@@ -372,14 +372,15 @@ Rough steps
 
 - check for agreement between subversion repository filters for binaries,
   and repsys
-
 - upgrade repsys everywhere
+
   - kenobi
   - cluster nodes
   - raoh
   - titan
 
 - create the first empty binrepos for the supported distros
+
   - cooker
   - updates/2009.1
   - updates/2009.0
@@ -387,23 +388,27 @@ Rough steps
 
 - check Secteam scripts, make needed changes to get them ready (non
   critical)
-
 - set up the new repositories
+
   - hook for filtering of disallowed (binary) files in main repository
   - binrepos mappings
 
 - make the new main + binrepos repositories available, but readonly
+
   - keep new main repository in sync with the old repository with hooks
 
 - make current repository readonly and enable verification of sha1.lst at
   package submission time
 
 - make sure new main repository and old repository are in sync
+
   - resync binrepos with the old repository as needed
 
 - final tests
+
   - change something
   - submit
   - etc.
 
 - make the new repositories writeable
+
