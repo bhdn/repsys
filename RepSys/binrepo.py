@@ -339,7 +339,6 @@ def upload(path, message=None):
     if not paths:
         raise Error, "'%s' does not seem to have any tarballs" % path
     topdir = getpkgtopdir()
-    #FIXME XXX ensure it will not try to upload to oldrepo
     bintopdir = translate_topdir(topdir)
     binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
     sourcesdir = os.path.join(topdir, "SOURCES")
