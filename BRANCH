@@ -16,6 +16,12 @@ knows how to access these binrepos by checking which URL defined in the
 "[binrepo]" section of the configuration file matches the path-part of the
 repository being accessed.  (see open issues)
 
+The package changelogs will be generated from SVN commit logs in the main
+"plaintext" repository ("txtrepo" for short) only.  Old changelogs will be
+preserved, as even empty revisions are preserved in the binaries-filtering
+conversion.
+
+
 Mapping revisions
 -----------------
 
