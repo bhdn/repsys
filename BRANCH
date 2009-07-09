@@ -2,7 +2,10 @@
 The detached binaries repository
 ================================
 
-A brief description:
+.. contents::
+
+A brief description
+-------------------
 
 Ideally, all binaries from packages sources (ie. all the binary files inside
 SOURCES/) will be placed in another subversion repository. This repository
@@ -47,6 +50,7 @@ main repository may be used to try to enforce this, by checking if the files
 changed in `sha1.lst` are already commited in the corresponding binrepo.
 
 Computation of `sha1.lst` is unlikely to be an issue:
+
 - it should not happen too often for any given package
 - it takes[0] less than 10s to sha1sum all SOURCES of openoffice.org-3.1-1mdv2010.0.src.rpm
 - it probably takes way less than the time to upload the file into the repository
@@ -179,6 +183,8 @@ this model, etc.
 markrelease of a package
 ------------------------
 
+::
+
    $ repsys markrelease 
 
 - will copy current/ to releases/VERSION/RELEASE, as usual
@@ -196,6 +202,8 @@ Use cases to be implemented after the first phase
 upgrading to a newer version of the package
 -------------------------------------------
 
+::
+
   $ cd bla/SOURCES/
   $ wget http://prdownloads.sourceforge.net/bla/bla-1.6.tar.bz2
   $ repsys add bla-1.6.0.tar.bz2
@@ -210,7 +218,7 @@ upgrading to a newer version of the package
   $ repsys rm SOURCES/bla-1.5.1.tar.bz2
 
 - it will remove the symlink and run svn rm on
-  SOURCES-bin/bla-1.6.0.tar.bz2
+  SOURCES-bin/bla-1.6.0.tar.bz2::
 
   $ cd ../ # package top dir
   $ repsys ci
@@ -259,6 +267,7 @@ Rejected or postponed ideas
 
 Use of a plain filesystem storage for the tarballs
 --------------------------------------------------
+
 This was planned, then rejected. It becomes too complicated when thinking
 about markrelease, and mapping SVN revisions in the main repository to
 binaries versions in the "tarballs storage", basically requiring
@@ -270,8 +279,10 @@ removing much files anyway.
 
 Use of a plain unversioned filesystem storage for the tarballs
 --------------------------------------------------------------
+
 Different than the previous one, this would mean not relying at all on
-binary files history keeping.  Structure could be something simple like:
+binary files history keeping.  Structure could be something simple like::
+
   packages/${pkg:0:1}/$pkg/$tarball
 
 This alternative does not suffice for Cooker, nor for supported distros, for
@@ -284,6 +295,7 @@ of space, anyway...
 
 Open tarballs repository
 ------------------------
+
 This idea is not really rejected. It does not go against splitting txtrepo
 and binrepo, but rather complement this idea, where the
 open-tarballs-repository would take the place of the binrepo.  The txtrepo
@@ -293,8 +305,10 @@ kept "closed", still as tarballs.
 
 Use of externals for more seamless Subversion usage
 ---------------------------------------------------
+
 This idea is not discarded, but it just provides easiness. OTOH, it makes
 things more complicated:
+
 - markrelease: externals would have to be updated in order to make it point
   to the tagged version in the binrepo, otherwise changes in
   current@binrepo would change older releases;
@@ -321,6 +335,7 @@ would not have to update every package when creating distro branches.
 
 Use of "external" xdelta to save space on binaries
 --------------------------------------------------
+
 But how? First idea is this could be done by defining a protocol and
 assuming repository manipulation with repsys (for ease).  Repsys could
 xdelta tarballs and add it to SVN with a special filename, then use it when
@@ -332,11 +347,14 @@ repository, so we may do it later, for binrepos.
 
 The Future
 ==========
+
 - Open tarballs repositories
+
   - suited for GIT, maybe multi-VCS
   - incremental move
   - not everything will be suited for this, must handle all cases or be
     optional
+
 - Xdelta
 
 
