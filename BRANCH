@@ -244,7 +244,6 @@ First phase
 - markrelease
 - putsrpm
 - getsrpm
-- binrepo-migrate
 
 
 Second phase
@@ -413,7 +412,7 @@ The user has two options to migrate the package and make it acceptable for
 submit: he can replace all binaries/tarballs from the SOURCES directory
 with new ones directly into the binrepo (in case of a new release of the
 package, only new binaries will be needed), or, the maintainer can run
-'repsys binrepo-migrate' to migrate all binaries to the new binrepo and
+'repsys migrate-binrepo' to migrate all binaries to the new binrepo and
 make the package ready to be submitted.
 
 Configuration
