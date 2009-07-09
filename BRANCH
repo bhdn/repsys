@@ -147,7 +147,7 @@ using the markrelease date in the txtrepo as '{DATE}'.
 be stored out of the packages SVN (another SVN, a DB, a txt file, etc.), and
 would work like:
 
-0. mark beginning of markrelease
+0. mark beginning of markrelease, early failing the package build if it fails
 1. do markrelease
 2. mark sucessful end of markrelease
    or mark failed markrelease, so we can replay it later
@@ -183,9 +183,7 @@ markrelease of a package
 
 - will copy current/ to releases/VERSION/RELEASE, as usual
 
-- will copy current/ to releases/, on the binrepo 
-
-- and will perform this copy on the binrepo too
+- will copy current/ to releases/, on the binrepo too
 
 Optionally, markrelease could create revprops indicating which is the
 revision of current/ on the binrepo that represents the tarballs that are
@@ -279,7 +277,10 @@ binary files history keeping.  Structure could be something simple like:
 This alternative does not suffice for Cooker, nor for supported distros, for
 which we want history.  It could, however, at some point be used for "very
 old" distros, for which we may have lost interest in keeping *binaries*
-history (package history will kept "forever" in the main SVN repository).
+history (package history will kept "forever" in the main SVN repository). 
+Alternatively, "resetting" an SVN binrepo (i.e.  recreate the repository) to
+contain only the latest tarballs would probably take about the same amount
+of space, anyway...
 
 Open tarballs repository
 ------------------------
