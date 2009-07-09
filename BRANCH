@@ -107,7 +107,7 @@ Drawbacks of this layout
 
 - (always) everything that changes the single-repository usage increases the chance
   of failure and make things more complicated.
-- subversion can't be used alone
+- subversion can't be used alone as easily as the current scheme allows
 - ...
 
 
