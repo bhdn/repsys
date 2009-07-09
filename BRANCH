@@ -339,13 +339,12 @@ The Future
 Deployment
 ==========
 
-The current repository will be kept around for a while. It should be
-possible to even use it as a binrepo.  But instead we'll make it readonly,
-create empty binrepos, and let people populate the binrepo as they go.[0]
+The current repository will be kept around for a while, in readonly state. 
+Initial binrepos will be populated with the binaries in the `current/`
+branches of packages.
 
-The binrepo mappings config might be kept in a regular (versioned)
-subversion property, plus a fallback config, for when the property is not
-set.  This could give trouble when eventually relocating the binrepos.
+The binrepo mappings config might be kept in a fixed subversion revision
+property (revision 0?).
 
 Rough steps
 -----------
@@ -359,13 +358,14 @@ Rough steps
   - raoh
   - titan
 
-- check Secteam scripts, make needed changes to get them ready
-
 - create the first empty binrepos for the supported distros
   - cooker
   - updates/2009.1
   - updates/2009.0
   - updates/2008.1
+
+- check Secteam scripts, make needed changes to get them ready (non
+  critical)
 
 - set up the new repositories
   - hook for filtering of disallowed (binary) files in main repository
@@ -374,9 +374,11 @@ Rough steps
 - make the new main + binrepos repositories available, but readonly
   - keep new main repository in sync with the old repository with hooks
 
-- make current repository readonly
+- make current repository readonly and enable verification of sha1.lst at
+  package submission time
 
-- make sure new main repository and old are in sync
+- make sure new main repository and old repository are in sync
+  - resync binrepos with the old repository as needed
 
 - final tests
   - change something
@@ -384,11 +386,6 @@ Rough steps
   - etc.
 
 - make the new repositories writeable
-
-[0]: alternatively, we might pre-populate the binrepos, but this might take
-time.  Although we'd only need to pre-populate the /current branch of the
-packages, as old releases might be fetched by using the old repository as
-binrepo.
 
 Usage after day zero
 ====================
