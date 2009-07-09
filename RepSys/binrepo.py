@@ -68,7 +68,27 @@ def default_repo():
         base = comps[1] + ":" + DEFAULT_TARBALLS_REPO
     return base
 
-def translate_url(url):
+def old_repo():
+    rawurl = config.get("binrepo", "old", None)
+    url = mirror.normalize_path(rawurl)
+    return url
+
+def uses_binrepo(topdir, url=None):
+    """Checks if package directory is converted to the binrepo
+
+    @url: if provided, it will try to check in the remote URL if the
+          package really uses the binrepo.
+    """
+    if os.path.exists(sources_path(topdir)):
+        return True
+    if url:
+        svn = SVN()
+        sourcesurl = mirror._joinurl(url, sources_path(""))
+        if svn.ls(sourcesurl, noerror=1):
+            return True
+    return False
+
+def translate_url(url, old=False):
     url = mirror.normalize_path(url)
     main = mirror.normalize_path(layout.repository_url())
     subpath = url[len(main)+1:]
@@ -78,22 +98,33 @@ def translate_url(url):
     ## would translate to 
     ## svn+ssh://svn.mandriva.com/svn/binrepo/20090/updates/trafshow/current/
     binbase = None
-    if BINREPOS_SECTION in config.sections():
+    if old:
+        binbase = old_repo()
+    elif BINREPOS_SECTION in config.sections():
         for option, value in config.walk(BINREPOS_SECTION):
             if subpath.startswith(option):
                 binbase = value
                 break
-    binurl = mirror._joinurl(binbase or default_repo(), subpath)
+    else:
+        binbase = default_repo()
+    binurl = mirror._joinurl(binbase, subpath)
     return binurl
 
-def translate_topdir(path):
+def translate_topdir(path, old=False):
     """Returns the URL in the binrepo from a given path inside a SVN
        checkout directory.
 
     @path: if specified, returns a URL in the binrepo whose path is the
            same as the path inside the main repository.
+    @old: indicates whether it should use the old read-only repository as
+          the base URL.
     """
-    base = default_repo()
+    if old:
+        base = old_repo()
+    else:
+        base = default_repo()
+    #FIXME svn_basedir() doesn't carry information about which binrepo
+    # should be used
     target = mirror.normalize_path(base + "/" + svn_basedir(path))
     return target
 
@@ -125,7 +156,12 @@ def find_binaries(paths):
                 new.append(path)
     return new
 
-def make_symlinks(source, dest):
+def make_symlinks(source, dest, onlynew=False):
+    """Create symlinks for files in sources into dest
+
+    @onlynew: if True, create symlinks only for files that are missing in
+              the destination directory.
+    """
     todo = []
     tomove = []
     for name in os.listdir(source):
@@ -134,6 +170,8 @@ def make_symlinks(source, dest):
             destpath = os.path.join(dest, name)
             linkpath = rellink(path, destpath)
             if os.path.exists(destpath):
+                if onlynew:
+                    continue
                 if (os.path.islink(destpath) and
                         os.readlink(destpath) == linkpath):
                     continue
@@ -152,14 +190,18 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
         revision=None, symlinks=True):
     assert not export or (export and pkgdirurl)
     svn = SVN()
-    if not export and not svn.propget(PROP_USES_BINREPO, targetdir):
-        return
     sourcespath = os.path.join(targetdir, "SOURCES")
     binpath = os.path.join(targetdir, BINARIES_CHECKOUT_NAME)
+    use_old = not uses_binrepo(targetdir)
     if pkgdirurl:
-        topurl = translate_url(pkgdirurl)
+        uses = uses_binrepo(targetdir, pkgdirurl)
+        topurl = translate_url(pkgdirurl, old=use_old)
     else:
-        topurl = translate_topdir(targetdir)
+        topurl = translate_topdir(targetdir, old=use_old)
+    if use_old:
+        sys.stderr.write("* using old read-only svn repository to "
+                "download binaries, use 'repsys binrepo-migrate' or "
+                "run 'repsys upload SOURCES/' (RTFM)\n")
     binrev = None
     if revision:
         if pkgdirurl:
@@ -181,7 +223,7 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
     else:
         svn.checkout(binurl, binpath, rev=binrev, show=show)
     if symlinks:
-        make_symlinks(binpath, sourcespath)
+        make_symlinks(binpath, sourcespath, onlynew=use_old)
 
 def import_binaries(topdir, pkgname):
     """Import all binaries from a given package checkout
@@ -297,6 +339,7 @@ def upload(path, message=None):
     if not paths:
         raise Error, "'%s' does not seem to have any tarballs" % path
     topdir = getpkgtopdir()
+    #FIXME XXX ensure it will not try to upload to oldrepo
     bintopdir = translate_topdir(topdir)
     binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
     sourcesdir = os.path.join(topdir, "SOURCES")
