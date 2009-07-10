@@ -152,8 +152,6 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
         revision=None, symlinks=True):
     assert not export or (export and pkgdirurl)
     svn = SVN()
-    if not export and not svn.propget(PROP_USES_BINREPO, targetdir):
-        return
     sourcespath = os.path.join(targetdir, "SOURCES")
     binpath = os.path.join(targetdir, BINARIES_CHECKOUT_NAME)
     if pkgdirurl:
@@ -163,18 +161,9 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
     binrev = None
     if revision:
         if pkgdirurl:
-            url = mirror._joinurl(pkgdirurl, sources_path(""))
-            date = svn.propget("svn:date", url, rev=revision, revprop=True)
+            binrev = mapped_revision(pkgdirurl, revision)
         else:
-            spath = sources_path(targetdir)
-            if os.path.exists(spath):
-                infolines = svn.info(spath, xml=True)
-                if infolines:
-                    rawinfo = "".join(infolines) # arg!
-                    found = re.search("<date>(.*?)</date>", rawinfo).groups()
-                    date = found[0]
-        if date:
-            binrev = "{%s}" % date
+            binrev = mapped_revision(targetdir, revision, wc=True)
     binurl = mirror._joinurl(topurl, BINARIES_DIR_NAME)
     if export:
         svn.export(binurl, binpath, rev=binrev, show=show)
@@ -194,10 +183,10 @@ def import_binaries(topdir, pkgname):
     topurl = translate_topdir(topdir)
     sourcesdir = os.path.join(topdir, "SOURCES")
     bintopdir = tempfile.mktemp("repsys")
-    if svn.propget(PROP_USES_BINREPO, topdir, noerror=1):
+    try:
         svn.checkout(topurl, bintopdir)
         checkout = True
-    else:
+    except Error:
         bintopdir = tempfile.mkdtemp("repsys")
         checkout = False
     try:
@@ -300,7 +289,7 @@ def upload(path, message=None):
     bintopdir = translate_topdir(topdir)
     binurl = mirror._joinurl(bintopdir, BINARIES_DIR_NAME)
     sourcesdir = os.path.join(topdir, "SOURCES")
-    bindir = os.path.join(topdir, BINARIES_DIR_NAME)
+    bindir = os.path.join(topdir, BINARIES_CHECKOUT_NAME)
     silent = config.get("log", "ignore-string", "SILENT")
     if not os.path.exists(bindir):
         try:
@@ -334,18 +323,41 @@ def upload(path, message=None):
     update.join()
     svn.commit(topdir + " " + sources, log=message, nonrecursive=True)
 
-def mapped_revision(url, revision):
+def mapped_revision(target, revision, wc=False):
+    """Maps a txtrepo revision to a binrepo datespec
+
+    This datespec can is intended to be used by svn .. -r DATE.
+
+    @target: a working copy path or a URL
+    @revision: if target is a URL, the revision number used when fetching
+         svn info
+    @wc: if True indicates that 'target' must be interpreted as a
+         the path of a svn working copy, otherwise it is handled as a URL
+    """
     svn = SVN()
-    binrev = svn.propget(PROP_BINREPO_REV, url, rev=revision)
-    if not binrev:
-        raise Error, "the property '%s' was not found on %s" % \
-            (PROP_USES_BINREPO, url)
+    binrev = None
+    if wc:
+        spath = sources_path(target)
+        if os.path.exists(spath):
+            infolines = svn.info(spath, xml=True)
+            if infolines:
+                rawinfo = "".join(infolines) # arg!
+                found = re.search("<date>(.*?)</date>", rawinfo).groups()
+                date = found[0]
+            else:
+                raise Error, "bogus 'svn info' for '%s'" % spath
+        else:
+            raise Error, "'%s' was not found" % spath
+    else:
+        url = mirror._joinurl(target, sources_path(""))
+        date = svn.propget("svn:date", url, rev=revision, revprop=True)
+        if not date:
+            raise Error, "no valid date available for '%s'" % url
+    binrev = "{%s}" % date
     return binrev
 
 def markrelease(sourceurl, releasesurl, version, release, revision):
     svn = SVN()
-    if not svn.propget(PROP_USES_BINREPO, sourceurl):
-        return
     binrev = mapped_revision(sourceurl, revision)
     binsource = translate_url(sourceurl)
     binreleases = translate_url(releasesurl)
