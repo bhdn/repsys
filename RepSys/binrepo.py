@@ -25,6 +25,9 @@ BINREPOS_SECTION = "binrepos"
 
 SOURCES_FILE = "sha1.lst"
 
+class ChecksumError(Error):
+    pass
+
 def svn_basedir(target):
     svn = SVN()
     info = svn.info2(target)
@@ -149,7 +152,7 @@ def make_symlinks(source, dest):
         os.symlink(linkpath, destpath)
 
 def download(targetdir, pkgdirurl=None, export=False, show=True,
-        revision=None, symlinks=True):
+        revision=None, symlinks=True, check=False):
     assert not export or (export and pkgdirurl)
     svn = SVN()
     sourcespath = os.path.join(targetdir, "SOURCES")
@@ -171,6 +174,8 @@ def download(targetdir, pkgdirurl=None, export=False, show=True,
         svn.checkout(binurl, binpath, rev=binrev, show=show)
     if symlinks:
         make_symlinks(binpath, sourcespath)
+    if check:
+        check_sources(targetdir)
 
 def import_binaries(topdir, pkgname):
     """Import all binaries from a given package checkout
@@ -240,6 +245,21 @@ def parse_sources(path):
             raise Error, "invalid line in sources file: %s" % rawline
         entries[name] = sum
     return entries
+
+def check_hash(path, sum):
+    newsum = file_hash(path)
+    if newsum != sum:
+        raise ChecksumError, "different checksums for %s: expected %s, "\
+                "but %s was found" % (path, sum, newsum)
+
+def check_sources(topdir):
+    spath = sources_path(topdir)
+    if not os.path.exists(spath):
+        raise Error, "'%s' was not found" % spath
+    entries = parse_sources(spath)
+    for name, sum in entries.iteritems():
+        fpath = os.path.join(topdir, "SOURCES", name)
+        check_hash(fpath, sum)
 
 def file_hash(path):
     sum = hashlib.sha1()

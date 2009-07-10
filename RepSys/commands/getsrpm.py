@@ -33,8 +33,7 @@ Options:
     -M         Do not use the mirror (use the main repository)
     -h         Show this message
     -S         Do not download sources from the binary repository
-    -C         Do not check integrity of files fetched from the binary
-               repository
+    --check    Check integrity of files fetched from the binary repository
     --strict   Check if the given revision contains changes in REPPKGURL
 
 Examples:
@@ -81,8 +80,8 @@ def parse_options():
     parser.add_option("-T", dest="template", type="string", default=None)
     parser.add_option("-S", dest="use_binrepo", default=True,
             action="store_false")
-    parser.add_option("-C", dest="binrepo_check", default=True,
-            action="store_false")
+    parser.add_option("--check", dest="binrepo_check", default=False,
+            action="store_true")
     parser.add_option("--strict", dest="strict", default=False,
             action="store_true")
     opts, args = parser.parse_args()
