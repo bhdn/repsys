@@ -379,12 +379,16 @@ Rough steps
   - raoh
   - titan
 
-- create the first empty binrepos for the supported distros
+- populate the binrepos for each supported distro, from a specific revision
+  of oldrepo, and mass commmit the corresponding sha1.lst in txtrepo for
+  every package
 
-  - cooker
-  - updates/2009.1
-  - updates/2009.0
-  - updates/2008.1
+  - set svn:date revprop of the sha1.lst mass commit to the date of the
+    oldrepo revision
+
+  - before mass commiting the sha1.lst, possibly freeze oldrepo, check
+    for changes to sources after the selected revision, and update the
+    binrepo as necessary
 
 - check Secteam scripts, make needed changes to get them ready (non
   critical)
