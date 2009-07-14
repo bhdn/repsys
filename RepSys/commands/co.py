@@ -20,9 +20,9 @@ Options:
     -b      The package branch
     -r REV  Revision to checkout
     -S      Do not download sources from the binaries repository
-    -c      Check integrity of files fetched from the binary repository
     -L      Do not make symlinks of the binaries downloaded in SOURCES/
     -M      Do not use the mirror (use the main repository)
+    --check Check integrity of files fetched from the binary repository
     -h      Show this message
 
 Examples:
@@ -38,7 +38,7 @@ def parse_options():
     parser.add_option("-r", dest="revision")
     parser.add_option("-S", dest="use_binrepo", default=True,
             action="store_false")
-    parser.add_option("-c", dest="binrepo_check", default=False,
+    parser.add_option("--check", dest="binrepo_check", default=False,
             action="store_true")
     parser.add_option("-L", dest="binrepo_link", default=True,
             action="store_false")
