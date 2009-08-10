@@ -28,7 +28,7 @@ SOURCES_FILE = "sha1.lst"
 class ChecksumError(Error):
     pass
 
-def svn_basedir(target):
+def svn_baseurl(target):
     svn = SVN()
     info = svn.info2(target)
     if info is None:
@@ -42,8 +42,10 @@ def svn_basedir(target):
     kind = info["Node Kind"]
     path = url[len(root):]
     if kind == "directory":
-        return path
-    return os.path.dirname(path)
+        return url
+    basepath = os.path.dirname(path)
+    baseurl = mirror.normalize_path(url + "/" + basepath)
+    return baseurl
 
 def svn_root(target):
     svn = SVN()
@@ -96,8 +98,9 @@ def translate_topdir(path):
     @path: if specified, returns a URL in the binrepo whose path is the
            same as the path inside the main repository.
     """
-    base = default_repo()
-    target = mirror.normalize_path(base + "/" + svn_basedir(path))
+    baseurl = svn_baseurl(path)
+    binurl = translate_url(baseurl)
+    target = mirror.normalize_path(binurl)
     return target
 
 def is_binary(path):
