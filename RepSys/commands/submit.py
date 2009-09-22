@@ -9,6 +9,7 @@ import getopt
 import sys
 import re
 import subprocess
+import uuid
 
 import xmlrpclib
 
@@ -39,6 +40,7 @@ Options:
     -s         The host in which the package URL will be submitted
                (defaults to the host in the URL)
     -a         Submit all URLs at once (depends on server-side support)
+    -i SID     Use the submit identifier SID
     -h         Show this message
     --distro   The distribution branch where the packages come from
     --define   Defines one variable to be used by the submit scripts 
@@ -64,6 +66,8 @@ def parse_options():
     parser.add_option("-l", action="callback", callback=list_targets)
     parser.add_option("-r", dest="revision", type="string", nargs=1)
     parser.add_option("-s", dest="submithost", type="string", nargs=1,
+            default=None)
+    parser.add_option("-i", dest="sid", type="string", nargs=1,
             default=None)
     parser.add_option("-a", dest="atonce", action="store_true", default=False)
     parser.add_option("--distro", dest="distro", type="string",
@@ -156,7 +160,7 @@ def list_targets(option, opt, val, parser):
     execcmd(command, show=True)
     sys.exit(0)
 
-def submit(urls, target, define=[], submithost=None, atonce=False):
+def submit(urls, target, define=[], submithost=None, atonce=False, sid=None):
     if submithost is None:
         submithost = config.get("submit", "host")
         if submithost is None:
@@ -170,7 +174,10 @@ def submit(urls, target, define=[], submithost=None, atonce=False):
     # copy of the rpm in the export directory
     createsrpm = get_helper("create-srpm")
     baseargs = ["ssh", submithost, createsrpm, "-t", target]
-    for entry in define:
+    if not sid:
+        sid = uuid.uuid4()
+    define.append("sid=%s" % sid)
+    for entry in reversed(define):
         baseargs.append("--define")
         baseargs.append(entry)
     cmdsargs = []

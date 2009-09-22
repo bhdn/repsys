@@ -6,6 +6,7 @@
   the author and the first line of the commit)
 - allow submitting many packages at once, even without support on server
   side (the same behavior as running repsys submit for each package)
+- append a parameter sid=UUID for every set of packages submitted
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has
