@@ -96,8 +96,10 @@ def parse_options():
     if expanded != args:
         print "Submitting: %s" % " ".join(expanded)
         args = expanded
+    # generate URLs for package names:
     opts.urls = [layout.package_url(nameurl, distro=opts.distro, mirrored=False)
             for nameurl in args]
+    # choose a target if not specified:
     if opts.target is None and opts.distro is None:
         target = layout.distro_branch(opts.urls[0]) or DEFAULT_TARGET
         print "Implicit target: %s" % target
