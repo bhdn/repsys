@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from RepSys import Error, config, layout
+from RepSys.svn import SVN
 from RepSys.command import *
 from RepSys.rpmutil import get_spec, get_submit_info
 from RepSys.util import get_auth, execcmd, get_helper
@@ -99,6 +100,25 @@ def parse_options():
     # generate URLs for package names:
     opts.urls = [layout.package_url(nameurl, distro=opts.distro, mirrored=False)
             for nameurl in args]
+    # find the revision if not specified:
+    newurls = []
+    for url in opts.urls:
+        if not "@" in url:
+            print "Fetching revision..."
+            courl = layout.checkout_url(url)
+            log = SVN().log(courl, limit=1)
+            if not log:
+                raise Error, "can't find a revision for %s" % courl
+            ci = log[0]
+            print "URL:", url
+            print "Commit:",
+            print "%d | %s" % (ci.revision, ci.author),
+            if ci.lines:
+                print "| %s" % ci.lines[0],
+            print
+            url = url + "@" + str(ci.revision)
+        newurls.append(url)
+    opts.urls[:] = newurls
     # choose a target if not specified:
     if opts.target is None and opts.distro is None:
         target = layout.distro_branch(opts.urls[0]) or DEFAULT_TARGET

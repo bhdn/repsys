@@ -2,6 +2,8 @@
 - make the -M option work again
 - sync now adds the spec file (pointed by blino)
 - fixed putsrpm to not create old log files for packages without changelog
+- submit now can fetch the revision number if not specified (it also shows
+  the author and the first line of the commit)
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has
