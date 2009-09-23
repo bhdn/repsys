@@ -4,6 +4,9 @@
 - fixed putsrpm to not create old log files for packages without changelog
 - submit now can fetch the revision number if not specified (it also shows
   the author and the first line of the commit)
+- allow submitting many packages at once, even without support on server
+  side (the same behavior as running repsys submit for each package)
+- append a parameter sid=UUID for every set of packages submitted
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has

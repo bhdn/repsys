@@ -9,6 +9,7 @@ import getopt
 import sys
 import re
 import subprocess
+import uuid
 
 import xmlrpclib
 
@@ -38,6 +39,8 @@ Options:
                argument)
     -s         The host in which the package URL will be submitted
                (defaults to the host in the URL)
+    -a         Submit all URLs at once (depends on server-side support)
+    -i SID     Use the submit identifier SID
     -h         Show this message
     --distro   The distribution branch where the packages come from
     --define   Defines one variable to be used by the submit scripts 
@@ -64,6 +67,9 @@ def parse_options():
     parser.add_option("-r", dest="revision", type="string", nargs=1)
     parser.add_option("-s", dest="submithost", type="string", nargs=1,
             default=None)
+    parser.add_option("-i", dest="sid", type="string", nargs=1,
+            default=None)
+    parser.add_option("-a", dest="atonce", action="store_true", default=False)
     parser.add_option("--distro", dest="distro", type="string",
             default=None)
     parser.add_option("--define", action="append", default=[])
@@ -157,7 +163,7 @@ def list_targets(option, opt, val, parser):
     execcmd(command, show=True)
     sys.exit(0)
 
-def submit(urls, target, define=[], submithost=None):
+def submit(urls, target, define=[], submithost=None, atonce=False, sid=None):
     if submithost is None:
         submithost = config.get("submit", "host")
         if submithost is None:
@@ -170,25 +176,33 @@ def submit(urls, target, define=[], submithost=None):
     # runs a create-srpm in the server through ssh, which will make a
     # copy of the rpm in the export directory
     createsrpm = get_helper("create-srpm")
-    args = ["ssh", submithost, createsrpm, "-t", target]
-    for entry in define:
-        args.append("--define")
-        args.append(entry)
+    baseargs = ["ssh", submithost, createsrpm, "-t", target]
+    if not sid:
+        sid = uuid.uuid4()
+    define.append("sid=%s" % sid)
+    for entry in reversed(define):
+        baseargs.append("--define")
+        baseargs.append(entry)
+    cmdsargs = []
     if len(urls) == 1:
         # be compatible with server-side repsys versions older than 1.6.90
         url, rev = layout.split_url_revision(urls[0])
-        args.append(url)
-        args.append("-r")
-        args.append(str(rev))
+        baseargs.append("-r")
+        baseargs.append(str(rev))
+        baseargs.append(url)
+        cmdsargs.append(baseargs)
+    elif atonce:
+        cmdsargs.append(baseargs + urls)
     else:
-        args.extend(urls)
-    command = subprocess.list2cmdline(args)
-    status, output = execcmd(command)
-    if status == 0:
-        print "Package submitted!"
-    else:
-        sys.stderr.write(output)
-        sys.exit(status)
+        cmdsargs.extend((baseargs + [url]) for url in urls)
+    for cmdargs in cmdsargs:
+        command = subprocess.list2cmdline(cmdargs)
+        status, output = execcmd(command)
+        if status == 0:
+            print "Package submitted!"
+        else:
+            sys.stderr.write(output)
+            sys.exit(status)
 
 def main():
     do_command(parse_options, submit)
