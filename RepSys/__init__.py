@@ -11,4 +11,6 @@ del ConfigParser
 
 class Error(Exception): pass
 
+class SilentError(Error): pass
+
 # vim:et:ts=4:sw=4

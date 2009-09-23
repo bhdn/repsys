@@ -1,4 +1,4 @@
-from RepSys import Error, config
+from RepSys import Error, SilentError, config
 from RepSys.util import execcmd, get_auth
 import sys
 import re
@@ -29,6 +29,10 @@ class SVN:
         try:
             return execcmd(cmdstr, **kwargs)
         except Error, e:
+            if kwargs.get("show"):
+                # svn has already dumped error messages, we don't need to
+                # try to do it too
+                raise SilentError
             if e.args:
                 if "Permission denied" in e.args[0]:
                     raise Error, ("%s\n"

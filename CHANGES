@@ -8,6 +8,7 @@
   side (the same behavior as running repsys submit for each package)
 - append a parameter sid=UUID for every set of packages submitted
 - strip username from package URL on submit (#53939)
+- clearer error message when svn co fails
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has
