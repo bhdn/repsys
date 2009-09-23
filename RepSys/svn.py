@@ -23,26 +23,36 @@ class SVN:
         if not kwargs.get("show") and args[0] not in localcmds:
             args = list(args)
             args.append("--non-interactive")
+        else:
+            kwargs["geterr"] = True
+        kwargs["cleanerr"] = True
         svn_command = config.get("global", "svn-command",
                         "SVN_SSH='ssh -o \"BatchMode yes\"' svn")
         cmdstr = svn_command + " " + " ".join(args)
         try:
             return execcmd(cmdstr, **kwargs)
         except Error, e:
-            if kwargs.get("show"):
-                # svn has already dumped error messages, we don't need to
-                # try to do it too
-                raise SilentError
+            msg = None
             if e.args:
                 if "Permission denied" in e.args[0]:
-                    raise Error, ("%s\n"
-                            "Seems ssh-agent or ForwardAgent are not setup, see "
-                            "http://wiki.mandriva.com/en/Development/Docs/Contributor_Tricks#SSH_configuration"
-                            " for more information." % e)
+                    msg = ("It seems ssh-agent or ForwardAgent are not setup "
+                           "or your username is wrong. See "
+                           "http://wiki.mandriva.com/en/Development/Docs/Contributor_Tricks#SSH_configuration"
+                           " for more information.")
                 elif "authorization failed" in e.args[0]:
-                    raise Error, ("%s\n"
-                            "Note that repsys does not support any HTTP "
-                            "authenticated access." % e)
+                    msg = ("Note that repsys does not support any HTTP "
+                           "authenticated access.")
+            if kwargs.get("show") and \
+                    not config.getbool("global", "verbose", 0):
+                # svn has already dumped error messages, we don't need to
+                # do it too
+                if msg:
+                    sys.stderr.write("\n")
+                    sys.stderr.write(msg)
+                    sys.stderr.write("\n")
+                raise SilentError
+            elif msg:
+                raise Error, "%s\n%s" % (e, msg)
             raise
 
     def _execsvn_success(self, *args, **kwargs):

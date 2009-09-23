@@ -2,11 +2,13 @@
 
 from RepSys import Error, config
 
+import subprocess
 import getpass
 import sys
 import os
 import re
 import logging
+from cStringIO import StringIO
 #import commands
 
 log = logging.getLogger("repsys")
@@ -26,14 +28,35 @@ def commands_getstatusoutput(cmd):
 def execcmd(*cmd, **kwargs):
     cmdstr = " ".join(cmd)
     if kwargs.get("show"):
-        status = os.system(cmdstr)
-        output = ""
+        if kwargs.get("geterr"):
+            err = StringIO()
+            pipe = subprocess.Popen(cmdstr, shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            of = pipe.stdout.fileno()
+            ef = pipe.stderr.fileno()
+            while True:
+                odata = os.read(of, 8192)
+                sys.stdout.write(odata)
+                edata = os.read(ef, 8192)
+                err.write(edata)
+                sys.stderr.write(edata)
+                status = pipe.poll()
+                if status is not None and not (odata and edata):
+                    break
+            output = err.getvalue()
+        else:
+            status = os.system(cmdstr)
+            output = ""
     else:
         status, output = commands_getstatusoutput(
                 "LANG=C LANGUAGE=C LC_ALL=C "+cmdstr)
+    verbose = config.getbool("global", "verbose", 0)
     if status != 0 and not kwargs.get("noerror"):
-        raise Error, "command failed: %s\n%s\n" % (cmdstr, output)
-    if config.getbool("global", "verbose", 0):
+        if kwargs.get("cleanerr") and not verbose:
+            raise Error, output
+        else:
+            raise Error, "command failed: %s\n%s\n" % (cmdstr, output)
+    if verbose:
         print cmdstr
         sys.stdout.write(output)
     return status, output

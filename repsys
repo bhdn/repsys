@@ -72,6 +72,8 @@ def dispatch_command(command, argv, debug=0):
         command = command_aliases[command]
     except KeyError:
         pass
+    if debug:
+        config.set("global", "verbose", "yes")
     try:
         repsys_module = __import__("RepSys.commands."+command)
         commands_module = getattr(repsys_module, "commands")

@@ -9,6 +9,9 @@
 - append a parameter sid=UUID for every set of packages submitted
 - strip username from package URL on submit (#53939)
 - clearer error message when svn co fails
+- svn authentication errors are handled, pointing to the wiki page on
+  configuration
+- svn commands will not be shown on error messages, unless using --debug
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has
