@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from RepSys import Error, config, layout
+from RepSys import Error, config, layout, mirror
 from RepSys.svn import SVN
 from RepSys.command import *
 from RepSys.rpmutil import get_spec, get_submit_info
@@ -104,7 +104,8 @@ def parse_options():
         print "Submitting: %s" % " ".join(expanded)
         args = expanded
     # generate URLs for package names:
-    opts.urls = [layout.package_url(nameurl, distro=opts.distro, mirrored=False)
+    opts.urls = [mirror.strip_username(
+                    layout.package_url(nameurl, distro=opts.distro, mirrored=False))
             for nameurl in args]
     # find the revision if not specified:
     newurls = []
