@@ -114,7 +114,10 @@ def parse_options():
             print "Commit:",
             print "%d | %s" % (ci.revision, ci.author),
             if ci.lines:
-                print "| %s" % ci.lines[0],
+                line = " ".join(ci.lines).strip()
+                if len(line) > 57:
+                    line = line[:57] + "..."
+                print "| %s" % line,
             print
             url = url + "@" + str(ci.revision)
         newurls.append(url)
