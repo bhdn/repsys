@@ -6,4 +6,4 @@ include CHANGES
 include README.LDAP
 include repsys-example.conf
 include *.chlog
-include rebrand-mdk create-srpm getsrpm-mdk repsys-ssh
+include create-srpm repsys-ssh
