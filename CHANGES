@@ -1,4 +1,4 @@
-* Development
+* 1.8
 - make the -M option work again
 - sync now adds the spec file (pointed by blino)
 - fixed putsrpm to not create old log files for packages without changelog
