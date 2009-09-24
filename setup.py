@@ -20,7 +20,7 @@ setup(name="repsys",
       long_description = """Tools for Mandriva Linux repository access and management.""",
       packages = ["RepSys", "RepSys.cgi", "RepSys.commands",
           "RepSys.plugins"],
-      scripts = ["repsys", "getsrpm-mdk"],
+      scripts = ["repsys", "getsrpm-mdk", "repsys-ssh"],
       data_files = [
 	      ("/usr/share/repsys/", 
               ["default.chlog", 

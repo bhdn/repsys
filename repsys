@@ -91,6 +91,7 @@ if __name__ == "__main__":
     except Error, e:
         sys.stderr.write("plugin initialization error: %s\n" % e)
         sys.exit(1)
+    config.set("global", "repsys-cmd", sys.argv[0])
     do_command(parse_options, dispatch_command)
 
 # vim:et:ts=4:sw=4

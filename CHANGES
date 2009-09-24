@@ -12,6 +12,9 @@
 - svn authentication errors are handled, pointing to the wiki page on
   configuration
 - svn commands will not be shown on error messages, unless using --debug
+- repsys uses the wrapper repsys-ssh for svn, to handle signals and also
+  set BatchMode
+- added the configuration option svn-env
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has

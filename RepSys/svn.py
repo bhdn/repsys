@@ -1,6 +1,7 @@
 from RepSys import Error, SilentError, config
 from RepSys.util import execcmd, get_auth
 import sys
+import os
 import re
 import time
 
@@ -26,8 +27,8 @@ class SVN:
         else:
             kwargs["geterr"] = True
         kwargs["cleanerr"] = True
-        svn_command = config.get("global", "svn-command",
-                        "SVN_SSH='ssh -o \"BatchMode yes\"' svn")
+        self._set_env()
+        svn_command = config.get("global", "svn-command", "svn")
         cmdstr = svn_command + " " + " ".join(args)
         try:
             return execcmd(cmdstr, **kwargs)
@@ -54,6 +55,29 @@ class SVN:
             elif msg:
                 raise Error, "%s\n%s" % (e, msg)
             raise
+
+    def _set_env(self):
+        wrapper = "repsys-ssh"
+        repsys = config.get("global", "repsys-cmd")
+        if repsys:
+            dir = os.path.dirname(repsys)
+            path = os.path.join(dir, wrapper)
+            if os.path.exists(path):
+                wrapper = path
+        defaults = {"SVN_SSH": wrapper}
+        os.environ.update(defaults)
+        raw = config.get("global", "svn-env")
+        if raw:
+            for line in raw.split("\n"):
+                env = line.strip()
+                if not env:
+                    continue
+                try:
+                    name, value = env.split("=", 1)
+                except ValueError:
+                    sys.stderr.write("invalid svn environment line: %r\n" % env)
+                    continue
+                os.environ[name] = value
 
     def _execsvn_success(self, *args, **kwargs):
         status, output = self._execsvn(*args, **kwargs)
