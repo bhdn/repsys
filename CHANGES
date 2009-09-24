@@ -15,6 +15,7 @@
 - repsys uses the wrapper repsys-ssh for svn, to handle signals and also
   set BatchMode
 - added the configuration option svn-env
+- show the error from rpm when fetching the version from a spec fails
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has
