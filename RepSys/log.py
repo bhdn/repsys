@@ -18,6 +18,7 @@ import locale
 import glob
 import tempfile
 import shutil
+import subprocess
 
 
 locale.setlocale(locale.LC_ALL, "C")
@@ -86,11 +87,15 @@ def getrelease(pkgdirurl, rev=None, macros=[], exported=None):
         specpath = found[0]
         options = rpm_macros_defs(macros)
         command = (("rpm -q --qf '%%{EPOCH}:%%{VERSION}-%%{RELEASE}\n' "
-                   "--specfile %s %s 2>/dev/null") % 
+                   "--specfile %s %s") %
                    (specpath, options))
-        status, output = execcmd(command)
-        if status != 0:
-            raise Error, "Error in command %s: %s" % (command, output)
+        pipe = subprocess.Popen(command, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, shell=True)
+        pipe.wait()
+        output = pipe.stdout.read()
+        error = pipe.stderr.read()
+        if pipe.returncode != 0:
+            raise Error, "Error in command %s: %s" % (command, error)
         releases = output.split()
         try:
             epoch, vr = releases[0].split(":", 1)

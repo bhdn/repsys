@@ -1,10 +1,26 @@
 * Development
-- make the -M option work again
-- sync now adds the spec file (pointed by blino)
-- fixed putsrpm to not create old log files for packages without changelog
 - added support to "binary repository"
 - added new commands upload, up and del to help handling tarballs in the
   binaries repository
+
+* 1.8
+- make the -M option work again
+- sync now adds the spec file (pointed by blino)
+- fixed putsrpm to not create old log files for packages without changelog
+- submit now can fetch the revision number if not specified (it also shows
+  the author and the first line of the commit)
+- allow submitting many packages at once, even without support on server
+  side (the same behavior as running repsys submit for each package)
+- append a parameter sid=UUID for every set of packages submitted
+- strip username from package URL on submit (#53939)
+- clearer error message when svn co fails
+- svn authentication errors are handled, pointing to the wiki page on
+  configuration
+- svn commands will not be shown on error messages, unless using --debug
+- repsys uses the wrapper repsys-ssh for svn, to handle signals and also
+  set BatchMode
+- added the configuration option svn-env
+- show the error from rpm when fetching the version from a spec fails
 
 * 1.7
 - dropped all authenticated access support: subversion authentication has

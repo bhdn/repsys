@@ -130,6 +130,8 @@ The directory to be used as base for temporay directories and files created by r
 Command used to download generic remote URLs, it accepts the variables \fB$url\fP and \fB$dest\fP. It is currently used when running \fBrepsys sync \-d\fP.
 .IP "\fBsvn\-command = COMMAND\fP"
 The base command used to execute svn(1). Runs through system(3).
+.IP "\fBsvn-env = VAR=VALUE ..\fP"
+The environment variables to use when running svn. More entries can be defined by using more lines. The variable defined by default is \fBSVN_SSH\fP, which points to the \fBrepsys-ssh\fP ssh wrapper.
 .IP "\fBverbose = yes/no\fP"
 Increase the verbosity of repsys output, printing commands being run and complete traceback when unhanlded errors happen.
 .IP "\fBtrunk-dir\fP"
