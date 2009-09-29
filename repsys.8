@@ -186,6 +186,9 @@ The complement of the previous option. When this token is found, only those line
 .SS "[template] section"
 .IP "\fBpath = PATH\fP"
 The path of the template used to generate the changelog from svn commits.
+.SS "[srpm] section"
+.IP "\fBrun-prep = yes/no\fP"
+Repsys can check for the presence of a file named \fBMakefile\fP in the top directory of the package and run \fBmake prep-srpm\fP so that it can generate the actual files that must be distributed in in the srpm. This option enables this feature. (Note: the command is expected to run in an restricted environment, the Makefile must use only minimal funcionalities.)
 .SH "ENVIRONMENT VARIABLES"
 .PP
 .IP "\fBREPSYS_CONF\fP"

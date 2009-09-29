@@ -100,6 +100,10 @@ def get_srpm(pkgdirurl,
         os.mkdir(srpmsdir)
         specsdir = os.path.join(tmpdir, "SPECS")
         speclist = glob.glob(os.path.join(specsdir, "*.spec"))
+        if config.getbool("srpm", "run-prep", False):
+            makefile = os.path.join(tmpdir, "Makefile")
+            if os.path.exists(makefile):
+                execcmd("make", "-C", tmpdir, "srpm-prep")
         if not speclist:
             raise Error, "no spec files found"
         spec = speclist[0]
