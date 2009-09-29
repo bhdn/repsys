@@ -19,6 +19,7 @@ def get_spec(pkgdirurl, targetdir=".", submit=False):
     tmpdir = tempfile.mktemp()
     try:
         geturl = layout.checkout_url(pkgdirurl, append_path="SPECS")
+        mirror.info(geturl)
         svn.export("'%s'" % geturl, tmpdir)
         speclist = glob.glob(os.path.join(tmpdir, "*.spec"))
         if not speclist:

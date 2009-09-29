@@ -3,7 +3,7 @@
 # This program will extract given version/revision of the named package
 # from the Conectiva Linux repository system.
 #
-from RepSys import Error, config
+from RepSys import Error, config, disable_mirror
 from RepSys.command import *
 from RepSys.layout import package_url
 from RepSys.rpmutil import get_srpm
@@ -76,6 +76,8 @@ def parse_options():
     parser.add_option("-n", dest="revname", action="store_true")
     parser.add_option("-l", dest="svnlog", action="store_true")
     parser.add_option("-T", dest="template", type="string", default=None)
+    parser.add_option("-M", "--no-mirror", action="callback",
+            callback=disable_mirror)
     parser.add_option("--strict", dest="strict", default=False,
             action="store_true")
     opts, args = parser.parse_args()

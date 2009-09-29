@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from RepSys import Error
+from RepSys import Error, disable_mirror
 from RepSys.command import *
 from RepSys.rpmutil import checkout
 import getopt
@@ -35,6 +35,8 @@ def parse_options():
     parser.add_option("-r", dest="revision")
     parser.add_option("--distribution", "-d", dest="distro", default=None)
     parser.add_option("--branch", "-b", dest="branch", default=None)
+    parser.add_option("-M", "--no-mirror", action="callback",
+            callback=disable_mirror)
     opts, args = parser.parse_args()
     if len(args) not in (1, 2):
         raise Error, "invalid arguments"
