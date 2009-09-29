@@ -1,5 +1,6 @@
 * Development
 - really fixed -M
+- new command log: shows the svn log for a given package
 
 * 1.8
 - make the -M option work again
