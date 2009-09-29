@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from RepSys import config, mirror, disable_mirror
 from RepSys.command import *
-from RepSys.layout import package_url
+from RepSys.layout import package_url, checkout_url
 from RepSys.rpmutil import sync
 from RepSys.util import execcmd
 import sys
@@ -40,8 +40,9 @@ def parse_options():
 
 def svn_log(pkgdirurl, verbose=False, limit=None, revision=None):
     mirror.info(pkgdirurl)
+    url = checkout_url(pkgdirurl)
     svncmd = config.get("global", "svn-command", "svn")
-    args = [svncmd, "log", pkgdirurl]
+    args = [svncmd, "log", url]
     if verbose:
         args.append("-v")
     if limit:
