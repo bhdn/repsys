@@ -36,6 +36,8 @@ def parse_options():
     opts, args = parser.parse_args()
     if len(args):
         opts.pkgdirurl = package_url(args[0])
+    else:
+        parser.error("log requires a package name")
     return opts
 
 def svn_log(pkgdirurl, verbose=False, limit=None, revision=None):
