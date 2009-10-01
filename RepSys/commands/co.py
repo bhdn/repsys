@@ -19,6 +19,7 @@ Options:
     -d      The distribution branch to checkout from
     -b      The package branch
     -r REV  Revision to checkout
+    -s      Only checkout the SPECS/ directory
     -M      Do not use the mirror (use the main repository)
     -h      Show this message
 
@@ -35,6 +36,8 @@ def parse_options():
     parser.add_option("-r", dest="revision")
     parser.add_option("--distribution", "-d", dest="distro", default=None)
     parser.add_option("--branch", "-b", dest="branch", default=None)
+    parser.add_option("-s", "--spec", dest="spec", default=False,
+            action="store_true")
     parser.add_option("-M", "--no-mirror", action="callback",
             callback=disable_mirror)
     opts, args = parser.parse_args()

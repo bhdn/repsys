@@ -458,10 +458,14 @@ def check_changed(pkgdirurl, all=0, show=0, verbose=0):
             "nopristine": nopristine}
 
 def checkout(pkgdirurl, path=None, revision=None, branch=None,
-        distro=None):
+        distro=None, spec=False):
     o_pkgdirurl = pkgdirurl
     pkgdirurl = layout.package_url(o_pkgdirurl, distro=distro)
-    current = layout.checkout_url(pkgdirurl, branch=branch)
+    append = None
+    if spec:
+        append = "SPECS"
+    current = layout.checkout_url(pkgdirurl, branch=branch,
+            append_path=append)
     if path is None:
         path = layout.package_name(pkgdirurl)
     mirror.info(current)

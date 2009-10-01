@@ -1,6 +1,7 @@
 * Development
 - really fixed -M
 - new command log: shows the svn log for a given package
+- added option -s to co, to allow checking out only SPECS
 
 * 1.8
 - make the -M option work again
