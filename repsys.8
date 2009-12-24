@@ -136,6 +136,10 @@ Increase the verbosity of repsys output, printing commands being run and complet
 Points to the default branch of the distro used in commands that do not have their branch or URL specified.
 .IP "\fBbranches-dir\fP"
 The directory inside the repository which contains all the branches of the distro. It is used to build the URL of packages referred using the branch notation BRANCH/PACKAGE, as in \fBrepsys co 2009.0/mutt\fP.
+.IP "\fBlog-file\fP"
+The path to the log file to be used (logging is only enabled if \fBlog-file\fP or \fBlog-level\fP are set.)
+.IP "\fBlog-level\fP"
+Logging level (can be info, warning, error, debug)
 .SS "[submit-groups] section"
 This section contains aliases to groups of packages to be submitted at once. For example, a line with \fBmy-python-packages = bzr bzrtools bzr-gtk\fP would allow the user to simply run \fBrepsys submit my-python-packages\fP.
 

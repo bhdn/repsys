@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from RepSys import Error, plugins, config
 from RepSys.command import *
+import logging
 import getopt
 import sys
 
@@ -82,13 +83,28 @@ def dispatch_command(command, argv, debug=0):
             raise Error, "invalid command '%s'" % command
         raise
     command_module.main()
-    
-if __name__ == "__main__":
+
+def init_logging():
+    path = config.get("global", "log-file", None)
+    level = config.get("global", "log-level", None)
+    if path or level:
+        path = path or "/var/log/repsys.log"
+        level = (level or "INFO").upper()
+        logging.basicConfig(filename=path,
+                level=logging.getLevelName(level),
+                format="%(asctime)s - %(levelname)s - %(message)s")
+        logging.info("repsys %s" % VERSION)
+
+def init():
     try:
+        init_logging()
         plugins.load()
     except Error, e:
-        sys.stderr.write("plugin initialization error: %s\n" % e)
+        sys.stderr.write("initialization error: %s\n" % e)
         sys.exit(1)
+
+if __name__ == "__main__":
+    init()
     do_command(parse_options, dispatch_command)
 
 # vim:et:ts=4:sw=4
