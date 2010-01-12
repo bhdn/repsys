@@ -122,6 +122,8 @@ Contains the base URL used to access packages in the svn repository when only pa
 Points to the base URL of the development branch of the svn repository. This option is deprecated as it has been replaced by "repository".
 .IP "\fBmirror = URL\fP" 
 The URL of an alternative and read\-only repository to be used when checking out packages. \fBrepsys ci\fP will automatically relocate to "repository" when comitting.
+.IP "\fBuse-mirror = yes/no\fP"
+Disable the use of the mirror repository when checking out packages.
 .IP "\fBurl\-map = MATCH\-REGEXP REPLACE\-EXPR\fP"
 This option is used on server-side to remap remote URLs brought by the user when running \fBrepsys submit\fP to local (and probably faster) URLs. \fBMATCH\-REGEXP\fP is a Python regular expression matching the components that must be reused in the local URL. \fbREPLACE\-EXPR\fP is a replace expression that should expand in the final URL. Example: \fBsvn\+ssh://svn\.mandriva\.com/(.*) file:///\1\fP
 .IP "\fBtempdir = PATH\fP"
