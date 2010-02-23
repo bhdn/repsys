@@ -26,7 +26,8 @@ def parse_options():
     parser = OptionParser(help=HELP)
     parser.add_option("-a", dest="all", action="store_true")
     parser.add_option("-s", dest="show", action="store_true")
-    parser.add_option("-M", "--no-mirror", action="disable_mirror")
+    parser.add_option("-M", "--no-mirror", action="callback",
+            callback=disable_mirror)
     opts, args = parser.parse_args()
     if len(args) != 1:
         raise Error, "invalid arguments"
