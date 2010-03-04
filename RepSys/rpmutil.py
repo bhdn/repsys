@@ -468,7 +468,7 @@ def checkout(pkgdirurl, path=None, revision=None, branch=None,
             append_path=append)
     if path is None:
         path = layout.package_name(pkgdirurl)
-    mirror.info(current)
+    mirror.info(current, write=True)
     svn = SVN()
     svn.checkout(current, path, rev=revision, show=1)
 

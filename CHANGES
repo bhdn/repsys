@@ -2,6 +2,7 @@
 - really fixed -M
 - new command log: shows the svn log for a given package
 - added option -s to co, to allow checking out only SPECS
+- use a better message when checking out from the mirror
 
 * 1.8
 - make the -M option work again
