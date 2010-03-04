@@ -26,6 +26,9 @@ def get_spec(pkgdirurl, targetdir=".", submit=False):
             raise Error, "no spec files found"
         spec = speclist[0]
         shutil.copy(spec, targetdir)
+        name = os.path.basename(spec)
+        path = os.path.join(targetdir, name)
+        print "Wrote %s" % (name)
     finally:
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
