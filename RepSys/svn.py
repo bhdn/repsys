@@ -21,11 +21,12 @@ class SVNLogEntry:
 class SVN:
     def _execsvn(self, *args, **kwargs):
         localcmds = ("add", "revert", "cleanup")
-        if not kwargs.get("show") and args[0] not in localcmds:
-            args = list(args)
-            args.append("--non-interactive")
-        else:
-            kwargs["geterr"] = True
+        if not kwargs.get("show"):
+            if args[0] not in localcmds:
+                args = list(args)
+                args.append("--non-interactive")
+            else:
+                kwargs["geterr"] = True
         kwargs["cleanerr"] = True
         self._set_env()
         svn_command = config.get("global", "svn-command", "svn")
