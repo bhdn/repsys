@@ -39,6 +39,7 @@ Options:
                argument)
     -s         The host in which the package URL will be submitted
                (defaults to the host in the URL)
+    -p         Port used to connect to the submit host
     -a         Submit all URLs at once (depends on server-side support)
     -i SID     Use the submit identifier SID
     -h         Show this message
@@ -67,6 +68,7 @@ def parse_options():
     parser.add_option("-r", dest="revision", type="string", nargs=1)
     parser.add_option("-s", dest="submithost", type="string", nargs=1,
             default=None)
+    parser.add_option("-p", dest="port", type="int", default=None)
     parser.add_option("-i", dest="sid", type="string", nargs=1,
             default=None)
     parser.add_option("-a", dest="atonce", action="store_true", default=False)
@@ -164,7 +166,8 @@ def list_targets(option, opt, val, parser):
     execcmd(command, show=True)
     sys.exit(0)
 
-def submit(urls, target, define=[], submithost=None, atonce=False, sid=None):
+def submit(urls, target, define=[], submithost=None, port=None,
+        atonce=False, sid=None):
     if submithost is None:
         submithost = config.get("submit", "host")
         if submithost is None:
@@ -172,12 +175,16 @@ def submit(urls, target, define=[], submithost=None, atonce=False, sid=None):
             type, rest = urllib.splittype(pkgdirurl)
             host, path = urllib.splithost(rest)
             user, host = urllib.splituser(host)
-            submithost, port = urllib.splitport(host)
-            del type, user, port, path, rest
+            submithost, svnport = urllib.splitport(host)
+            del type, user, svnport, path, rest
+    if port is None:
+        port = config.getint("submit", "port", "22")
+
     # runs a create-srpm in the server through ssh, which will make a
     # copy of the rpm in the export directory
     createsrpm = get_helper("create-srpm")
-    baseargs = ["ssh", submithost, createsrpm, "-t", target]
+    baseargs = ["ssh", "-p", str(port), submithost, createsrpm,
+            "-t", target]
     if not sid:
         sid = uuid.uuid4()
     define.append("sid=%s" % sid)
