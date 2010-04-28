@@ -78,6 +78,8 @@ def parse_options():
     opts, args = parser.parse_args()
     if not args:
         name, url, rev = get_submit_info(".")
+        if opts.revision is not None:
+            rev = opts.revision
         args = ["%s@%s" % (url, str(rev))]
         print "Submitting %s at revision %s" % (name, rev)
         print "URL: %s" % url
