@@ -79,6 +79,7 @@ def get_srpm(pkgdirurl,
     specdir = "--define '_specdir %s/%s'" % (tmpdir, "SPECS")
     srcrpmdir = "--define '_srcrpmdir %s/%s'" % (tmpdir, "SRPMS")
     patchdir = "--define '_patchdir %s/%s'" % (tmpdir, "SOURCES")
+    temppath = "--define '_tmppath %s'" % (tmpdir)
 
     try:
         if mode == "version":
@@ -125,9 +126,9 @@ def get_srpm(pkgdirurl,
 
         defs = rpm_macros_defs(macros)
         sourcecmd = config.get("helper", "rpmbuild", "rpmbuild")
-        execcmd("%s -bs --nodeps %s %s %s %s %s %s %s %s %s %s" %
+        execcmd("%s -bs --nodeps %s %s %s %s %s %s %s %s %s %s %s" %
             (sourcecmd, topdir, builddir, rpmdir, sourcedir, specdir,
-                srcrpmdir, patchdir, packager, spec, defs))
+                srcrpmdir, patchdir, temppath, packager, spec, defs))
 
         # copy the generated SRPMs to their target locations
         targetsrpms = []
