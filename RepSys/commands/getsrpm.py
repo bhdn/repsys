@@ -31,6 +31,7 @@ Options:
     -l         Use subversion log to build rpm %changelog
     -T FILE    Template to be used to generate the %changelog
     -M         Do not use the mirror (use the main repository)
+    -d DISTRO  Use a set of macros from a specific distro (from repsys.conf)
     -h         Show this message
     --strict   Check if the given revision contains changes in REPPKGURL
 
@@ -78,6 +79,7 @@ def parse_options():
     parser.add_option("-T", dest="template", type="string", default=None)
     parser.add_option("-M", "--no-mirror", action="callback",
             callback=disable_mirror)
+    parser.add_option("-d", "--distro", type="string", default=None)
     parser.add_option("--strict", dest="strict", default=False,
             action="store_true")
     opts, args = parser.parse_args()

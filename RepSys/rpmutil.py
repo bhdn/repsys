@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from RepSys import Error, config
-from RepSys import mirror, layout, log
+from RepSys import mirror, layout, log, cgiutil
 from RepSys.svn import SVN
 from RepSys.simplerpm import SRPM
 from RepSys.util import execcmd
@@ -67,6 +67,7 @@ def get_srpm(pkgdirurl,
              scripts = [], 
              submit = False,
              template = None,
+             distro = None,
              macros = [],
              verbose = 0,
              strict = False):
@@ -124,6 +125,14 @@ def get_srpm(pkgdirurl,
         if packager:
             packager = " --define 'packager %s'" % packager
 
+        if distro:
+            cmpdistro = distro.lower()
+            for target in cgiutil.get_targets():
+                if target.name.lower() == cmpdistro:
+                    macros.extend(target.macros)
+                    break
+            else:
+                raise Error, "no such submit target in configuration: %s" % (distro)
         defs = rpm_macros_defs(macros)
         sourcecmd = config.get("helper", "rpmbuild", "rpmbuild")
         execcmd("%s -bs --nodeps %s %s %s %s %s %s %s %s %s %s %s" %
