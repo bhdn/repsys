@@ -173,12 +173,7 @@ def submit(urls, target, define=[], submithost=None, port=None,
     if submithost is None:
         submithost = config.get("submit", "host")
         if submithost is None:
-            # extract the submit host from the svn host
-            type, rest = urllib.splittype(pkgdirurl)
-            host, path = urllib.splithost(rest)
-            user, host = urllib.splituser(host)
-            submithost, svnport = urllib.splitport(host)
-            del type, user, svnport, path, rest
+            raise Error, "no submit host defined in configuration"
     if port is None:
         port = config.getint("submit", "port", "22")
 

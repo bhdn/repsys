@@ -3,6 +3,7 @@
 - allow using submit -r REV, without package name
 - set _tmppath rpm macro based on tempdir from repsys.conf
 - allow using target macros in getsrpm as in submit (via the -d option)
+- abort when no submit host is defined, less chance of obscure errors
 
 * 1.9
 - really fixed -M
