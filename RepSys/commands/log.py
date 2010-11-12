@@ -49,7 +49,7 @@ def svn_log(pkgdirurl, verbose=False, limit=None, revision=None):
         args.append("-v")
     if limit:
         args.append("-l")
-        args.append(limit)
+        args.append(str(limit))
     if revision:
         args.append("-r")
         args.append(revision)
