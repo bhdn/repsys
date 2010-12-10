@@ -151,6 +151,10 @@ Defines the default host in which \fBrepsys submit\fP will run the submit helper
 Defines the port number used to connect to the submit host. Defaults to 22.
 .IP "\fBdefault = TARGET\fP"
 The default target to be used in \fBrepsys submit\fP when the option \-t is not used.
+.IP "\fBdisabled = yes/no\fP"
+(server-side) Enable or disable package submission. Note that this is only intended to inform the user and does not effectively blocks the user from submitting, as would still be possible to run the upload tool directly.
+.IP \fBdisabled-message = MESSAGE\fP"
+(server-side) The message user to tell the user submission has been disabled.
 .SS "[submit TARGET] sections (server\-side only)"
 These sections describe each one of the sections available to submit packages, ther configuration options are:
 .IP "\fBtarget = PATH\fP"

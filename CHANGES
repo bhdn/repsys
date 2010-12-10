@@ -4,6 +4,8 @@
 - set _tmppath rpm macro based on tempdir from repsys.conf
 - allow using target macros in getsrpm as in submit (via the -d option)
 - abort when no submit host is defined, less chance of obscure errors
+- added option in configuration to allow disabling submits temporarily
+  (this is intended to be a reminder, as it can be easily work-arounded)
 
 * 1.9
 - really fixed -M
