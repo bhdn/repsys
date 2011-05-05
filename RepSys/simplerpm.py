@@ -7,13 +7,16 @@ class SRPM:
         self._getinfo()
 
     def _getinfo(self):
-        cmdstr = "rpm -qp --qf '%%{name} %%{epoch} %%{release} %%{version}' %s"
-        status, output = execcmd(cmdstr % self.filename)
+        args = ["rpm", "-qp", "--qf", "%{name} %{epoch} %{release} %{version}",
+                self.filename]
+        status, output = execcmd(args)
         self.name, self.epoch, self.release, self.version = output.split()
         if self.epoch == "(none)":
             self.epoch = None
 
     def unpack(self, topdir):
-        execcmd("rpm -i --define '_topdir %s' %s" % (topdir, self.filename))
+        args = ["rpm", "-i", "--define", "_topdir %s" % (topdir),
+                self.filename]
+        execcmd(args)
 
 # vim:et:ts=4:sw=4

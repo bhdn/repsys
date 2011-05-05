@@ -6,6 +6,8 @@ from RepSys.rpmutil import sync
 from RepSys.util import execcmd
 import sys
 import os
+import subprocess
+import shlex
 
 HELP = """\
 Usage: repsys log [OPTIONS] [PACKAGE]
@@ -54,9 +56,13 @@ def svn_log(pkgdirurl, verbose=False, limit=None, revision=None):
         args.append("-r")
         args.append(revision)
     if os.isatty(sys.stdin.fileno()):
-        args.append("| less")
-    rawcmd = " ".join(args)
-    execcmd(rawcmd, show=True)
+        pager = shlex.split(os.environ.get("PAGER", "less"))
+        p = subprocess.Popen(args, stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(pager, stdin=p.stdout)
+        p2.wait()
+        p.wait()
+    else:
+        execcmd(args, show=True)
 
 def main():
     do_command(parse_options, svn_log)

@@ -33,11 +33,6 @@ def get_spec(pkgdirurl, targetdir=".", submit=False):
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
 
-def rpm_macros_defs(macros):
-    defs = ("--define \"%s %s\"" % macro for macro in macros)
-    args = " ".join(defs)
-    return args
-
 #FIXME move it to another module
 def rev_touched_url(url, rev):
     svn = SVN()
@@ -73,14 +68,17 @@ def get_srpm(pkgdirurl,
              strict = False):
     svn = SVN()
     tmpdir = tempfile.mktemp()
-    topdir = "--define '_topdir %s'" % tmpdir
-    builddir = "--define '_builddir %s/%s'" % (tmpdir, "BUILD")
-    rpmdir = "--define '_rpmdir %s/%s'" % (tmpdir, "RPMS")
-    sourcedir = "--define '_sourcedir %s/%s'" % (tmpdir, "SOURCES")
-    specdir = "--define '_specdir %s/%s'" % (tmpdir, "SPECS")
-    srcrpmdir = "--define '_srcrpmdir %s/%s'" % (tmpdir, "SRPMS")
-    patchdir = "--define '_patchdir %s/%s'" % (tmpdir, "SOURCES")
-    temppath = "--define '_tmppath %s'" % (tmpdir)
+    topdir = "_topdir %s" % tmpdir
+    builddir = "_builddir %s/%s" % (tmpdir, "BUILD")
+    rpmdir = "_rpmdir %s/%s" % (tmpdir, "RPMS")
+    sourcedir = "_sourcedir %s/%s" % (tmpdir, "SOURCES")
+    specdir = "_specdir %s/%s" % (tmpdir, "SPECS")
+    srcrpmdir = "_srcrpmdir %s/%s" % (tmpdir, "SRPMS")
+    patchdir = "_patchdir %s/%s" % (tmpdir, "SOURCES")
+    temppath = "_tmppath %s" % (tmpdir)
+
+    rpmdefs = [("--define", expr) for expr in (topdir, builddir, rpmdir,
+        sourcedir, specdir, srcrpmdir, patchdir, temppath)]
 
     try:
         if mode == "version":
@@ -108,7 +106,7 @@ def get_srpm(pkgdirurl,
         if config.getbool("srpm", "run-prep", False):
             makefile = os.path.join(tmpdir, "Makefile")
             if os.path.exists(makefile):
-                execcmd("make", "-C", tmpdir, "srpm-prep")
+                execcmd(("make", "-C", tmpdir, "srpm-prep"))
         if not speclist:
             raise Error, "no spec files found"
         spec = speclist[0]
@@ -133,11 +131,14 @@ def get_srpm(pkgdirurl,
                     break
             else:
                 raise Error, "no such submit target in configuration: %s" % (distro)
-        defs = rpm_macros_defs(macros)
         sourcecmd = config.get("helper", "rpmbuild", "rpmbuild")
-        execcmd("%s -bs --nodeps %s %s %s %s %s %s %s %s %s %s %s" %
-            (sourcecmd, topdir, builddir, rpmdir, sourcedir, specdir,
-                srcrpmdir, patchdir, temppath, packager, spec, defs))
+        args = [sourcecmd, "-bs", "--nodeps"]
+        for pair in rpmdefs:
+            args.extend(pair)
+        for pair in macros:
+            args.extend(("--define", "%s %s" % pair))
+        args.append(spec)
+        execcmd(args)
 
         # copy the generated SRPMs to their target locations
         targetsrpms = []
@@ -179,7 +180,7 @@ def patch_spec(pkgdirurl, patchfile, log=""):
         if not speclist:
             raise Error, "no spec files found"
         spec = speclist[0]
-        status, output = execcmd("patch", spec, patchfile)
+        status, output = execcmd(["patch", spec, patchfile])
         if status != 0:
             raise Error, "can't apply patch:\n%s\n" % output
         else:
@@ -260,8 +261,8 @@ def put_srpm(srpmfile, markrelease=False, striplog=True, branch=None,
                 svn.remove(entrypath)
 
             # Copy all files
-            execcmd("cp -rf", uspecsdir, currentdir)
-            execcmd("cp -rf", usourcesdir, currentdir)
+            execcmd(["cp", "-rf", uspecsdir, currentdir])
+            execcmd(["cp", "-rf", usourcesdir, currentdir])
             
             # Add new entries
             for entry in [x for x in uspecsentries

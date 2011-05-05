@@ -164,9 +164,8 @@ def list_targets(option, opt, val, parser):
         raise Error, "no submit host defined in repsys.conf"
     createsrpm = get_helper("create-srpm")
     #TODO make it configurable
-    command = "ssh %s %s --list" % (host, createsrpm)
-    execcmd(command, show=True)
-    sys.exit(0)
+    args = ["ssh", host, createsrpm, "--list"]
+    execcmd(args, show=True)
 
 def submit(urls, target, define=[], submithost=None, port=None,
         atonce=False, sid=None):
@@ -201,8 +200,7 @@ def submit(urls, target, define=[], submithost=None, port=None,
     else:
         cmdsargs.extend((baseargs + [url]) for url in urls)
     for cmdargs in cmdsargs:
-        command = subprocess.list2cmdline(cmdargs)
-        status, output = execcmd(command)
+        status, output = execcmd(cmdargs)
         if status == 0:
             print "Package submitted!"
         else:
