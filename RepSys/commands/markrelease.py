@@ -12,7 +12,6 @@ from RepSys.command import *
 from RepSys.layout import package_url
 from RepSys.simplerpm import SRPM
 from RepSys.rpmutil import mark_release
-from RepSys.util import get_auth
 import getopt
 import sys
 import os
@@ -94,7 +93,6 @@ def parse_options():
         raise Error, "no revision provided"
     elif not opts.version:
         raise Error, "no version provided"
-    #get_auth()
     return opts
 
 def main():

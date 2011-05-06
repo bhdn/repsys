@@ -1,5 +1,5 @@
 from RepSys import Error, SilentError, config
-from RepSys.util import execcmd, get_auth
+from RepSys.util import execcmd
 import sys
 import os
 import re

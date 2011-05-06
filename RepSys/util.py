@@ -5,7 +5,6 @@ from RepSys import Error, config
 import shlex
 import subprocess
 import select
-import getpass
 import sys
 import os
 import re
@@ -75,28 +74,6 @@ def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
         raise CommandError, msg
 
     return status, output
-
-def get_auth(username=None, password=None):
-    set_username = 1
-    set_password = 1
-    if not username:
-        username = config.get("auth", "username")
-        if not username:
-            username = raw_input("username: ")
-        else:
-            set_username = 0
-    if not password:
-        password = config.get("auth", "password")
-        if not password:
-            password = getpass.getpass("password: ")
-        else:
-            set_password = 0
-    if set_username:
-        config.set("auth", "username", username)
-    if set_password:
-        config.set("auth", "password", password)
-    return username, password
-
 
 def mapurl(url):
     """Maps a url following the regexp provided by the option url-map in
