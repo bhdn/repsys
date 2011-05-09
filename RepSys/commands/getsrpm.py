@@ -3,7 +3,7 @@
 # This program will extract given version/revision of the named package
 # from the Conectiva Linux repository system.
 #
-from RepSys import Error, config
+from RepSys import Error, config, disable_mirror
 from RepSys.command import *
 from RepSys.layout import package_url
 from RepSys.rpmutil import get_srpm
@@ -31,6 +31,7 @@ Options:
     -l         Use subversion log to build rpm %changelog
     -T FILE    Template to be used to generate the %changelog
     -M         Do not use the mirror (use the main repository)
+    -d DISTRO  Use a set of macros from a specific distro (from repsys.conf)
     -h         Show this message
     -S         Do not download sources from the binary repository
     --check    Check integrity of files fetched from the binary repository
@@ -82,6 +83,9 @@ def parse_options():
             action="store_false")
     parser.add_option("--check", dest="binrepo_check", default=False,
             action="store_true")
+    parser.add_option("-M", "--no-mirror", action="callback",
+            callback=disable_mirror)
+    parser.add_option("-d", "--distro", type="string", default=None)
     parser.add_option("--strict", dest="strict", default=False,
             action="store_true")
     opts, args = parser.parse_args()

@@ -9,11 +9,12 @@ import sys
 import os
 import pwd
 import optparse
-import subprocess
 import urlparse
 import urllib
 
 class CmdError(Error): pass
+
+class SubmitDisabled(Error): pass
 
 class CmdIface:
     def author_email(self, author):
@@ -21,6 +22,11 @@ class CmdIface:
 
     def submit_package(self, urls, revision, targetname, dontmapurl_=0,
             define=[]):
+        if config.getbool("submit", "disabled", False):
+            message = config.get("submit", "disabled-message",
+                    "package submission is temporarily suspended, please "
+                    "try again later")
+            raise SubmitDisabled, message
         pw = pwd.getpwuid(os.getuid())
         username = pw[0]
         packager = config.get("users", username) or pw[4]
@@ -67,8 +73,7 @@ class CmdIface:
                         upload_command.append(x)
                 upload_command.append(targetname)
                 upload_command.extend(uploadsrpms)
-                command = subprocess.list2cmdline(upload_command)
-                status, output = execcmd(command, noerror=1)
+                status, output = execcmd(upload_command, noerror=1)
                 for srpm in uploadsrpms:
                     if os.path.isfile(srpm):
                         os.unlink(srpm)

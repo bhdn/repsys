@@ -122,6 +122,8 @@ Contains the base URL used to access packages in the svn repository when only pa
 Points to the base URL of the development branch of the svn repository. This option is deprecated as it has been replaced by "repository".
 .IP "\fBmirror = URL\fP" 
 The URL of an alternative and read\-only repository to be used when checking out packages. \fBrepsys ci\fP will automatically relocate to "repository" when comitting.
+.IP "\fBuse-mirror = yes/no\fP"
+Disable the use of the mirror repository when checking out packages.
 .IP "\fBurl\-map = MATCH\-REGEXP REPLACE\-EXPR\fP"
 This option is used on server-side to remap remote URLs brought by the user when running \fBrepsys submit\fP to local (and probably faster) URLs. \fBMATCH\-REGEXP\fP is a Python regular expression matching the components that must be reused in the local URL. \fbREPLACE\-EXPR\fP is a replace expression that should expand in the final URL. Example: \fBsvn\+ssh://svn\.mandriva\.com/(.*) file:///\1\fP
 .IP "\fBtempdir = PATH\fP"
@@ -145,8 +147,14 @@ Also distro branches or revision numbers can be specified for each package group
 .SS "[submit] section"
 .IP "\fBhost = HOST\fP"
 Defines the default host in which \fBrepsys submit\fP will run the submit helper.
+.IP "\fBport = PORT\fP"
+Defines the port number used to connect to the submit host. Defaults to 22.
 .IP "\fBdefault = TARGET\fP"
 The default target to be used in \fBrepsys submit\fP when the option \-t is not used.
+.IP "\fBdisabled = yes/no\fP"
+(server-side) Enable or disable package submission. Note that this is only intended to inform the user and does not effectively blocks the user from submitting, as would still be possible to run the upload tool directly.
+.IP \fBdisabled-message = MESSAGE\fP"
+(server-side) The message user to tell the user submission has been disabled.
 .SS "[submit TARGET] sections (server\-side only)"
 These sections describe each one of the sections available to submit packages, ther configuration options are:
 .IP "\fBtarget = PATH\fP"
@@ -186,6 +194,9 @@ The complement of the previous option. When this token is found, only those line
 .SS "[template] section"
 .IP "\fBpath = PATH\fP"
 The path of the template used to generate the changelog from svn commits.
+.SS "[srpm] section"
+.IP "\fBrun-prep = yes/no\fP"
+Repsys can check for the presence of a file named \fBMakefile\fP in the top directory of the package and run \fBmake prep-srpm\fP so that it can generate the actual files that must be distributed in in the srpm. This option enables this feature. (Note: the command is expected to run in an restricted environment, the Makefile must use only minimal funcionalities.)
 .SH "ENVIRONMENT VARIABLES"
 .PP
 .IP "\fBREPSYS_CONF\fP"

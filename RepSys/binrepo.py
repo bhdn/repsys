@@ -1,5 +1,5 @@
 from RepSys import Error, config, mirror, layout
-from RepSys.util import execcmd, rellink
+from RepSys.util import rellink
 from RepSys.svn import SVN
 
 import sys

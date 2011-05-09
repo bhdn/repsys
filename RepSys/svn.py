@@ -1,5 +1,5 @@
 from RepSys import Error, SilentError, config
-from RepSys.util import execcmd, get_auth
+from RepSys.util import execcmd
 import sys
 import os
 import re
@@ -21,19 +21,24 @@ class SVNLogEntry:
 class SVN:
     def _execsvn(self, *args, **kwargs):
         localcmds = ("add", "revert", "cleanup")
-        if not kwargs.get("show") and args[0] not in localcmds:
-            args = list(args)
-            args.append("--non-interactive")
-        else:
-            kwargs["geterr"] = True
-        kwargs["cleanerr"] = True
-        if kwargs.get("xml"):
-            args.append("--xml")
+        collecterr = False
+        if not kwargs.get("show"):
+            if args[0] not in localcmds:
+                args = list(args)
+                args.append("--non-interactive")
+            else:
+                collecterr = True
+        cleanerr = True
         self._set_env()
         svn_command = config.get("global", "svn-command", "svn")
-        cmdstr = svn_command + " " + " ".join(args)
+        cmdargs = [svn_command]
+        if kwargs.get("xml"):
+            args.append("--xml")
+        cmdargs.extend(args)
         try:
-            return execcmd(cmdstr, **kwargs)
+            return execcmd(cmdargs, show=kwargs.get("show", False),
+                    noerror=kwargs.get("noerror", False),
+                    collecterr=collecterr, cleanerr=cleanerr)
         except Error, e:
             msg = None
             if e.args:
@@ -91,10 +96,10 @@ class SVN:
             received_kwargs.has_key("logfile")):
             ret = received_kwargs.get("log")
             if ret is not None:
-                cmd_args.append("-m '%s'" % ret)
+                cmd_args.extend(("-m", ret))
             ret = received_kwargs.get("logfile")
             if ret is not None:
-                cmd_args.append("-F '%s'" % ret)
+                cmd_args.extend(("-F", ret))
 
     def _add_revision(self, cmd_args, received_kwargs, optional=0):
         if not optional or received_kwargs.has_key("rev"):
@@ -106,7 +111,7 @@ class SVN:
                     except ValueError:
                         raise Error, "invalid revision provided"
             if ret:
-                cmd_args.append("-r '%s'" % ret)
+                cmd_args.extend(("-r", str(ret)))
         
     def add(self, path, **kwargs):
         cmd = ["add", path]
@@ -152,12 +157,12 @@ class SVN:
         return self._execsvn_commit(*cmd, **kwargs)
 
     def export(self, url, targetpath, **kwargs):
-        cmd = ["export", "'%s'" % url, targetpath]
+        cmd = ["export", url, targetpath]
         self._add_revision(cmd, kwargs, optional=1)
         return self._execsvn_success(*cmd, **kwargs)
 
     def checkout(self, url, targetpath, **kwargs):
-        cmd = ["checkout", "'%s'" % url, targetpath]
+        cmd = ["checkout", url, targetpath]
         self._add_revision(cmd, kwargs, optional=1)
         return self._execsvn_success(*cmd, **kwargs)
 
@@ -170,7 +175,7 @@ class SVN:
         return output
  
     def propset(self, propname, value, targets, **kwargs):
-        cmd = ["propset", propname, "'%s'" % value, targets]
+        cmd = ["propset", propname, str(value), targets]
         return self._execsvn_success(*cmd, **kwargs)
 
     def propedit(self, propname, target, **kwargs):
@@ -191,9 +196,9 @@ class SVN:
           
     def info(self, path, **kwargs):
         cmd = ["info", path]
-        status, output = self._execsvn(local=True, noerror=True, *cmd, **kwargs)
-        if "Not a versioned resource" not in output:
-            return output.splitlines()
+        status, output = self._execsvn(local=True, *cmd, **kwargs)
+        if status == 0 and "Not a versioned resource" not in output:
+            return output.strip().splitlines()
         return None
 
     def info2(self, *args, **kwargs):
@@ -314,13 +319,13 @@ class SVN:
                 except (ValueError, TypeError):
                     raise Error, "invalid log end revision provided"
             start = start or "HEAD"
-            cmd.append("-r %s:%s" % (start, end))
+            cmd.extend(("-r", "%s:%s" % (start, end)))
         if limit is not None:
             try:
                 limit = int(limit)
             except (ValueError, TypeError):
                 raise Error, "invalid limit number provided"
-            cmd.append("--limit %d" % limit)
+            cmd.extend(("--limit", str(limit)))
         status, output = self._execsvn(*cmd, **kwargs)
         if status != 0:
             return None
@@ -380,7 +385,7 @@ class SVNLook:
     def _execsvnlook(self, cmd, *args, **kwargs):
         execcmd_args = ["svnlook", cmd, self.repospath]
         self._add_txnrev(execcmd_args, kwargs)
-        execcmd_args += args
+        execcmd_args.extend(args)
         execcmd_kwargs = {}
         keywords = ["show", "noerror"]
         for key in keywords:
@@ -392,15 +397,15 @@ class SVNLook:
         if received_kwargs.has_key("txn"):
             txn = received_kwargs.get("txn")
             if txn is not None:
-                cmd_args += ["-t", txn]
+                cmd_args.extend(("-t", txn))
         elif self.txn is not None:
-            cmd_args += ["-t", self.txn]
+            cmd_args.extend(("-t", self.txn))
         if received_kwargs.has_key("rev"):
             rev = received_kwargs.get("rev")
             if rev is not None:
-                cmd_args += ["-r", rev]
+                cmd_args.extend(("-r", str(rev)))
         elif self.rev is not None:
-            cmd_args += ["-r", self.rev]
+            cmd_args.extend(("-r", str(self.rev)))
 
     def changed(self, **kwargs):
         status, output = self._execsvnlook("changed", **kwargs)
