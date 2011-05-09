@@ -160,6 +160,8 @@ def list_targets(option, opt, val, parser):
     #TODO make it configurable
     args = ["ssh", host, createsrpm, "--list"]
     execcmd(args, show=True)
+    sys.exit(0) # it is invoked via optparse callback, thus we need to
+                # force ending the script
 
 def submit(urls, target, define=[], submithost=None, port=None,
         atonce=False, sid=None):
