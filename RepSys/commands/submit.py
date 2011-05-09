@@ -5,7 +5,6 @@ from RepSys.command import *
 from RepSys.rpmutil import get_submit_info
 from RepSys.util import execcmd, get_helper
 import sys
-import uuid
 
 HELP = """\
 Usage: repsys submit [OPTIONS] [URL[@REVISION] ...]
@@ -35,7 +34,6 @@ Options:
                (defaults to the host in the URL)
     -p         Port used to connect to the submit host
     -a         Submit all URLs at once (depends on server-side support)
-    -i SID     Use the submit identifier SID
     -h         Show this message
     --distro   The distribution branch where the packages come from
     --define   Defines one variable to be used by the submit scripts 
@@ -63,8 +61,6 @@ def parse_options():
     parser.add_option("-s", dest="submithost", type="string", nargs=1,
             default=None)
     parser.add_option("-p", dest="port", type="int", default=None)
-    parser.add_option("-i", dest="sid", type="string", nargs=1,
-            default=None)
     parser.add_option("-a", dest="atonce", action="store_true", default=False)
     parser.add_option("--distro", dest="distro", type="string",
             default=None)
@@ -164,7 +160,7 @@ def list_targets(option, opt, val, parser):
                 # force ending the script
 
 def submit(urls, target, define=[], submithost=None, port=None,
-        atonce=False, sid=None):
+        atonce=False):
     if submithost is None:
         submithost = config.get("submit", "host")
         if submithost is None:
@@ -177,9 +173,6 @@ def submit(urls, target, define=[], submithost=None, port=None,
     createsrpm = get_helper("create-srpm")
     baseargs = ["ssh", "-p", str(port), submithost, createsrpm,
             "-t", target]
-    if not sid:
-        sid = uuid.uuid4()
-    define.append("sid=%s" % sid)
     for entry in reversed(define):
         baseargs.append("--define")
         baseargs.append(entry)
