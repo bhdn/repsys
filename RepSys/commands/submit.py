@@ -2,16 +2,10 @@
 from RepSys import Error, config, layout, mirror
 from RepSys.svn import SVN
 from RepSys.command import *
-from RepSys.rpmutil import get_spec, get_submit_info
+from RepSys.rpmutil import get_submit_info
 from RepSys.util import execcmd, get_helper
-import urllib
-import getopt
 import sys
-import re
-import subprocess
 import uuid
-
-import xmlrpclib
 
 HELP = """\
 Usage: repsys submit [OPTIONS] [URL[@REVISION] ...]
