@@ -47,9 +47,9 @@ def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
         rl = [outfd, errfd]
         xl = wl
         while proc.poll() is None:
-            _, mrl, _ = select.select(wl, rl, xl, 0.5)
+            mrl, _, _ = select.select(rl, wl, xl, 0.5)
             for fd in mrl:
-                data = os.read(fd)
+                data = os.read(fd, 8192)
                 if fd == errfd:
                     error.write(data)
                     sys.stderr.write(data)
