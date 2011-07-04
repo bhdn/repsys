@@ -31,7 +31,10 @@ def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
     if not show or (show and collecterr):
         env.update({"LANG": "C", "LANGUAGE": "C", "LC_ALL": "C"})
         stdout = subprocess.PIPE
-        stderr = subprocess.STDOUT
+        if collecterr:
+            stderr = subprocess.PIPE
+        else:
+            stderr = subprocess.STDOUT
 
     proc = subprocess.Popen(cmdargs, shell=False, stdout=stdout,
             stderr=stderr, env=env)

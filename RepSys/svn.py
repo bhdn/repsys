@@ -22,12 +22,13 @@ class SVN:
     def _execsvn(self, *args, **kwargs):
         localcmds = ("add", "revert", "cleanup")
         collecterr = False
-        if not kwargs.get("show"):
+        if kwargs.get("show"):
+            if not kwargs.get("local"):
+                collecterr = True
+        else:
             if args[0] not in localcmds:
                 args = list(args)
                 args.append("--non-interactive")
-            else:
-                collecterr = True
         cleanerr = True
         self._set_env()
         svn_command = config.get("global", "svn-command", "svn")
