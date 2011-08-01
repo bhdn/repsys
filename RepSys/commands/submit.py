@@ -189,11 +189,12 @@ def submit(urls, target, define=[], submithost=None, port=None,
     else:
         cmdsargs.extend((baseargs + [url]) for url in urls)
     for cmdargs in cmdsargs:
-        status, output = execcmd(cmdargs)
+        status, output = execcmd(cmdargs, noerror=1)
         if status == 0:
             print "Package submitted!"
         else:
             sys.stderr.write(output)
+            sys.stderr.write("\n")
             sys.exit(status)
 
 def main():
