@@ -1,3 +1,7 @@
+* 1.11
+- added option --debug to submit and create-srpm, to allow controlling the
+  verbosity of submit output
+
 * 1.10
 - allow setting the port used to connect to the submit host
 - allow using submit -r REV, without package name
