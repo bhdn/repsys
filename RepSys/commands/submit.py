@@ -35,6 +35,7 @@ Options:
     -p         Port used to connect to the submit host
     -a         Submit all URLs at once (depends on server-side support)
     -h         Show this message
+    --debug    Enable debugging messages (on server-side)
     --distro   The distribution branch where the packages come from
     --define   Defines one variable to be used by the submit scripts 
                in the submit host
@@ -55,6 +56,7 @@ DEFAULT_TARGET = "Cooker"
 def parse_options():
     parser = OptionParser(help=HELP)
     parser.defaults["revision"] = None
+    parser.add_option("--debug", default=False, action="store_true")
     parser.add_option("-t", dest="target", default=None)
     parser.add_option("-l", action="callback", callback=list_targets)
     parser.add_option("-r", dest="revision", type="string", nargs=1)
@@ -160,7 +162,7 @@ def list_targets(option, opt, val, parser):
                 # force ending the script
 
 def submit(urls, target, define=[], submithost=None, port=None,
-        atonce=False):
+        atonce=False, debug=False):
     if submithost is None:
         submithost = config.get("submit", "host")
         if submithost is None:
@@ -173,6 +175,8 @@ def submit(urls, target, define=[], submithost=None, port=None,
     createsrpm = get_helper("create-srpm")
     baseargs = ["ssh", "-p", str(port), submithost, createsrpm,
             "-t", target]
+    if debug:
+        baseargs.append("--debug")
     for entry in reversed(define):
         baseargs.append("--define")
         baseargs.append(entry)
