@@ -92,6 +92,8 @@ class CmdIface:
 def parse_options():
     usage = "create-srpm <packageurl> -t <target>"
     parser = optparse.OptionParser(usage=usage)
+    parser.add_option("-d", "--debug", default=False, action="store_true",
+                      help="enable debugging output")
     parser.add_option("-t", "--target", type="string", dest="target",
                       help="target name")
     parser.add_option("-M", "--nomapping", action="store_true",
@@ -113,6 +115,8 @@ def main():
     plugins.load()
     iface = CmdIface()
     opts, args = parse_options()
+    if opts.debug:
+        config.set("global", "verbose", "yes")
     try:
         if opts.list_targets:
             for target in iface.submit_targets():
