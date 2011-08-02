@@ -11,7 +11,14 @@ import re
 from cStringIO import StringIO
 
 class CommandError(Error):
-    pass
+
+    def __init__(self, cmdline, status, output):
+        self.cmdline = cmdline
+        self.status = status
+        self.output = output
+
+    def __str__(self):
+        return "command failed: %s\n%s\n" % (self.cmdline, self.output)
 
 def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
         noerror=False, strip=True):
@@ -70,8 +77,7 @@ def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
             msg = output
         else:
             cmdline = subprocess.list2cmdline(cmdargs)
-            msg = "command failed: %s\n%s\n" % (cmdline, output)
-        raise CommandError, msg
+        raise CommandError(cmdline, proc.returncode, output)
 
     return proc.returncode, output
 

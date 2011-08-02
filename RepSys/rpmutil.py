@@ -3,7 +3,7 @@ from RepSys import Error, config
 from RepSys import mirror, layout, log, cgiutil
 from RepSys.svn import SVN
 from RepSys.simplerpm import SRPM
-from RepSys.util import execcmd
+from RepSys.util import execcmd, CommandError
 from RepSys.command import default_parent
 import rpm
 import urlparse
@@ -138,7 +138,15 @@ def get_srpm(pkgdirurl,
         for pair in macros:
             args.extend(("--define", "%s %s" % pair))
         args.append(spec)
-        execcmd(args)
+        try:
+            execcmd(args)
+        except CommandError, e:
+            if config.getbool("global", "verbose"):
+                cmdline = e.cmdline + "\n"
+            else:
+                cmdline = ""
+            raise Error, ("error while creating the source RPM "
+                        "(with %s):\n%s%s" % (sourcecmd, cmdline, e.output))
 
         # copy the generated SRPMs to their target locations
         targetsrpms = []
