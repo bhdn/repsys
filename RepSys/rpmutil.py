@@ -20,7 +20,7 @@ def get_spec(pkgdirurl, targetdir=".", submit=False):
     try:
         geturl = layout.checkout_url(pkgdirurl, append_path="SPECS")
         mirror.info(geturl)
-        svn.export("'%s'" % geturl, tmpdir)
+        svn.export(geturl, tmpdir)
         speclist = glob.glob(os.path.join(tmpdir, "*.spec"))
         if not speclist:
             raise Error, "no spec files found"
