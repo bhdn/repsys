@@ -34,6 +34,7 @@ Options:
                (defaults to the host in the URL)
     -p         Port used to connect to the submit host
     -a         Submit all URLs at once (depends on server-side support)
+    -K         Do not replace the %changelog from the spec file
     -h         Show this message
     --debug    Enable debugging messages (on server-side)
     --distro   The distribution branch where the packages come from
@@ -67,6 +68,7 @@ def parse_options():
     parser.add_option("--distro", dest="distro", type="string",
             default=None)
     parser.add_option("--define", action="append", default=[])
+    parser.add_option("-K", "--keeplog", action="store_true", default=False)
     opts, args = parser.parse_args()
     if not args:
         name, url, rev = get_submit_info(".")
@@ -162,7 +164,7 @@ def list_targets(option, opt, val, parser):
                 # force ending the script
 
 def submit(urls, target, define=[], submithost=None, port=None,
-        atonce=False, debug=False):
+        atonce=False, debug=False, keeplog=False):
     if submithost is None:
         submithost = config.get("submit", "host")
         if submithost is None:
@@ -177,6 +179,8 @@ def submit(urls, target, define=[], submithost=None, port=None,
             "-t", target]
     if debug:
         baseargs.append("--debug")
+    if keeplog:
+        baseargs.append("--keeplog")
     for entry in reversed(define):
         baseargs.append("--define")
         baseargs.append(entry)
