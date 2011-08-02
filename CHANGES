@@ -1,6 +1,8 @@
 * 1.11
 - added option --debug to submit and create-srpm, to allow controlling the
   verbosity of submit output
+- added option -K to submit to disable the changelog generation based on
+  svn log (patch by Franck Bui)
 
 * 1.10
 - allow setting the port used to connect to the submit host
