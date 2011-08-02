@@ -39,7 +39,6 @@ def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
     proc = subprocess.Popen(cmdargs, shell=False, stdout=stdout,
             stderr=stderr, env=env)
 
-    status = None
     output = ""
 
     if show and collecterr:
@@ -66,9 +65,7 @@ def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
             if strip:
                 output = output.rstrip()
 
-    status = proc.returncode
-
-    if (not noerror) and status != 0:
+    if (not noerror) and proc.returncode != 0:
         if cleanerr:
             msg = output
         else:
@@ -76,7 +73,7 @@ def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
             msg = "command failed: %s\n%s\n" % (cmdline, output)
         raise CommandError, msg
 
-    return status, output
+    return proc.returncode, output
 
 def mapurl(url):
     """Maps a url following the regexp provided by the option url-map in
