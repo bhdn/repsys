@@ -75,8 +75,7 @@ def execcmd(cmd_args_or_str, show=False, collecterr=False, cleanerr=False,
     if (not noerror) and proc.returncode != 0:
         if cleanerr:
             msg = output
-        else:
-            cmdline = subprocess.list2cmdline(cmdargs)
+        cmdline = subprocess.list2cmdline(cmdargs)
         raise CommandError(cmdline, proc.returncode, output)
 
     return proc.returncode, output
