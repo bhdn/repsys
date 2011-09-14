@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from RepSys import Error, config, layout
 from RepSys.svn import SVN
-from RepSys.util import execcmd
+from RepSys.util import CommandError
 
 try:
     from Cheetah.Template import Template
@@ -71,7 +71,6 @@ def getrelease(pkgdirurl, rev=None, macros=[], exported=None):
     Is here where things should be changed if "automatic release increasing" 
     will be used.
     """
-    from RepSys.rpmutil import rpm_macros_defs
     svn = SVN()
     pkgcurrenturl = os.path.join(pkgdirurl, "current")
     specurl = os.path.join(pkgcurrenturl, "SPECS")
@@ -85,24 +84,22 @@ def getrelease(pkgdirurl, rev=None, macros=[], exported=None):
         if not found:
             raise Error, "no .spec file found inside %s" % specurl
         specpath = found[0]
-        options = rpm_macros_defs(macros)
-        command = (("rpm -q --qf '%%{EPOCH}:%%{VERSION}-%%{RELEASE}\n' "
-                   "--specfile %s %s") %
-                   (specpath, options))
-        pipe = subprocess.Popen(command, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, shell=True)
-        pipe.wait()
-        output = pipe.stdout.read()
-        error = pipe.stderr.read()
-        if pipe.returncode != 0:
-            raise Error, "Error in command %s: %s" % (command, error)
+        args = ["rpm", "-q", "--qf", "%{EPOCH}:%{VERSION}-%{RELEASE}\n",
+                "--specfile", specpath]
+        for pair in macros:
+            args.extend(("--define", "%s %s" % pair))
+        proc = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+        if proc.wait() != 0:
+            raise CommandError(args, proc.returncode, proc.stderr.read())
+        output = proc.stdout.read()
         releases = output.split()
         try:
             epoch, vr = releases[0].split(":", 1)
             version, release = vr.split("-", 1)
         except ValueError:
             raise Error, "Invalid command output: %s: %s" % \
-                    (command, output)
+                    (args, output)
         #XXX check if this is the right way:
         if epoch == "(none)":
             ev = version
