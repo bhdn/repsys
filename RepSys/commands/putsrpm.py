@@ -15,7 +15,7 @@ If the package was already imported, it will add the new files and remove
 those not present in the source RPM.
 
 Options:
-    -m LOG  Log message used when commiting changes
+    -l LOG  Log message used when commiting changes
     -t      Create version-release tag on releases/
     -b NAME The distribution branch to place it
     -d URL  The URL of base directory where packages will be placed
