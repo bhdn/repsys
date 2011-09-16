@@ -20,6 +20,7 @@ import tempfile
 import shutil
 import subprocess
 
+TARGET_ENCODING = "utf8"
 
 locale.setlocale(locale.LC_ALL, "C")
 
@@ -336,8 +337,9 @@ def dump_file(releases, currentlog=None, template=None):
                              "releases" : releases,
                              "revisions_by_author": revisions_author}]
     t = Template(**params)
-    return t.respond()
-
+    su = t.respond()
+    data = su.encode(TARGET_ENCODING)
+    return data
 
 class InvalidEntryError(Exception):
     pass
